@@ -5,24 +5,47 @@
     <section :class="controlPanelClass">
       <SetupPanel
         v-if="!isSessionLive"
+        :session-mode="sessionMode"
         :file-input-accept="fileInputAccept"
         :duration-seconds="durationSeconds"
+        :class-preset-options="classPresetOptions"
+        :class-preset-id="classPresetId"
+        :class-blocks="classBlocks"
+        :class-photo-order="classPhotoOrder"
+        :avoid-immediate-repeats="avoidImmediateRepeats"
+        :has-class-plan="hasClassPlan"
+        :class-target-minutes="classTargetMinutes"
+        :class-pose-count="classPoseCount"
+        :class-total-minutes-text="classTotalMinutesText"
+        :class-delta-text="classDeltaText"
+        :start-action-label="startActionLabel"
+        :regenerate-action-label="regenerateActionLabel"
         :has-source-photos="hasSourcePhotos"
         :status-message="statusMessage"
         :upload-notice="uploadNotice"
         @photos-selected="handlePhotoSelection"
+        @session-mode-change="setSessionMode"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
+        @class-preset-change="setClassPreset"
+        @class-block-update="updateClassBlock"
+        @class-block-add="addClassBlock"
+        @class-block-remove="removeClassBlock"
+        @class-photo-order-change="setClassPhotoOrder"
+        @class-repeat-toggle="setAvoidImmediateRepeats"
         @start-session="startFreshSession"
         @new-random-set="createNewRandomSet"
       />
 
       <LiveControlsPanel
         v-else
+        :session-mode="sessionMode"
         :duration-seconds="durationSeconds"
         :is-running="isRunning"
+        :is-paused="isPaused"
         :has-source-photos="hasSourcePhotos"
         :pause-label="pauseLabel"
+        :restart-label="restartActionLabel"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
         @toggle-pause="togglePause"
@@ -39,6 +62,8 @@
       :placeholder-text="placeholderText"
       :slide-counter-text="slideCounterText"
       :time-left-text="timeLeftText"
+      :active-pose-label="activePoseLabel"
+      :session-time-left-text="sessionTimeLeftText"
       :timer-fill-percent="timerFillPercent"
     />
   </main>
@@ -55,19 +80,43 @@ import { useLiveKeyboardShortcuts } from "./composables/useLiveKeyboardShortcuts
 
 const {
   fileInputAccept,
+  sessionMode,
   durationSeconds,
+  classPresetOptions,
+  classPresetId,
+  classBlocks,
+  classPhotoOrder,
+  avoidImmediateRepeats,
+  hasClassPlan,
+  classTargetMinutes,
+  classPoseCount,
+  classTotalMinutesText,
+  classDeltaText,
+  startActionLabel,
+  regenerateActionLabel,
+  restartActionLabel,
   statusMessage,
   uploadNotice,
   currentSlideUrl,
   currentSlideAlt,
+  activePoseLabel,
+  sessionTimeLeftText,
   hasSourcePhotos,
   isRunning,
+  isPaused,
   isSessionLive,
   pauseLabel,
   slideCounterText,
   timeLeftText,
   timerFillPercent,
   placeholderText,
+  setSessionMode,
+  setClassPreset,
+  updateClassBlock,
+  addClassBlock,
+  removeClassBlock,
+  setClassPhotoOrder,
+  setAvoidImmediateRepeats,
   startFreshSession,
   togglePause,
   goToNextSlide,

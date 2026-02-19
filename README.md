@@ -42,3 +42,17 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
   `npm run build`
 - Preview production build:
   `npm run preview`
+
+## Quality Checks
+
+- Lint:
+  `npm run lint`
+- Unit tests:
+  `npm run test`
+- Run all local gates (lint + test + build):
+  `npm run check`
+
+## CI
+
+- GitHub Actions workflow: `.github/workflows/ci.yml`
+- Runs `npm ci`, then `npm run lint`, `npm run test`, and `npm run build` on pull requests and pushes to `main`.

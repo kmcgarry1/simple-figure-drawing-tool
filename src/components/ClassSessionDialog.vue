@@ -1,0 +1,181 @@
+<template>
+  <div
+    v-if="isOpen"
+    class="fixed inset-0 z-40 grid place-items-center bg-slate-950/75 p-3"
+    @click.self="closeDialog"
+    @keydown="onBackdropKeydown"
+  >
+    <section
+      ref="dialogRef"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Life drawing class wizard"
+      tabindex="-1"
+      class="max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-xl border border-slate-600 bg-slate-900 p-4 shadow-2xl"
+    >
+      <header class="mb-3 flex items-start justify-between gap-3">
+        <div class="grid gap-1">
+          <p class="text-base font-semibold text-slate-100">Life Drawing Class Wizard</p>
+          <p class="text-sm text-slate-300">Build your class plan and launch from this dialog.</p>
+        </div>
+        <button
+          type="button"
+          class="rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-100 transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+          @click="closeDialog"
+        >
+          Close
+        </button>
+      </header>
+
+      <div class="grid gap-3">
+        <ClassPresetSection
+          :class-preset-options="classPresetOptions"
+          :class-preset-id="classPresetId"
+          @class-preset-change="$emit('class-preset-change', $event)"
+        />
+
+        <ClassPoseBlocksSection
+          :class-blocks="classBlocks"
+          @class-block-update="$emit('class-block-update', $event)"
+          @class-block-add="$emit('class-block-add')"
+          @class-block-remove="$emit('class-block-remove', $event)"
+        />
+
+        <ClassPhotoSequenceSection
+          :class-photo-order="classPhotoOrder"
+          :avoid-immediate-repeats="avoidImmediateRepeats"
+          @class-photo-order-change="$emit('class-photo-order-change', $event)"
+          @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
+        />
+
+        <div class="grid gap-1 rounded-md border border-slate-700 bg-slate-950/50 px-2.5 py-2 text-sm text-slate-300">
+          <p>
+            Plan total:
+            <span class="font-semibold text-slate-100">{{ classTotalMinutesText }}</span>
+            across {{ classPoseCount }} poses.
+          </p>
+          <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>
+        </div>
+
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2">
+          <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
+            {{ startActionLabel }}
+          </BaseButton>
+          <BaseButton
+            :disabled="!hasSourcePhotos || !hasClassPlan"
+            tone="subtle"
+            @click="$emit('new-random-set')"
+          >
+            {{ regenerateActionLabel }}
+          </BaseButton>
+        </div>
+      </div>
+    </section>
+  </div>
+</template>
+
+<script setup>
+import { nextTick, ref, watch } from "vue";
+import BaseButton from "./BaseButton.vue";
+import ClassPhotoSequenceSection from "./classDialog/ClassPhotoSequenceSection.vue";
+import ClassPoseBlocksSection from "./classDialog/ClassPoseBlocksSection.vue";
+import ClassPresetSection from "./classDialog/ClassPresetSection.vue";
+
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    required: true
+  },
+  classPresetOptions: {
+    type: Array,
+    required: true
+  },
+  classPresetId: {
+    type: String,
+    required: true
+  },
+  classBlocks: {
+    type: Array,
+    required: true
+  },
+  classPhotoOrder: {
+    type: String,
+    required: true
+  },
+  avoidImmediateRepeats: {
+    type: Boolean,
+    required: true
+  },
+  hasClassPlan: {
+    type: Boolean,
+    required: true
+  },
+  classTargetMinutes: {
+    type: Number,
+    required: true
+  },
+  classPoseCount: {
+    type: Number,
+    required: true
+  },
+  classTotalMinutesText: {
+    type: String,
+    required: true
+  },
+  classDeltaText: {
+    type: String,
+    required: true
+  },
+  startActionLabel: {
+    type: String,
+    required: true
+  },
+  regenerateActionLabel: {
+    type: String,
+    required: true
+  },
+  hasSourcePhotos: {
+    type: Boolean,
+    required: true
+  }
+});
+
+const emit = defineEmits([
+  "close",
+  "class-preset-change",
+  "class-block-update",
+  "class-block-add",
+  "class-block-remove",
+  "class-photo-order-change",
+  "class-repeat-toggle",
+  "start-session",
+  "new-random-set"
+]);
+
+const dialogRef = ref(null);
+
+watch(
+  () => props.isOpen,
+  async (nextOpen) => {
+    if (!nextOpen) {
+      return;
+    }
+
+    await nextTick();
+    dialogRef.value?.focus();
+  }
+);
+
+function closeDialog() {
+  emit("close");
+}
+
+function onBackdropKeydown(event) {
+  if (event.key !== "Escape") {
+    return;
+  }
+
+  event.preventDefault();
+  closeDialog();
+}
+</script>

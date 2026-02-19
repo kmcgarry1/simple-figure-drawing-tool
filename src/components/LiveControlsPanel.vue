@@ -1,9 +1,13 @@
 <template>
-  <div class="button-row compact-row">
-    <button type="button" :disabled="!isRunning" @click="$emit('toggle-pause')">{{ pauseLabel }}</button>
-    <button type="button" :disabled="!isRunning" @click="$emit('next')">Next</button>
-    <button type="button" :disabled="!hasSourcePhotos" @click="$emit('new-set')">New Set</button>
-    <button type="button" @click="$emit('end')">End</button>
+  <div class="grid grid-cols-2 gap-1.5">
+    <BaseButton compact :disabled="!isRunning" @click="$emit('toggle-pause')">
+      {{ pauseLabel }}
+    </BaseButton>
+    <BaseButton compact :disabled="!isRunning" tone="subtle" @click="$emit('next')">Next</BaseButton>
+    <BaseButton compact :disabled="!hasSourcePhotos" tone="subtle" @click="$emit('new-set')">
+      New Set
+    </BaseButton>
+    <BaseButton compact tone="danger" @click="$emit('end')">End</BaseButton>
   </div>
 
   <DurationInput
@@ -17,6 +21,7 @@
 </template>
 
 <script setup>
+import BaseButton from "./BaseButton.vue";
 import DurationInput from "./DurationInput.vue";
 
 defineProps({

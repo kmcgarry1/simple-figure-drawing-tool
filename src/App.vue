@@ -1,8 +1,8 @@
 <template>
-  <main class="app-shell" :class="{ 'session-live': isSessionLive }">
+  <main :class="shellClass">
     <AppHeader v-if="!isSessionLive" />
 
-    <section class="control-panel" :class="{ compact: isSessionLive }">
+    <section :class="controlPanelClass">
       <SetupPanel
         v-if="!isSessionLive"
         :file-input-accept="fileInputAccept"
@@ -45,6 +45,7 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import AppHeader from "./components/AppHeader.vue";
 import LiveControlsPanel from "./components/LiveControlsPanel.vue";
 import SetupPanel from "./components/SetupPanel.vue";
@@ -79,6 +80,18 @@ const {
 function updateDurationSeconds(value) {
   durationSeconds.value = value;
 }
+
+const shellClass = computed(() =>
+  isSessionLive.value
+    ? "relative min-h-dvh text-slate-100"
+    : "mx-auto my-4 grid w-[min(980px,calc(100%-2rem))] gap-3 text-slate-100 max-[720px]:my-2 max-[720px]:w-[calc(100%-1rem)]"
+);
+
+const controlPanelClass = computed(() =>
+  isSessionLive.value
+    ? "fixed bottom-2 left-2 z-30 w-[min(230px,calc(100vw-1rem))] rounded-lg border border-slate-500/40 bg-slate-800/90 p-2 backdrop-blur"
+    : "grid gap-3 rounded-xl border border-slate-700 bg-slate-800 p-4 max-[720px]:rounded-lg"
+);
 
 useLiveKeyboardShortcuts({
   isSessionLive,

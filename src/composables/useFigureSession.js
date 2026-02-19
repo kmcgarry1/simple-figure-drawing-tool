@@ -1,168 +1,149 @@
-import { computed, onBeforeUnmount, ref } from "vue";
+import { onBeforeUnmount, ref, watch } from "vue";
+import { FILE_INPUT_ACCEPT } from "../config";
+import { CLASS_PRESET_OPTIONS, createBlocksFromPreset } from "../utils/classPlan";
+import { createClassPlanActions } from "./figureSession/classPlanActions";
 import {
-  DEFAULT_DURATION_SECONDS,
-  FILE_INPUT_ACCEPT,
-  SESSION_PHOTO_LIMIT
-} from "../config";
+  PHOTO_ORDER_SHUFFLE,
+  SESSION_MODE_CLASS,
+  SESSION_MODE_QUICK
+} from "./figureSession/constants";
+import { useFigureSessionDerivedState } from "./figureSession/derivedState";
 import {
-  chooseRandomPhotos,
-  clampDurationSeconds,
-  normalizeUploadedPhotos
-} from "../utils/photoInput";
+  loadSessionPreferences,
+  persistSessionPreferences
+} from "./figureSession/persistence";
+import { createPlaybackRuntime } from "./figureSession/playbackRuntime";
+import { createSetPreparationController } from "./figureSession/setPreparation";
+import { IDLE_MESSAGE } from "./figureSession/sessionMessages";
 
 export function useFigureSession() {
+  const persistedPreferences = loadSessionPreferences();
+
   const sourcePhotos = ref([]);
-  const sessionPhotos = ref([]);
+  const sessionSlides = ref([]);
   const currentIndex = ref(-1);
 
   const phase = ref("idle");
-  const statusMessage = ref("Upload at least 1 photo to begin.");
+  const statusMessage = ref(IDLE_MESSAGE);
   const uploadNotice = ref("");
 
-  const durationSeconds = ref(DEFAULT_DURATION_SECONDS);
+  const sessionMode = ref(persistedPreferences.sessionMode);
+  const durationSeconds = ref(persistedPreferences.durationSeconds);
+
+  const classPresetId = ref(persistedPreferences.classPresetId || CLASS_PRESET_OPTIONS[0].id);
+  const classBlocks = ref(
+    persistedPreferences.classBlocks || createBlocksFromPreset(classPresetId.value)
+  );
+  const classPhotoOrder = ref(persistedPreferences.classPhotoOrder || PHOTO_ORDER_SHUFFLE);
+  const avoidImmediateRepeats = ref(
+    persistedPreferences.avoidImmediateRepeats
+  );
+
   const remainingMs = ref(0);
   const activeSlideDurationMs = ref(0);
 
   const currentSlideUrl = ref("");
   const currentSlideAlt = ref("");
 
-  let slideTimeoutId = null;
-  let tickIntervalId = null;
-  let deadline = 0;
-
-  const hasSourcePhotos = computed(() => sourcePhotos.value.length > 0);
-  const isRunning = computed(() => phase.value === "running");
-  const isPaused = computed(() => phase.value === "paused");
-  const isSessionLive = computed(() => isRunning.value || isPaused.value);
-  const pauseLabel = computed(() => (isPaused.value ? "Resume" : "Pause"));
-
-  const slideCounterText = computed(() => {
-    const total = sessionPhotos.value.length;
-    const current = currentIndex.value >= 0 ? currentIndex.value + 1 : 0;
-    return `${current} / ${total}`;
+  const {
+    hasSourcePhotos,
+    isRunning,
+    isPaused,
+    isSessionLive,
+    pauseLabel,
+    activeSlide,
+    hasClassPlan,
+    classTargetMinutes,
+    classPoseCount,
+    classDeltaText,
+    classTotalMinutesText,
+    startActionLabel,
+    regenerateActionLabel,
+    restartActionLabel,
+    slideCounterText,
+    timeLeftText,
+    activePoseLabel,
+    sessionTimeLeftText,
+    timerFillPercent,
+    placeholderText
+  } = useFigureSessionDerivedState({
+    sourcePhotos,
+    sessionSlides,
+    currentIndex,
+    phase,
+    sessionMode,
+    classBlocks,
+    classPresetId,
+    remainingMs,
+    activeSlideDurationMs
   });
 
-  const timeLeftText = computed(() => {
-    const secondsLeft = Math.ceil(Math.max(0, remainingMs.value) / 1000);
-    return `${secondsLeft}s`;
+  const {
+    clearTimers,
+    revokeSlideUrl,
+    clearPreloadedSlide,
+    resetPlaybackState,
+    scheduleCurrentSlide,
+    startPreparedSession,
+    goToNextSlide,
+    togglePause,
+    stopSession
+  } = createPlaybackRuntime({
+    phase,
+    statusMessage,
+    sessionMode,
+    sessionSlides,
+    currentIndex,
+    remainingMs,
+    activeSlideDurationMs,
+    currentSlideUrl,
+    currentSlideAlt,
+    hasSourcePhotos,
+    isRunning,
+    isPaused,
+    activeSlide,
+    slideCounterText
   });
 
-  const timerFillPercent = computed(() => {
-    if (activeSlideDurationMs.value <= 0) {
-      return 0;
-    }
-
-    const ratio = Math.max(0, Math.min(1, remainingMs.value / activeSlideDurationMs.value));
-    return ratio * 100;
+  const {
+    getQuickDurationSeconds,
+    prepareActiveSet,
+    handlePhotoSelection
+  } = createSetPreparationController({
+    sourcePhotos,
+    sessionSlides,
+    phase,
+    statusMessage,
+    sessionMode,
+    durationSeconds,
+    classBlocks,
+    classPhotoOrder,
+    avoidImmediateRepeats,
+    uploadNotice,
+    hasSourcePhotos,
+    classTotalMinutesText,
+    classDeltaText,
+    clearTimers,
+    revokeSlideUrl,
+    resetPlaybackState
   });
 
-  const placeholderText = computed(() => {
-    if (!hasSourcePhotos.value) {
-      return "Your slideshow will appear here.";
-    }
-    if (phase.value === "complete") {
-      return "Session complete. Start a new round when ready.";
-    }
-    if (phase.value === "ready") {
-      return "Random set prepared. Press Start Session.";
-    }
-    return "Preparing session...";
+  const {
+    setClassPreset,
+    updateClassBlock,
+    addClassBlock,
+    removeClassBlock,
+    setClassPhotoOrder,
+    setAvoidImmediateRepeats
+  } = createClassPlanActions({
+    classPresetId,
+    classBlocks,
+    classPhotoOrder,
+    avoidImmediateRepeats,
+    sessionMode,
+    isSessionLive,
+    statusMessage
   });
-
-  function clearTimers() {
-    if (slideTimeoutId !== null) {
-      clearTimeout(slideTimeoutId);
-      slideTimeoutId = null;
-    }
-
-    if (tickIntervalId !== null) {
-      clearInterval(tickIntervalId);
-      tickIntervalId = null;
-    }
-  }
-
-  function revokeSlideUrl() {
-    if (currentSlideUrl.value) {
-      URL.revokeObjectURL(currentSlideUrl.value);
-      currentSlideUrl.value = "";
-      currentSlideAlt.value = "";
-    }
-  }
-
-  function getDurationMs() {
-    const clamped = clampDurationSeconds(durationSeconds.value);
-    durationSeconds.value = clamped;
-    return clamped * 1000;
-  }
-
-  function showCurrentSlide() {
-    const file = sessionPhotos.value[currentIndex.value];
-    if (!file) {
-      revokeSlideUrl();
-      return;
-    }
-
-    revokeSlideUrl();
-    currentSlideUrl.value = URL.createObjectURL(file);
-    currentSlideAlt.value = `Slide ${currentIndex.value + 1}: ${file.name}`;
-  }
-
-  function prepareRandomSet() {
-    if (!hasSourcePhotos.value) {
-      sessionPhotos.value = [];
-      currentIndex.value = -1;
-      remainingMs.value = 0;
-      activeSlideDurationMs.value = 0;
-      phase.value = "idle";
-      statusMessage.value = "Upload at least 1 photo to begin.";
-      revokeSlideUrl();
-      return false;
-    }
-
-    const pickCount = Math.min(SESSION_PHOTO_LIMIT, sourcePhotos.value.length);
-    sessionPhotos.value = chooseRandomPhotos(sourcePhotos.value, pickCount);
-    currentIndex.value = -1;
-    remainingMs.value = 0;
-    activeSlideDurationMs.value = 0;
-    phase.value = "ready";
-    revokeSlideUrl();
-
-    statusMessage.value =
-      sessionPhotos.value.length < SESSION_PHOTO_LIMIT
-        ? `Random set ready: ${sessionPhotos.value.length} photo(s) selected (fewer than ${SESSION_PHOTO_LIMIT} uploaded).`
-        : `Random set ready: ${SESSION_PHOTO_LIMIT} photos selected.`;
-
-    return true;
-  }
-
-  function scheduleCurrentSlide() {
-    clearTimers();
-    const delay = Math.max(1, remainingMs.value);
-    remainingMs.value = delay;
-    deadline = Date.now() + delay;
-
-    slideTimeoutId = setTimeout(() => {
-      advanceSlide();
-    }, delay);
-
-    tickIntervalId = setInterval(() => {
-      remainingMs.value = Math.max(0, deadline - Date.now());
-    }, 100);
-  }
-
-  function startPreparedSession() {
-    if (sessionPhotos.value.length === 0) {
-      return;
-    }
-
-    currentIndex.value = 0;
-    activeSlideDurationMs.value = getDurationMs();
-    remainingMs.value = activeSlideDurationMs.value;
-    phase.value = "running";
-    showCurrentSlide();
-    scheduleCurrentSlide();
-    statusMessage.value = `Running session with ${sessionPhotos.value.length} photo(s).`;
-  }
 
   function startFreshSession() {
     if (!hasSourcePhotos.value) {
@@ -170,7 +151,7 @@ export function useFigureSession() {
       return;
     }
 
-    const hasSet = prepareRandomSet();
+    const hasSet = prepareActiveSet();
     if (!hasSet) {
       return;
     }
@@ -178,87 +159,41 @@ export function useFigureSession() {
     startPreparedSession();
   }
 
-  function finishSession() {
-    clearTimers();
-    phase.value = "complete";
-    remainingMs.value = 0;
-    activeSlideDurationMs.value = 0;
-    statusMessage.value = "Session complete. Press Start Session for a new round.";
-  }
-
-  function advanceSlide() {
-    if (!isRunning.value) {
-      return;
-    }
-
-    if (currentIndex.value >= sessionPhotos.value.length - 1) {
-      finishSession();
-      return;
-    }
-
-    currentIndex.value += 1;
-    activeSlideDurationMs.value = getDurationMs();
-    remainingMs.value = activeSlideDurationMs.value;
-    showCurrentSlide();
-    scheduleCurrentSlide();
-  }
-
-  function goToNextSlide() {
-    if (!isRunning.value) {
-      return;
-    }
-
-    clearTimers();
-    advanceSlide();
-  }
-
-  function togglePause() {
-    if (!isRunning.value && !isPaused.value) {
-      return;
-    }
-
-    if (isRunning.value) {
-      remainingMs.value = Math.max(0, deadline - Date.now());
-      phase.value = "paused";
-      clearTimers();
-      statusMessage.value = "Session paused.";
-      return;
-    }
-
-    if (remainingMs.value <= 0) {
-      activeSlideDurationMs.value = getDurationMs();
-      remainingMs.value = activeSlideDurationMs.value;
-    }
-
-    phase.value = "running";
-    scheduleCurrentSlide();
-    statusMessage.value = "Session resumed.";
-  }
-
   function applyDurationChange() {
-    const durationMs = getDurationMs();
+    if (sessionMode.value !== SESSION_MODE_QUICK) {
+      statusMessage.value = "Per-photo duration is only used in Quick Session mode.";
+      return;
+    }
+
+    const duration = getQuickDurationSeconds();
+    const durationMs = duration * 1000;
+    sessionSlides.value = sessionSlides.value.map((slide) => ({
+      ...slide,
+      durationSeconds: duration,
+      durationMs
+    }));
 
     if (isRunning.value) {
       activeSlideDurationMs.value = durationMs;
       remainingMs.value = durationMs;
       scheduleCurrentSlide();
-      statusMessage.value = `Duration updated to ${durationMs / 1000} seconds.`;
+      statusMessage.value = `Duration updated to ${duration} seconds.`;
       return;
     }
 
     if (isPaused.value) {
       activeSlideDurationMs.value = durationMs;
       remainingMs.value = durationMs;
-      statusMessage.value = `Duration updated to ${durationMs / 1000} seconds.`;
+      statusMessage.value = `Duration updated to ${duration} seconds.`;
       return;
     }
 
-    statusMessage.value = `Duration set to ${durationMs / 1000} seconds.`;
+    statusMessage.value = `Duration set to ${duration} seconds.`;
   }
 
   function createNewRandomSet() {
     const autoStart = isSessionLive.value;
-    const hasSet = prepareRandomSet();
+    const hasSet = prepareActiveSet();
     if (!hasSet) {
       return;
     }
@@ -268,47 +203,88 @@ export function useFigureSession() {
     }
   }
 
-  function stopSession() {
-    clearTimers();
-    remainingMs.value = 0;
-    activeSlideDurationMs.value = 0;
-    phase.value = hasSourcePhotos.value ? "ready" : "idle";
-    statusMessage.value = "Session stopped.";
-  }
-
-  function handlePhotoSelection(fileList) {
-    clearTimers();
-    revokeSlideUrl();
-
-    const { photos, notices } = normalizeUploadedPhotos(fileList);
-    sourcePhotos.value = photos;
-    sessionPhotos.value = [];
-    currentIndex.value = -1;
-    remainingMs.value = 0;
-    activeSlideDurationMs.value = 0;
-    uploadNotice.value = notices.join(" ");
-
-    if (!hasSourcePhotos.value) {
-      phase.value = "idle";
-      statusMessage.value = "Upload at least 1 valid photo to begin.";
+  function setSessionMode(nextMode) {
+    if (![SESSION_MODE_QUICK, SESSION_MODE_CLASS].includes(nextMode)) {
       return;
     }
 
-    prepareRandomSet();
+    if (nextMode === sessionMode.value) {
+      return;
+    }
+
+    if (isSessionLive.value) {
+      statusMessage.value = "End the current run before switching modes.";
+      return;
+    }
+
+    sessionMode.value = nextMode;
+    clearTimers();
+    revokeSlideUrl();
+    resetPlaybackState();
+    sessionSlides.value = [];
+
+    if (!hasSourcePhotos.value) {
+      phase.value = "idle";
+      statusMessage.value = IDLE_MESSAGE;
+      return;
+    }
+
+    prepareActiveSet();
   }
+
+  watch(
+    [
+      sessionMode,
+      durationSeconds,
+      classPresetId,
+      classBlocks,
+      classPhotoOrder,
+      avoidImmediateRepeats
+    ],
+    () => {
+      persistSessionPreferences({
+        sessionMode: sessionMode.value,
+        durationSeconds: durationSeconds.value,
+        classPresetId: classPresetId.value,
+        classBlocks: classBlocks.value,
+        classPhotoOrder: classPhotoOrder.value,
+        avoidImmediateRepeats: avoidImmediateRepeats.value
+      });
+    },
+    {
+      deep: true
+    }
+  );
 
   onBeforeUnmount(() => {
     clearTimers();
     revokeSlideUrl();
+    clearPreloadedSlide();
   });
 
   return {
     fileInputAccept: FILE_INPUT_ACCEPT,
+    sessionMode,
     durationSeconds,
+    classPresetOptions: CLASS_PRESET_OPTIONS,
+    classPresetId,
+    classBlocks,
+    classPhotoOrder,
+    avoidImmediateRepeats,
+    hasClassPlan,
+    classTargetMinutes,
+    classPoseCount,
+    classTotalMinutesText,
+    classDeltaText,
+    startActionLabel,
+    regenerateActionLabel,
+    restartActionLabel,
     statusMessage,
     uploadNotice,
     currentSlideUrl,
     currentSlideAlt,
+    activePoseLabel,
+    sessionTimeLeftText,
     hasSourcePhotos,
     isRunning,
     isPaused,
@@ -318,6 +294,13 @@ export function useFigureSession() {
     timeLeftText,
     timerFillPercent,
     placeholderText,
+    setSessionMode,
+    setClassPreset,
+    updateClassBlock,
+    addClassBlock,
+    removeClassBlock,
+    setClassPhotoOrder,
+    setAvoidImmediateRepeats,
     startFreshSession,
     togglePause,
     goToNextSlide,

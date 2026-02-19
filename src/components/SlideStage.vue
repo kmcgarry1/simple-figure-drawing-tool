@@ -4,6 +4,8 @@
       v-if="isSessionLive && currentSlideUrl"
       :slide-counter-text="slideCounterText"
       :time-left-text="timeLeftText"
+      :active-pose-label="activePoseLabel"
+      :session-time-left-text="sessionTimeLeftText"
       :timer-fill-percent="timerFillPercent"
     />
 
@@ -40,6 +42,14 @@ const props = defineProps({
     required: true
   },
   timeLeftText: {
+    type: String,
+    required: true
+  },
+  activePoseLabel: {
+    type: String,
+    required: true
+  },
+  sessionTimeLeftText: {
     type: String,
     required: true
   },

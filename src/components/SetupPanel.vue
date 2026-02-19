@@ -46,103 +46,6 @@
   <section v-else class="grid gap-3 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
     <p class="text-sm font-semibold text-slate-100">2. Life Drawing Class Wizard</p>
 
-    <div class="grid gap-2">
-      <p class="text-xs uppercase tracking-wide text-slate-400">Class Length Preset</p>
-      <div class="grid grid-cols-3 gap-2 max-[560px]:grid-cols-1">
-        <BaseButton
-          v-for="preset in classPresetOptions"
-          :key="preset.id"
-          compact
-          :tone="presetTone(preset.id)"
-          @click="$emit('class-preset-change', preset.id)"
-        >
-          {{ preset.label }}
-        </BaseButton>
-      </div>
-    </div>
-
-    <div class="grid gap-2">
-      <p class="text-xs uppercase tracking-wide text-slate-400">Pose Blocks</p>
-      <article
-        v-for="(block, index) in classBlocks"
-        :key="`pose-block-${index}`"
-        class="grid gap-2 rounded-md border border-slate-700 bg-slate-950/50 p-2.5"
-      >
-        <label class="grid gap-1 text-xs text-slate-300">
-          <span>Block Name</span>
-          <input
-            type="text"
-            :value="block.label"
-            class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-            @input="onBlockLabelInput(index, $event)"
-          />
-        </label>
-
-        <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-          <label class="grid gap-1 text-xs text-slate-300">
-            <span>Seconds Per Pose</span>
-            <input
-              type="number"
-              min="5"
-              max="7200"
-              :value="block.durationSeconds"
-              class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-              @change="onBlockDurationChange(index, $event)"
-            />
-          </label>
-
-          <label class="grid gap-1 text-xs text-slate-300">
-            <span>Pose Count</span>
-            <input
-              type="number"
-              min="1"
-              max="200"
-              :value="block.poseCount"
-              class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-              @change="onBlockCountChange(index, $event)"
-            />
-          </label>
-        </div>
-
-        <BaseButton
-          compact
-          tone="danger"
-          :disabled="classBlocks.length <= 1"
-          @click="$emit('class-block-remove', index)"
-        >
-          Remove Block
-        </BaseButton>
-      </article>
-
-      <BaseButton compact tone="subtle" @click="$emit('class-block-add')">Add Block</BaseButton>
-    </div>
-
-    <div class="grid gap-2">
-      <p class="text-xs uppercase tracking-wide text-slate-400">Photo Sequence</p>
-      <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-        <BaseButton compact :tone="photoOrderTone('shuffle')" @click="$emit('class-photo-order-change', 'shuffle')">
-          Shuffle Photos
-        </BaseButton>
-        <BaseButton
-          compact
-          :tone="photoOrderTone('sequential')"
-          @click="$emit('class-photo-order-change', 'sequential')"
-        >
-          Upload Order
-        </BaseButton>
-      </div>
-      <label class="inline-flex items-center gap-2 text-sm text-slate-300">
-        <input
-          type="checkbox"
-          class="h-4 w-4 rounded border-slate-600 bg-slate-900 text-sky-500 focus-visible:ring-sky-400"
-          :checked="avoidImmediateRepeats"
-          :disabled="classPhotoOrder === 'sequential'"
-          @change="onRepeatToggle"
-        />
-        <span>Avoid back-to-back repeats while shuffling.</span>
-      </label>
-    </div>
-
     <div class="grid gap-1 rounded-md border border-slate-700 bg-slate-950/50 px-2.5 py-2 text-sm text-slate-300">
       <p>
         Plan total:
@@ -153,6 +56,7 @@
     </div>
 
     <div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2">
+      <BaseButton tone="subtle" @click="openClassDialog">Edit Class Plan</BaseButton>
       <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
         {{ startActionLabel }}
       </BaseButton>
@@ -166,6 +70,33 @@
     </div>
   </section>
 
+  <ClassSessionDialog
+    v-if="sessionMode === 'class'"
+    :is-open="isClassDialogOpen"
+    :class-preset-options="classPresetOptions"
+    :class-preset-id="classPresetId"
+    :class-blocks="classBlocks"
+    :class-photo-order="classPhotoOrder"
+    :avoid-immediate-repeats="avoidImmediateRepeats"
+    :has-class-plan="hasClassPlan"
+    :class-target-minutes="classTargetMinutes"
+    :class-pose-count="classPoseCount"
+    :class-total-minutes-text="classTotalMinutesText"
+    :class-delta-text="classDeltaText"
+    :start-action-label="startActionLabel"
+    :regenerate-action-label="regenerateActionLabel"
+    :has-source-photos="hasSourcePhotos"
+    @close="closeClassDialog"
+    @class-preset-change="$emit('class-preset-change', $event)"
+    @class-block-update="$emit('class-block-update', $event)"
+    @class-block-add="$emit('class-block-add')"
+    @class-block-remove="$emit('class-block-remove', $event)"
+    @class-photo-order-change="$emit('class-photo-order-change', $event)"
+    @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
+    @start-session="$emit('start-session')"
+    @new-random-set="$emit('new-random-set')"
+  />
+
   <div class="grid gap-1">
     <p class="text-sm text-slate-400" role="status" aria-live="polite">{{ statusMessage }}</p>
     <p v-if="uploadNotice" class="text-sm text-slate-300">{{ uploadNotice }}</p>
@@ -174,7 +105,9 @@
 </template>
 
 <script setup>
+import { ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
+import ClassSessionDialog from "./ClassSessionDialog.vue";
 import DurationInput from "./DurationInput.vue";
 
 const props = defineProps({
@@ -275,39 +208,27 @@ function modeTone(mode) {
   return props.sessionMode === mode ? "primary" : "subtle";
 }
 
-function presetTone(presetId) {
-  return props.classPresetId === presetId ? "primary" : "subtle";
+const isClassDialogOpen = ref(false);
+
+watch(
+  () => props.sessionMode,
+  (nextMode, previousMode) => {
+    if (nextMode !== "class") {
+      isClassDialogOpen.value = false;
+      return;
+    }
+
+    if (previousMode === "quick") {
+      isClassDialogOpen.value = true;
+    }
+  }
+);
+
+function openClassDialog() {
+  isClassDialogOpen.value = true;
 }
 
-function photoOrderTone(order) {
-  return props.classPhotoOrder === order ? "primary" : "subtle";
-}
-
-function onBlockLabelInput(index, event) {
-  emit("class-block-update", {
-    index,
-    field: "label",
-    value: event.target.value
-  });
-}
-
-function onBlockDurationChange(index, event) {
-  emit("class-block-update", {
-    index,
-    field: "durationSeconds",
-    value: event.target.value
-  });
-}
-
-function onBlockCountChange(index, event) {
-  emit("class-block-update", {
-    index,
-    field: "poseCount",
-    value: event.target.value
-  });
-}
-
-function onRepeatToggle(event) {
-  emit("class-repeat-toggle", event.target.checked);
+function closeClassDialog() {
+  isClassDialogOpen.value = false;
 }
 </script>

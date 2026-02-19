@@ -1,5 +1,5 @@
-import { onBeforeUnmount, ref } from "vue";
-import { DEFAULT_DURATION_SECONDS, FILE_INPUT_ACCEPT } from "../config";
+import { onBeforeUnmount, ref, watch } from "vue";
+import { FILE_INPUT_ACCEPT } from "../config";
 import { CLASS_PRESET_OPTIONS, createBlocksFromPreset } from "../utils/classPlan";
 import { createClassPlanActions } from "./figureSession/classPlanActions";
 import {
@@ -8,11 +8,17 @@ import {
   SESSION_MODE_QUICK
 } from "./figureSession/constants";
 import { useFigureSessionDerivedState } from "./figureSession/derivedState";
+import {
+  loadSessionPreferences,
+  persistSessionPreferences
+} from "./figureSession/persistence";
 import { createPlaybackRuntime } from "./figureSession/playbackRuntime";
 import { createSetPreparationController } from "./figureSession/setPreparation";
 import { IDLE_MESSAGE } from "./figureSession/sessionMessages";
 
 export function useFigureSession() {
+  const persistedPreferences = loadSessionPreferences();
+
   const sourcePhotos = ref([]);
   const sessionSlides = ref([]);
   const currentIndex = ref(-1);
@@ -21,13 +27,17 @@ export function useFigureSession() {
   const statusMessage = ref(IDLE_MESSAGE);
   const uploadNotice = ref("");
 
-  const sessionMode = ref(SESSION_MODE_CLASS);
-  const durationSeconds = ref(DEFAULT_DURATION_SECONDS);
+  const sessionMode = ref(persistedPreferences.sessionMode);
+  const durationSeconds = ref(persistedPreferences.durationSeconds);
 
-  const classPresetId = ref(CLASS_PRESET_OPTIONS[0].id);
-  const classBlocks = ref(createBlocksFromPreset(classPresetId.value));
-  const classPhotoOrder = ref(PHOTO_ORDER_SHUFFLE);
-  const avoidImmediateRepeats = ref(true);
+  const classPresetId = ref(persistedPreferences.classPresetId || CLASS_PRESET_OPTIONS[0].id);
+  const classBlocks = ref(
+    persistedPreferences.classBlocks || createBlocksFromPreset(classPresetId.value)
+  );
+  const classPhotoOrder = ref(persistedPreferences.classPhotoOrder || PHOTO_ORDER_SHUFFLE);
+  const avoidImmediateRepeats = ref(
+    persistedPreferences.avoidImmediateRepeats
+  );
 
   const remainingMs = ref(0);
   const activeSlideDurationMs = ref(0);
@@ -71,6 +81,7 @@ export function useFigureSession() {
   const {
     clearTimers,
     revokeSlideUrl,
+    clearPreloadedSlide,
     resetPlaybackState,
     scheduleCurrentSlide,
     startPreparedSession,
@@ -221,9 +232,34 @@ export function useFigureSession() {
     prepareActiveSet();
   }
 
+  watch(
+    [
+      sessionMode,
+      durationSeconds,
+      classPresetId,
+      classBlocks,
+      classPhotoOrder,
+      avoidImmediateRepeats
+    ],
+    () => {
+      persistSessionPreferences({
+        sessionMode: sessionMode.value,
+        durationSeconds: durationSeconds.value,
+        classPresetId: classPresetId.value,
+        classBlocks: classBlocks.value,
+        classPhotoOrder: classPhotoOrder.value,
+        avoidImmediateRepeats: avoidImmediateRepeats.value
+      });
+    },
+    {
+      deep: true
+    }
+  );
+
   onBeforeUnmount(() => {
     clearTimers();
     revokeSlideUrl();
+    clearPreloadedSlide();
   });
 
   return {

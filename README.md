@@ -21,6 +21,12 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
   - Per-pose countdown with progress bar.
   - Pose counter, active pose label, and total session time remaining.
   - Keyboard shortcuts: `Space` pause/resume, `Right Arrow` next, `Esc` end.
+- Professional baseline:
+  - Persistent session preferences (`localStorage`).
+  - Modal focus trap + focus return for keyboard users.
+  - Next-image preloading for smoother transitions.
+  - Production observability hooks (Vercel Analytics/Speed Insights, optional Sentry).
+  - Security headers and CSP via `vercel.json`.
 
 ## Technical Notes
 
@@ -49,10 +55,28 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
   `npm run lint`
 - Unit tests:
   `npm run test`
+- End-to-end smoke tests:
+  `npm run e2e`
 - Run all local gates (lint + test + build):
   `npm run check`
 
 ## CI
 
 - GitHub Actions workflow: `.github/workflows/ci.yml`
-- Runs `npm ci`, then `npm run lint`, `npm run test`, and `npm run build` on pull requests and pushes to `main`.
+- Runs `npm ci`, then lint/test/build checks, plus Playwright smoke tests.
+- Dependency updates are automated via `.github/dependabot.yml`.
+
+## Observability
+
+- Vercel Analytics and Speed Insights are enabled in production builds.
+- Sentry is optional and activates only when `VITE_SENTRY_DSN` is set.
+- Optional Sentry env vars:
+  - `VITE_SENTRY_DSN`
+  - `VITE_SENTRY_TRACES_SAMPLE_RATE` (between `0` and `1`)
+
+## App Metadata
+
+- In-app version badge is sourced from `package.json`.
+- Public pages:
+  - `public/privacy.html`
+  - `public/changelog.html`

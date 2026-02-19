@@ -3,23 +3,29 @@
     v-if="isOpen"
     class="fixed inset-0 z-40 grid place-items-center bg-slate-950/75 p-3"
     @click.self="closeDialog"
-    @keydown="onBackdropKeydown"
   >
     <section
       ref="dialogRef"
       role="dialog"
       aria-modal="true"
-      aria-label="Life drawing class wizard"
+      aria-labelledby="class-dialog-title"
+      aria-describedby="class-dialog-description"
       tabindex="-1"
       class="max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-xl border border-slate-600 bg-slate-900 p-4 shadow-2xl"
+      @keydown="onDialogKeydown"
     >
       <header class="mb-3 flex items-start justify-between gap-3">
         <div class="grid gap-1">
-          <p class="text-base font-semibold text-slate-100">Life Drawing Class Wizard</p>
-          <p class="text-sm text-slate-300">Build your class plan and launch from this dialog.</p>
+          <h2 id="class-dialog-title" class="text-base font-semibold text-slate-100">
+            Life Drawing Class Wizard
+          </h2>
+          <p id="class-dialog-description" class="text-sm text-slate-300">
+            Build your class plan and launch from this dialog.
+          </p>
         </div>
         <button
           type="button"
+          aria-label="Close class wizard dialog"
           class="rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-100 transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           @click="closeDialog"
         >
@@ -75,11 +81,20 @@
 </template>
 
 <script setup>
-import { nextTick, ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
 import ClassPhotoSequenceSection from "./classDialog/ClassPhotoSequenceSection.vue";
 import ClassPoseBlocksSection from "./classDialog/ClassPoseBlocksSection.vue";
 import ClassPresetSection from "./classDialog/ClassPresetSection.vue";
+
+const FOCUSABLE_SELECTOR = [
+  "a[href]:not([tabindex='-1'])",
+  "button:not([disabled]):not([tabindex='-1'])",
+  "input:not([disabled]):not([type='hidden']):not([tabindex='-1'])",
+  "select:not([disabled]):not([tabindex='-1'])",
+  "textarea:not([disabled]):not([tabindex='-1'])",
+  "[tabindex]:not([tabindex='-1'])"
+].join(",");
 
 const props = defineProps({
   isOpen: {
@@ -153,16 +168,23 @@ const emit = defineEmits([
 ]);
 
 const dialogRef = ref(null);
+const previousFocusedElement = ref(null);
 
 watch(
   () => props.isOpen,
   async (nextOpen) => {
-    if (!nextOpen) {
+    if (nextOpen) {
+      previousFocusedElement.value =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      document.body.style.overflow = "hidden";
+      await nextTick();
+      dialogRef.value?.focus();
       return;
     }
 
+    document.body.style.overflow = "";
     await nextTick();
-    dialogRef.value?.focus();
+    previousFocusedElement.value?.focus();
   }
 );
 
@@ -170,12 +192,46 @@ function closeDialog() {
   emit("close");
 }
 
-function onBackdropKeydown(event) {
-  if (event.key !== "Escape") {
+function onDialogKeydown(event) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeDialog();
     return;
   }
 
-  event.preventDefault();
-  closeDialog();
+  if (event.key !== "Tab") {
+    return;
+  }
+
+  const focusables = Array.from(
+    dialogRef.value?.querySelectorAll(FOCUSABLE_SELECTOR) || []
+  ).filter(
+    (element) => element instanceof HTMLElement && element.getClientRects().length > 0
+  );
+
+  if (focusables.length === 0) {
+    event.preventDefault();
+    dialogRef.value?.focus();
+    return;
+  }
+
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  const activeElement = document.activeElement;
+
+  if (event.shiftKey && activeElement === first) {
+    event.preventDefault();
+    last.focus();
+    return;
+  }
+
+  if (!event.shiftKey && activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
+
+onBeforeUnmount(() => {
+  document.body.style.overflow = "";
+});
 </script>

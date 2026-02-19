@@ -202,6 +202,10 @@ const emit = defineEmits([
 
 function onPhotosSelected(event) {
   emit("photos-selected", event.target?.files || []);
+
+  if (event.target instanceof HTMLInputElement) {
+    event.target.value = "";
+  }
 }
 
 function modeTone(mode) {

@@ -24,6 +24,9 @@ export function createPlaybackRuntime({
   let slideTimeoutId = null;
   let tickIntervalId = null;
   let deadline = 0;
+  let preloadedSlideUrl = "";
+  let preloadedSlideIndex = -1;
+  let preloadedSlideImage = null;
 
   function clearTimers() {
     if (slideTimeoutId !== null) {
@@ -35,6 +38,16 @@ export function createPlaybackRuntime({
       clearInterval(tickIntervalId);
       tickIntervalId = null;
     }
+  }
+
+  function clearPreloadedSlide() {
+    if (preloadedSlideUrl) {
+      URL.revokeObjectURL(preloadedSlideUrl);
+    }
+
+    preloadedSlideUrl = "";
+    preloadedSlideIndex = -1;
+    preloadedSlideImage = null;
   }
 
   function revokeSlideUrl() {
@@ -49,6 +62,26 @@ export function createPlaybackRuntime({
     currentIndex.value = -1;
     remainingMs.value = 0;
     activeSlideDurationMs.value = 0;
+    clearPreloadedSlide();
+  }
+
+  function preloadNextSlide() {
+    clearPreloadedSlide();
+
+    const nextIndex = currentIndex.value + 1;
+    const nextSlide = sessionSlides.value[nextIndex];
+    if (!nextSlide?.file) {
+      return;
+    }
+
+    preloadedSlideIndex = nextIndex;
+    preloadedSlideUrl = URL.createObjectURL(nextSlide.file);
+    preloadedSlideImage = new Image();
+    preloadedSlideImage.src = preloadedSlideUrl;
+
+    if (typeof preloadedSlideImage.decode === "function") {
+      preloadedSlideImage.decode().catch(() => {});
+    }
   }
 
   function showCurrentSlide() {
@@ -59,8 +92,18 @@ export function createPlaybackRuntime({
     }
 
     revokeSlideUrl();
-    currentSlideUrl.value = URL.createObjectURL(slide.file);
+
+    if (preloadedSlideIndex === currentIndex.value && preloadedSlideUrl) {
+      currentSlideUrl.value = preloadedSlideUrl;
+      preloadedSlideUrl = "";
+      preloadedSlideIndex = -1;
+      preloadedSlideImage = null;
+    } else {
+      currentSlideUrl.value = URL.createObjectURL(slide.file);
+    }
+
     currentSlideAlt.value = `${slideCounterText.value}: ${slide.file.name}`;
+    preloadNextSlide();
   }
 
   function scheduleCurrentSlide() {
@@ -99,6 +142,7 @@ export function createPlaybackRuntime({
   function finishSession() {
     clearTimers();
     revokeSlideUrl();
+    clearPreloadedSlide();
     phase.value = "complete";
     remainingMs.value = 0;
     activeSlideDurationMs.value = 0;
@@ -156,6 +200,7 @@ export function createPlaybackRuntime({
   function stopSession() {
     clearTimers();
     revokeSlideUrl();
+    clearPreloadedSlide();
     resetPlaybackState();
     phase.value = hasSourcePhotos.value ? "ready" : "idle";
     statusMessage.value = stopMessageForMode(sessionMode.value, SESSION_MODE_CLASS);
@@ -164,6 +209,7 @@ export function createPlaybackRuntime({
   return {
     clearTimers,
     revokeSlideUrl,
+    clearPreloadedSlide,
     resetPlaybackState,
     scheduleCurrentSlide,
     startPreparedSession,

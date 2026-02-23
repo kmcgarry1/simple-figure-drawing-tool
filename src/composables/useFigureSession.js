@@ -1,6 +1,7 @@
-import { onBeforeUnmount, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { FILE_INPUT_ACCEPT } from "../config";
 import { CLASS_PRESET_OPTIONS, createBlocksFromPreset } from "../utils/classPlan";
+import { createPhotoId } from "../utils/photoInput";
 import { createClassPlanActions } from "./figureSession/classPlanActions";
 import {
   PHOTO_ORDER_SHUFFLE,
@@ -38,6 +39,7 @@ export function useFigureSession() {
   const avoidImmediateRepeats = ref(
     persistedPreferences.avoidImmediateRepeats
   );
+  const photoTagsById = ref({});
 
   const remainingMs = ref(0);
   const activeSlideDurationMs = ref(0);
@@ -119,6 +121,7 @@ export function useFigureSession() {
     classBlocks,
     classPhotoOrder,
     avoidImmediateRepeats,
+    photoTagsById,
     uploadNotice,
     hasSourcePhotos,
     classTotalMinutesText,
@@ -127,6 +130,27 @@ export function useFigureSession() {
     revokeSlideUrl,
     resetPlaybackState
   });
+
+  const taggedPhotos = computed(() =>
+    sourcePhotos.value.map((file) => {
+      const photoId = createPhotoId(file);
+      return {
+        id: photoId,
+        name: file.name,
+        tag: photoTagsById.value[photoId] || ""
+      };
+    })
+  );
+
+  const availablePhotoTags = computed(() =>
+    Array.from(
+      new Set(
+        Object.values(photoTagsById.value)
+          .map((tag) => String(tag).trim())
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b))
+  );
 
   const {
     setClassPreset,
@@ -215,6 +239,43 @@ export function useFigureSession() {
     }
   }
 
+  function normalizePhotoTag(rawTag) {
+    return String(rawTag ?? "").trim();
+  }
+
+  function syncPhotoTagsForSourcePhotos() {
+    const nextTags = {};
+    for (const file of sourcePhotos.value) {
+      const photoId = createPhotoId(file);
+      const normalizedTag = normalizePhotoTag(photoTagsById.value[photoId]);
+      if (normalizedTag) {
+        nextTags[photoId] = normalizedTag;
+      }
+    }
+    photoTagsById.value = nextTags;
+  }
+
+  function handlePhotoSelectionWithTags(fileList) {
+    handlePhotoSelection(fileList);
+    syncPhotoTagsForSourcePhotos();
+  }
+
+  function updatePhotoTag({ photoId, tag }) {
+    const normalizedTag = normalizePhotoTag(tag);
+    const nextTags = { ...photoTagsById.value };
+
+    if (!normalizedTag) {
+      delete nextTags[photoId];
+    } else {
+      nextTags[photoId] = normalizedTag;
+    }
+
+    photoTagsById.value = nextTags;
+
+    if (sessionMode.value === SESSION_MODE_CLASS && !isSessionLive.value && hasSourcePhotos.value) {
+      prepareActiveSet();
+    }
+  }
   function setSessionMode(nextMode) {
     if (![SESSION_MODE_QUICK, SESSION_MODE_CLASS].includes(nextMode)) {
       return;
@@ -281,6 +342,8 @@ export function useFigureSession() {
     classPresetOptions: CLASS_PRESET_OPTIONS,
     classPresetId,
     classBlocks,
+    taggedPhotos,
+    availablePhotoTags,
     classPhotoOrder,
     avoidImmediateRepeats,
     hasClassPlan,
@@ -319,6 +382,7 @@ export function useFigureSession() {
     createNewRandomSet,
     stopSession,
     applyDurationChange,
-    handlePhotoSelection
+    updatePhotoTag,
+    handlePhotoSelection: handlePhotoSelectionWithTags
   };
 }

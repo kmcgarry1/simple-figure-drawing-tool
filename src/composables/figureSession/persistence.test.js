@@ -76,7 +76,8 @@ describe("session preference storage", () => {
       {
         label: "Gestures",
         durationSeconds: 45,
-        poseCount: 4
+        poseCount: 4,
+        photoTag: "all"
       }
     ]);
   });

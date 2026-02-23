@@ -18,25 +18,25 @@ export const CLASS_PRESET_OPTIONS = Object.freeze([
 
 const CLASS_PRESET_BLOCKS = Object.freeze({
   "class-1h": Object.freeze([
-    { label: "Warm-up", durationSeconds: 30, poseCount: 8 },
-    { label: "Warm-up", durationSeconds: 60, poseCount: 6 },
-    { label: "Gesture", durationSeconds: 120, poseCount: 10 },
-    { label: "Long Pose", durationSeconds: 300, poseCount: 4 },
-    { label: "Final Pose", durationSeconds: 600, poseCount: 1 }
+    { label: "Warm-up", durationSeconds: 30, poseCount: 8, breakAfterSeconds: 0 },
+    { label: "Warm-up", durationSeconds: 60, poseCount: 6, breakAfterSeconds: 0 },
+    { label: "Gesture", durationSeconds: 120, poseCount: 10, breakAfterSeconds: 0 },
+    { label: "Long Pose", durationSeconds: 300, poseCount: 4, breakAfterSeconds: 0 },
+    { label: "Final Pose", durationSeconds: 600, poseCount: 1, breakAfterSeconds: 0 }
   ]),
   "class-2h": Object.freeze([
-    { label: "Warm-up", durationSeconds: 30, poseCount: 10 },
-    { label: "Warm-up", durationSeconds: 60, poseCount: 10 },
-    { label: "Gesture", durationSeconds: 120, poseCount: 15 },
-    { label: "Long Pose", durationSeconds: 300, poseCount: 9 },
-    { label: "Final Pose", durationSeconds: 1800, poseCount: 1 }
+    { label: "Warm-up", durationSeconds: 30, poseCount: 10, breakAfterSeconds: 0 },
+    { label: "Warm-up", durationSeconds: 60, poseCount: 10, breakAfterSeconds: 0 },
+    { label: "Gesture", durationSeconds: 120, poseCount: 15, breakAfterSeconds: 0 },
+    { label: "Long Pose", durationSeconds: 300, poseCount: 9, breakAfterSeconds: 0 },
+    { label: "Final Pose", durationSeconds: 1800, poseCount: 1, breakAfterSeconds: 0 }
   ]),
   "class-3h": Object.freeze([
-    { label: "Warm-up", durationSeconds: 30, poseCount: 12 },
-    { label: "Warm-up", durationSeconds: 60, poseCount: 12 },
-    { label: "Gesture", durationSeconds: 120, poseCount: 21 },
-    { label: "Long Pose", durationSeconds: 300, poseCount: 12 },
-    { label: "Final Pose", durationSeconds: 3600, poseCount: 1 }
+    { label: "Warm-up", durationSeconds: 30, poseCount: 12, breakAfterSeconds: 0 },
+    { label: "Warm-up", durationSeconds: 60, poseCount: 12, breakAfterSeconds: 0 },
+    { label: "Gesture", durationSeconds: 120, poseCount: 21, breakAfterSeconds: 0 },
+    { label: "Long Pose", durationSeconds: 300, poseCount: 12, breakAfterSeconds: 0 },
+    { label: "Final Pose", durationSeconds: 3600, poseCount: 1, breakAfterSeconds: 0 }
   ])
 });
 
@@ -44,13 +44,16 @@ const FALLBACK_PRESET_ID = CLASS_PRESET_OPTIONS[0].id;
 const DEFAULT_BLOCK = Object.freeze({
   label: "Custom Block",
   durationSeconds: 120,
-  poseCount: 6
+  poseCount: 6,
+  breakAfterSeconds: 0
 });
 
 const MIN_BLOCK_DURATION_SECONDS = 5;
 const MAX_BLOCK_DURATION_SECONDS = 7200;
 const MIN_BLOCK_POSE_COUNT = 1;
 const MAX_BLOCK_POSE_COUNT = 200;
+const MIN_BLOCK_BREAK_SECONDS = 0;
+const MAX_BLOCK_BREAK_SECONDS = 3600;
 
 function clampToInt(value, min, max, fallback) {
   const parsed = Number.parseInt(String(value), 10);
@@ -87,11 +90,18 @@ export function sanitizeClassBlocks(rawBlocks) {
         MAX_BLOCK_POSE_COUNT,
         DEFAULT_BLOCK.poseCount
       );
+      const breakAfterCandidate = clampToInt(
+        rawBlock?.breakAfterSeconds,
+        MIN_BLOCK_BREAK_SECONDS,
+        MAX_BLOCK_BREAK_SECONDS,
+        DEFAULT_BLOCK.breakAfterSeconds
+      );
 
       return {
         label: labelCandidate || DEFAULT_BLOCK.label,
         durationSeconds: durationCandidate,
-        poseCount: poseCountCandidate
+        poseCount: poseCountCandidate,
+        breakAfterSeconds: breakAfterCandidate
       };
     })
     .filter((block) => block.poseCount > 0);
@@ -106,14 +116,19 @@ export function sanitizeClassBlocks(rawBlocks) {
 export function calculateClassPlanSummary(blocks) {
   const safeBlocks = sanitizeClassBlocks(blocks);
   return safeBlocks.reduce(
-    (summary, block) => {
+    (summary, block, index) => {
       summary.totalPoses += block.poseCount;
       summary.totalSeconds += block.durationSeconds * block.poseCount;
+      if (index < safeBlocks.length - 1 && block.breakAfterSeconds > 0) {
+        summary.totalBreakSeconds += block.breakAfterSeconds;
+        summary.totalSeconds += block.breakAfterSeconds;
+      }
       return summary;
     },
     {
       totalPoses: 0,
-      totalSeconds: 0
+      totalSeconds: 0,
+      totalBreakSeconds: 0
     }
   );
 }

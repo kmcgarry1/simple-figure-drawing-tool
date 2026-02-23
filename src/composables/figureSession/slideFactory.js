@@ -9,7 +9,20 @@ function createSlideFromPose(file, pose, index) {
     durationSeconds: pose.durationSeconds,
     durationMs: pose.durationSeconds * 1000,
     label: pose.label,
-    poseNumber: index + 1
+    poseNumber: index + 1,
+    kind: "pose"
+  };
+}
+
+function createBreakSlide(breakSeconds, afterLabel, index) {
+  return {
+    file: null,
+    durationSeconds: breakSeconds,
+    durationMs: breakSeconds * 1000,
+    label: `${afterLabel} Break`,
+    poseNumber: null,
+    breakNumber: index + 1,
+    kind: "break"
   };
 }
 
@@ -102,7 +115,33 @@ export function createClassSlides({
     classPhotoOrder,
     avoidImmediateRepeats
   });
-  const slides = poses.map((pose, index) => createSlideFromPose(photoSequence[index], pose, index));
+
+  const slides = [];
+  let poseCursor = 0;
+  let breakCursor = 0;
+
+  safeBlocks.forEach((block, blockIndex) => {
+    for (let poseIndex = 0; poseIndex < block.poseCount; poseIndex += 1) {
+      slides.push(
+        createSlideFromPose(
+          photoSequence[poseCursor],
+          {
+            label: block.label,
+            durationSeconds: block.durationSeconds
+          },
+          poseCursor
+        )
+      );
+      poseCursor += 1;
+    }
+
+    const shouldAddBreak =
+      blockIndex < safeBlocks.length - 1 && Number(block.breakAfterSeconds) > 0;
+    if (shouldAddBreak) {
+      slides.push(createBreakSlide(block.breakAfterSeconds, block.label, breakCursor));
+      breakCursor += 1;
+    }
+  });
 
   return {
     slides,

@@ -42,6 +42,21 @@
         </label>
       </div>
 
+      <label class="grid gap-1 text-xs text-slate-300">
+        <span>Break After Block (seconds)</span>
+        <input
+          type="number"
+          min="0"
+          max="3600"
+          :value="block.breakAfterSeconds ?? 0"
+          class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+          @change="onBlockBreakChange(index, $event)"
+        />
+      </label>
+      <p v-if="index === classBlocks.length - 1" class="text-[11px] text-slate-400">
+        Break timing applies between blocks; the final block has no trailing break.
+      </p>
+
       <BaseButton
         compact
         tone="danger"
@@ -88,6 +103,14 @@ function onBlockCountChange(index, event) {
   emit("class-block-update", {
     index,
     field: "poseCount",
+    value: event.target.value
+  });
+}
+
+function onBlockBreakChange(index, event) {
+  emit("class-block-update", {
+    index,
+    field: "breakAfterSeconds",
     value: event.target.value
   });
 }

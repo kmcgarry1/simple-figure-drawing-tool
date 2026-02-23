@@ -1,7 +1,7 @@
 <template>
   <section :class="stageClass" aria-live="polite">
     <SlideTimerOverlay
-      v-if="isSessionLive && currentSlideUrl"
+      v-if="isSessionLive"
       :slide-counter-text="slideCounterText"
       :time-left-text="timeLeftText"
       :active-pose-label="activePoseLabel"
@@ -11,7 +11,7 @@
 
     <div :class="imageWrapClass">
       <img v-if="currentSlideUrl" :class="imageClass" :src="currentSlideUrl" :alt="currentSlideAlt" />
-      <p v-else class="m-4 text-center text-sm text-slate-400">{{ placeholderText }}</p>
+      <p v-else class="m-4 text-center text-sm text-slate-400">{{ emptyStageText }}</p>
     </div>
   </section>
 </template>
@@ -75,5 +75,9 @@ const imageClass = computed(() =>
   props.isSessionLive
     ? "block h-auto w-auto max-h-dvh max-w-screen object-contain object-center [image-orientation:from-image]"
     : "block h-auto w-auto max-h-full max-w-full object-contain object-center [image-orientation:from-image]"
+);
+
+const emptyStageText = computed(() =>
+  props.isSessionLive ? `${props.activePoseLabel} in progress.` : props.placeholderText
 );
 </script>

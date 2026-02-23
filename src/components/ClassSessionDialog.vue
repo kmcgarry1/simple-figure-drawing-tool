@@ -42,6 +42,7 @@
 
         <ClassPoseBlocksSection
           :class-blocks="classBlocks"
+          :available-photo-tags="availablePhotoTags"
           @class-block-update="$emit('class-block-update', $event)"
           @class-block-add="$emit('class-block-add')"
           @class-block-remove="$emit('class-block-remove', $event)"
@@ -110,6 +111,10 @@ const props = defineProps({
     required: true
   },
   classBlocks: {
+    type: Array,
+    required: true
+  },
+  availablePhotoTags: {
     type: Array,
     required: true
   },

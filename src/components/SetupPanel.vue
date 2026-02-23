@@ -23,6 +23,13 @@
     </div>
   </section>
 
+  <PhotoTagManagerSection
+    v-if="taggedPhotos.length > 0"
+    :tagged-photos="taggedPhotos"
+    :available-photo-tags="availablePhotoTags"
+    @photo-tag-update="$emit('photo-tag-update', $event)"
+  />
+
   <section v-if="sessionMode === 'quick'" class="grid gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
     <p class="text-sm font-semibold text-slate-100">2. Quick Session</p>
     <DurationInput
@@ -76,6 +83,7 @@
     :class-preset-options="classPresetOptions"
     :class-preset-id="classPresetId"
     :class-blocks="classBlocks"
+    :available-photo-tags="availablePhotoTags"
     :class-photo-order="classPhotoOrder"
     :avoid-immediate-repeats="avoidImmediateRepeats"
     :has-class-plan="hasClassPlan"
@@ -109,6 +117,7 @@ import { ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
 import ClassSessionDialog from "./ClassSessionDialog.vue";
 import DurationInput from "./DurationInput.vue";
+import PhotoTagManagerSection from "./PhotoTagManagerSection.vue";
 
 const props = defineProps({
   sessionMode: {
@@ -132,6 +141,14 @@ const props = defineProps({
     required: true
   },
   classBlocks: {
+    type: Array,
+    required: true
+  },
+  taggedPhotos: {
+    type: Array,
+    required: true
+  },
+  availablePhotoTags: {
     type: Array,
     required: true
   },
@@ -190,6 +207,7 @@ const emit = defineEmits([
   "session-mode-change",
   "duration-input",
   "duration-change",
+  "photo-tag-update",
   "class-preset-change",
   "class-block-update",
   "class-block-add",

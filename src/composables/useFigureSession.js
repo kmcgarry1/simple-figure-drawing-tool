@@ -13,6 +13,12 @@ import {
   persistSessionPreferences
 } from "./figureSession/persistence";
 import { createPlaybackRuntime } from "./figureSession/playbackRuntime";
+import {
+  appendSessionHistory,
+  clearSessionHistoryStore,
+  loadSessionHistory,
+  persistSessionHistory
+} from "./figureSession/sessionHistory";
 import { createSetPreparationController } from "./figureSession/setPreparation";
 import { IDLE_MESSAGE } from "./figureSession/sessionMessages";
 
@@ -38,9 +44,12 @@ export function useFigureSession() {
   const avoidImmediateRepeats = ref(
     persistedPreferences.avoidImmediateRepeats
   );
+  const sessionHistory = ref(loadSessionHistory());
 
   const remainingMs = ref(0);
   const activeSlideDurationMs = ref(0);
+  const runStartedAtMs = ref(null);
+  const runPlannedSlides = ref(0);
 
   const currentSlideUrl = ref("");
   const currentSlideAlt = ref("");
@@ -156,7 +165,37 @@ export function useFigureSession() {
       return;
     }
 
+    runStartedAtMs.value = Date.now();
+    runPlannedSlides.value = sessionSlides.value.length;
     startPreparedSession();
+  }
+
+  function recordSessionHistory(result, completedSlides) {
+    if (!runStartedAtMs.value) {
+      return;
+    }
+
+    const now = Date.now();
+    const plannedSlides = runPlannedSlides.value || sessionSlides.value.length;
+    const normalizedCompletedSlides = Math.min(
+      plannedSlides,
+      Math.max(0, Number.parseInt(String(completedSlides), 10) || 0)
+    );
+
+    sessionHistory.value = appendSessionHistory(sessionHistory.value, {
+      id: `session-${now}-${Math.floor(Math.random() * 10000)}`,
+      sessionMode: sessionMode.value,
+      result,
+      startedAt: new Date(runStartedAtMs.value).toISOString(),
+      endedAt: new Date(now).toISOString(),
+      elapsedSeconds: Math.max(0, Math.round((now - runStartedAtMs.value) / 1000)),
+      plannedSlides,
+      completedSlides: normalizedCompletedSlides
+    });
+    persistSessionHistory(sessionHistory.value);
+
+    runStartedAtMs.value = null;
+    runPlannedSlides.value = 0;
   }
 
   function applyDurationChange() {
@@ -205,14 +244,32 @@ export function useFigureSession() {
 
   function createNewRandomSet() {
     const autoStart = isSessionLive.value;
+    if (autoStart) {
+      recordSessionHistory("ended", currentIndex.value);
+    }
+
     const hasSet = prepareActiveSet();
     if (!hasSet) {
       return;
     }
 
     if (autoStart) {
+      runStartedAtMs.value = Date.now();
+      runPlannedSlides.value = sessionSlides.value.length;
       startPreparedSession();
     }
+  }
+
+  function endSession() {
+    const completedSlidesBeforeStop = currentIndex.value;
+    stopSession();
+    recordSessionHistory("ended", completedSlidesBeforeStop);
+  }
+
+  function clearSessionHistory() {
+    sessionHistory.value = [];
+    clearSessionHistoryStore();
+    statusMessage.value = "Session history cleared.";
   }
 
   function setSessionMode(nextMode) {
@@ -268,6 +325,15 @@ export function useFigureSession() {
     }
   );
 
+  watch(
+    phase,
+    (nextPhase, previousPhase) => {
+      if (nextPhase === "complete" && previousPhase !== "complete") {
+        recordSessionHistory("completed", runPlannedSlides.value);
+      }
+    }
+  );
+
   onBeforeUnmount(() => {
     clearTimers();
     revokeSlideUrl();
@@ -283,6 +349,7 @@ export function useFigureSession() {
     classBlocks,
     classPhotoOrder,
     avoidImmediateRepeats,
+    sessionHistory,
     hasClassPlan,
     classTargetMinutes,
     classPoseCount,
@@ -317,7 +384,8 @@ export function useFigureSession() {
     togglePause,
     goToNextSlide,
     createNewRandomSet,
-    stopSession,
+    stopSession: endSession,
+    clearSessionHistory,
     applyDurationChange,
     handlePhotoSelection
   };

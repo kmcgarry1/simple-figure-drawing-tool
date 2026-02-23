@@ -167,6 +167,18 @@ export function useFigureSession() {
 
     const duration = getQuickDurationSeconds();
     const durationMs = duration * 1000;
+    const hasPreparedSlides = sessionSlides.value.length > 0;
+    const isDurationUnchanged =
+      hasPreparedSlides &&
+      sessionSlides.value.every(
+        (slide) => slide.durationSeconds === duration && slide.durationMs === durationMs
+      );
+
+    if (isDurationUnchanged) {
+      statusMessage.value = `Duration remains at ${duration} seconds.`;
+      return;
+    }
+
     sessionSlides.value = sessionSlides.value.map((slide) => ({
       ...slide,
       durationSeconds: duration,

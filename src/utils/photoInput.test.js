@@ -63,4 +63,18 @@ describe("normalizeUploadedPhotos", () => {
     expect(notices.join(" ")).toContain("larger than 25MB");
     expect(notices.join(" ")).toContain("duplicate file(s) ignored");
   });
+
+  it("rejects files with explicitly disallowed mime types even if extension looks valid", () => {
+    const { photos, notices } = normalizeUploadedPhotos([
+      {
+        name: "looks-safe.jpg",
+        type: "image/svg+xml",
+        size: 1024,
+        lastModified: 10
+      }
+    ]);
+
+    expect(photos).toHaveLength(0);
+    expect(notices.join(" ")).toContain("unsupported image type");
+  });
 });

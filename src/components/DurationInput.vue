@@ -17,7 +17,6 @@
       :class="compact ? 'px-2 py-1.5 text-sm' : 'px-2.5 py-2 text-sm'"
       @input="onInput"
       @change="$emit('commit')"
-      @blur="$emit('commit')"
     />
   </label>
 </template>

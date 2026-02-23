@@ -18,10 +18,12 @@ function getLowercaseExtension(fileName) {
 }
 
 function isAllowedImageType(file) {
-  if (ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
-    return true;
+  const mimeType = String(file?.type || "").toLowerCase().trim();
+  if (mimeType) {
+    return ALLOWED_IMAGE_MIME_TYPES.has(mimeType);
   }
-  const extension = getLowercaseExtension(file.name);
+
+  const extension = getLowercaseExtension(file?.name || "");
   return ALLOWED_IMAGE_EXTENSIONS.has(extension);
 }
 

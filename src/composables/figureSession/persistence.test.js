@@ -39,6 +39,8 @@ describe("normalizeSessionPreferences", () => {
     expect(result.classPresetId).toBe("class-1h");
     expect(result.classPhotoOrder).toBe("shuffle");
     expect(result.avoidImmediateRepeats).toBe(true);
+    expect(result.audioMuted).toBe(false);
+    expect(result.audioVolumePercent).toBe(60);
     expect(result.classBlocks.length).toBeGreaterThan(0);
   });
 });
@@ -61,7 +63,9 @@ describe("session preference storage", () => {
       classPresetId: "class-2h",
       classBlocks: [{ label: "Gestures", durationSeconds: 45, poseCount: 4 }],
       classPhotoOrder: "sequential",
-      avoidImmediateRepeats: false
+      avoidImmediateRepeats: false,
+      audioMuted: true,
+      audioVolumePercent: 25
     });
 
     const loaded = loadSessionPreferences();
@@ -70,7 +74,9 @@ describe("session preference storage", () => {
       durationSeconds: 90,
       classPresetId: "class-2h",
       classPhotoOrder: "sequential",
-      avoidImmediateRepeats: false
+      avoidImmediateRepeats: false,
+      audioMuted: true,
+      audioVolumePercent: 25
     });
     expect(loaded.classBlocks).toEqual([
       {

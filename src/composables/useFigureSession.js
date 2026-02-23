@@ -15,6 +15,7 @@ import {
 import { createPlaybackRuntime } from "./figureSession/playbackRuntime";
 import { createSetPreparationController } from "./figureSession/setPreparation";
 import { IDLE_MESSAGE } from "./figureSession/sessionMessages";
+import { useAudioCues } from "./useAudioCues";
 
 export function useFigureSession() {
   const persistedPreferences = loadSessionPreferences();
@@ -38,6 +39,8 @@ export function useFigureSession() {
   const avoidImmediateRepeats = ref(
     persistedPreferences.avoidImmediateRepeats
   );
+  const audioMuted = ref(Boolean(persistedPreferences.audioMuted));
+  const audioVolumePercent = ref(persistedPreferences.audioVolumePercent);
 
   const remainingMs = ref(0);
   const activeSlideDurationMs = ref(0);
@@ -79,6 +82,14 @@ export function useFigureSession() {
   });
 
   const {
+    playCountdownCue,
+    playSlideCompleteCue
+  } = useAudioCues({
+    audioMuted,
+    audioVolumePercent
+  });
+
+  const {
     clearTimers,
     revokeSlideUrl,
     clearPreloadedSlide,
@@ -102,7 +113,9 @@ export function useFigureSession() {
     isRunning,
     isPaused,
     activeSlide,
-    slideCounterText
+    slideCounterText,
+    onCountdownCue: playCountdownCue,
+    onSlideCompleteCue: playSlideCompleteCue
   });
 
   const {
@@ -244,6 +257,24 @@ export function useFigureSession() {
     prepareActiveSet();
   }
 
+  function clampAudioVolumePercent(value) {
+    const parsed = Number.parseInt(String(value), 10);
+    if (Number.isNaN(parsed)) {
+      return 0;
+    }
+
+    return Math.min(100, Math.max(0, parsed));
+  }
+
+  function setAudioVolume(nextValue) {
+    audioVolumePercent.value = clampAudioVolumePercent(nextValue);
+  }
+
+  function toggleAudioMuted() {
+    audioMuted.value = !audioMuted.value;
+    statusMessage.value = audioMuted.value ? "Audio cues muted." : "Audio cues unmuted.";
+  }
+
   watch(
     [
       sessionMode,
@@ -251,7 +282,9 @@ export function useFigureSession() {
       classPresetId,
       classBlocks,
       classPhotoOrder,
-      avoidImmediateRepeats
+      avoidImmediateRepeats,
+      audioMuted,
+      audioVolumePercent
     ],
     () => {
       persistSessionPreferences({
@@ -260,7 +293,9 @@ export function useFigureSession() {
         classPresetId: classPresetId.value,
         classBlocks: classBlocks.value,
         classPhotoOrder: classPhotoOrder.value,
-        avoidImmediateRepeats: avoidImmediateRepeats.value
+        avoidImmediateRepeats: avoidImmediateRepeats.value,
+        audioMuted: audioMuted.value,
+        audioVolumePercent: audioVolumePercent.value
       });
     },
     {
@@ -283,6 +318,8 @@ export function useFigureSession() {
     classBlocks,
     classPhotoOrder,
     avoidImmediateRepeats,
+    audioMuted,
+    audioVolumePercent,
     hasClassPlan,
     classTargetMinutes,
     classPoseCount,
@@ -313,6 +350,8 @@ export function useFigureSession() {
     removeClassBlock,
     setClassPhotoOrder,
     setAvoidImmediateRepeats,
+    setAudioVolume,
+    toggleAudioMuted,
     startFreshSession,
     togglePause,
     goToNextSlide,

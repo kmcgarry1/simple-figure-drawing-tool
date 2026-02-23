@@ -30,6 +30,15 @@ function normalizePhotoOrder(value) {
     : PHOTO_ORDER_SHUFFLE;
 }
 
+function normalizeVolumePercent(value) {
+  const parsed = Number.parseInt(String(value), 10);
+  if (Number.isNaN(parsed)) {
+    return 60;
+  }
+
+  return Math.min(100, Math.max(0, parsed));
+}
+
 function resolvePresetId(rawPresetId) {
   return getClassPresetById(rawPresetId).id;
 }
@@ -50,7 +59,9 @@ function defaultPreferences() {
     classPresetId: defaultPresetId,
     classBlocks: createBlocksFromPreset(defaultPresetId),
     classPhotoOrder: PHOTO_ORDER_SHUFFLE,
-    avoidImmediateRepeats: true
+    avoidImmediateRepeats: true,
+    audioMuted: false,
+    audioVolumePercent: 60
   };
 }
 
@@ -67,7 +78,12 @@ export function normalizeSessionPreferences(rawPreferences) {
     avoidImmediateRepeats:
       typeof rawPreferences?.avoidImmediateRepeats === "boolean"
         ? rawPreferences.avoidImmediateRepeats
-        : defaults.avoidImmediateRepeats
+        : defaults.avoidImmediateRepeats,
+    audioMuted:
+      typeof rawPreferences?.audioMuted === "boolean"
+        ? rawPreferences.audioMuted
+        : defaults.audioMuted,
+    audioVolumePercent: normalizeVolumePercent(rawPreferences?.audioVolumePercent)
   };
 }
 

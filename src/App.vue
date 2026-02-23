@@ -13,6 +13,7 @@
         :class-blocks="classBlocks"
         :class-photo-order="classPhotoOrder"
         :avoid-immediate-repeats="avoidImmediateRepeats"
+        :class-templates="classTemplates"
         :has-class-plan="hasClassPlan"
         :class-target-minutes="classTargetMinutes"
         :class-pose-count="classPoseCount"
@@ -33,6 +34,9 @@
         @class-block-remove="removeClassBlock"
         @class-photo-order-change="setClassPhotoOrder"
         @class-repeat-toggle="setAvoidImmediateRepeats"
+        @class-template-save="saveClassTemplateByName"
+        @class-template-load="loadClassTemplateById"
+        @class-template-delete="deleteClassTemplateById"
         @start-session="startFreshSession"
         @new-random-set="createNewRandomSet"
       />
@@ -87,6 +91,7 @@ const {
   classBlocks,
   classPhotoOrder,
   avoidImmediateRepeats,
+  classTemplates,
   hasClassPlan,
   classTargetMinutes,
   classPoseCount,
@@ -117,6 +122,9 @@ const {
   removeClassBlock,
   setClassPhotoOrder,
   setAvoidImmediateRepeats,
+  saveClassTemplateByName,
+  loadClassTemplateById,
+  deleteClassTemplateById,
   startFreshSession,
   togglePause,
   goToNextSlide,

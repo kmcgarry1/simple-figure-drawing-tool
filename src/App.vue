@@ -41,6 +41,8 @@
         v-else
         :session-mode="sessionMode"
         :duration-seconds="durationSeconds"
+        :audio-muted="audioMuted"
+        :audio-volume-percent="audioVolumePercent"
         :is-running="isRunning"
         :is-paused="isPaused"
         :has-source-photos="hasSourcePhotos"
@@ -48,6 +50,8 @@
         :restart-label="restartActionLabel"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
+        @audio-volume-input="setAudioVolume"
+        @audio-mute-toggle="toggleAudioMuted"
         @toggle-pause="togglePause"
         @next="goToNextSlide"
         @new-set="createNewRandomSet"
@@ -87,6 +91,8 @@ const {
   classBlocks,
   classPhotoOrder,
   avoidImmediateRepeats,
+  audioMuted,
+  audioVolumePercent,
   hasClassPlan,
   classTargetMinutes,
   classPoseCount,
@@ -117,6 +123,8 @@ const {
   removeClassBlock,
   setClassPhotoOrder,
   setAvoidImmediateRepeats,
+  setAudioVolume,
+  toggleAudioMuted,
   startFreshSession,
   togglePause,
   goToNextSlide,

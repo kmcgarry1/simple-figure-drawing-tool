@@ -19,6 +19,30 @@
     @update="$emit('duration-input', $event)"
     @commit="$emit('duration-change')"
   />
+
+  <section class="grid gap-1.5 rounded-md border border-slate-600/60 bg-slate-900/60 p-2">
+    <div class="flex items-center justify-between gap-2">
+      <p class="text-xs font-medium text-slate-200">Audio Cues</p>
+      <BaseButton compact tone="subtle" @click="$emit('audio-mute-toggle')">
+        {{ audioMuted ? "Unmute" : "Mute" }}
+      </BaseButton>
+    </div>
+
+    <label class="grid gap-1 text-xs text-slate-300" for="audioVolumeRange">
+      <span>Volume: {{ audioVolumePercent }}%</span>
+      <input
+        id="audioVolumeRange"
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        :value="audioVolumePercent"
+        class="accent-sky-400"
+        @input="$emit('audio-volume-input', $event.target.value)"
+      />
+    </label>
+    <p class="text-[11px] text-slate-400">Includes 3-2-1 countdown and pose-end chime.</p>
+  </section>
 </template>
 
 <script setup>
@@ -32,6 +56,14 @@ defineProps({
   },
   durationSeconds: {
     type: [Number, String],
+    required: true
+  },
+  audioMuted: {
+    type: Boolean,
+    required: true
+  },
+  audioVolumePercent: {
+    type: Number,
     required: true
   },
   isRunning: {
@@ -56,5 +88,14 @@ defineProps({
   }
 });
 
-defineEmits(["duration-input", "duration-change", "toggle-pause", "next", "new-set", "end"]);
+defineEmits([
+  "duration-input",
+  "duration-change",
+  "audio-volume-input",
+  "audio-mute-toggle",
+  "toggle-pause",
+  "next",
+  "new-set",
+  "end"
+]);
 </script>

@@ -97,6 +97,8 @@
     @new-random-set="$emit('new-random-set')"
   />
 
+  <SessionHistorySection :session-history="sessionHistory" @clear-history="$emit('clear-history')" />
+
   <div class="grid gap-1">
     <p class="text-sm text-slate-400" role="status" aria-live="polite">{{ statusMessage }}</p>
     <p v-if="uploadNotice" class="text-sm text-slate-300">{{ uploadNotice }}</p>
@@ -109,6 +111,7 @@ import { ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
 import ClassSessionDialog from "./ClassSessionDialog.vue";
 import DurationInput from "./DurationInput.vue";
+import SessionHistorySection from "./SessionHistorySection.vue";
 
 const props = defineProps({
   sessionMode: {
@@ -175,6 +178,10 @@ const props = defineProps({
     type: Boolean,
     required: true
   },
+  sessionHistory: {
+    type: Array,
+    required: true
+  },
   statusMessage: {
     type: String,
     required: true
@@ -197,7 +204,8 @@ const emit = defineEmits([
   "class-photo-order-change",
   "class-repeat-toggle",
   "start-session",
-  "new-random-set"
+  "new-random-set",
+  "clear-history"
 ]);
 
 function onPhotosSelected(event) {

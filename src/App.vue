@@ -21,6 +21,7 @@
         :start-action-label="startActionLabel"
         :regenerate-action-label="regenerateActionLabel"
         :has-source-photos="hasSourcePhotos"
+        :session-history="sessionHistory"
         :status-message="statusMessage"
         :upload-notice="uploadNotice"
         @photos-selected="handlePhotoSelection"
@@ -35,6 +36,7 @@
         @class-repeat-toggle="setAvoidImmediateRepeats"
         @start-session="startFreshSession"
         @new-random-set="createNewRandomSet"
+        @clear-history="clearSessionHistory"
       />
 
       <LiveControlsPanel
@@ -95,6 +97,7 @@ const {
   startActionLabel,
   regenerateActionLabel,
   restartActionLabel,
+  sessionHistory,
   statusMessage,
   uploadNotice,
   currentSlideUrl,
@@ -121,6 +124,7 @@ const {
   togglePause,
   goToNextSlide,
   createNewRandomSet,
+  clearSessionHistory,
   stopSession,
   applyDurationChange,
   handlePhotoSelection

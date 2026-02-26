@@ -39,8 +39,9 @@ describe("normalizeSessionPreferences", () => {
     expect(result.classPresetId).toBe("class-1h");
     expect(result.classPhotoOrder).toBe("shuffle");
     expect(result.avoidImmediateRepeats).toBe(true);
-    expect(result.audioMuted).toBe(false);
-    expect(result.audioVolumePercent).toBe(60);
+    expect(result.mirrorLiveView).toBe(false);
+    expect(result.grayscaleLiveView).toBe(false);
+    expect(result.hideLiveOverlay).toBe(false);
     expect(result.classBlocks.length).toBeGreaterThan(0);
   });
 });
@@ -64,8 +65,9 @@ describe("session preference storage", () => {
       classBlocks: [{ label: "Gestures", durationSeconds: 45, poseCount: 4 }],
       classPhotoOrder: "sequential",
       avoidImmediateRepeats: false,
-      audioMuted: true,
-      audioVolumePercent: 25
+      mirrorLiveView: true,
+      grayscaleLiveView: true,
+      hideLiveOverlay: true
     });
 
     const loaded = loadSessionPreferences();
@@ -75,14 +77,16 @@ describe("session preference storage", () => {
       classPresetId: "class-2h",
       classPhotoOrder: "sequential",
       avoidImmediateRepeats: false,
-      audioMuted: true,
-      audioVolumePercent: 25
+      mirrorLiveView: true,
+      grayscaleLiveView: true,
+      hideLiveOverlay: true
     });
     expect(loaded.classBlocks).toEqual([
       {
         label: "Gestures",
         durationSeconds: 45,
-        poseCount: 4
+        poseCount: 4,
+        photoTag: "all"
       }
     ]);
   });

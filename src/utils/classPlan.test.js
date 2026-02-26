@@ -19,7 +19,8 @@ describe("sanitizeClassBlocks", () => {
       {
         label: "Custom Block",
         durationSeconds: 120,
-        poseCount: 1
+        poseCount: 1,
+        photoTag: "all"
       }
     ]);
   });

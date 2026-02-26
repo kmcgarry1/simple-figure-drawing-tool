@@ -60,10 +60,23 @@ export function useFigureSessionDerivedState({
   );
 
   const slideCounterText = computed(() => {
-    const total = sessionSlides.value.length;
-    const current = currentIndex.value >= 0 ? currentIndex.value + 1 : 0;
-    const prefix = sessionMode.value === SESSION_MODE_CLASS ? "Pose" : "Slide";
-    return `${prefix} ${current} / ${total}`;
+    if (sessionMode.value !== SESSION_MODE_CLASS) {
+      const total = sessionSlides.value.length;
+      const current = currentIndex.value >= 0 ? currentIndex.value + 1 : 0;
+      return `Slide ${current} / ${total}`;
+    }
+
+    const totalClassPoses = sessionSlides.value.filter((slide) => slide.kind !== "break").length;
+    if (currentIndex.value < 0) {
+      return `Pose 0 / ${totalClassPoses}`;
+    }
+
+    const active = activeSlide.value;
+    if (active?.kind === "break") {
+      return `Break ${active.breakNumber || 0}`;
+    }
+
+    return `Pose ${active?.poseNumber || 0} / ${totalClassPoses}`;
   });
 
   const timeLeftText = computed(() => formatClockFromMs(remainingMs.value));

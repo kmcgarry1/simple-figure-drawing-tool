@@ -18,25 +18,25 @@ export const CLASS_PRESET_OPTIONS = Object.freeze([
 
 const CLASS_PRESET_BLOCKS = Object.freeze({
   "class-1h": Object.freeze([
-    { label: "Warm-up", durationSeconds: 30, poseCount: 8 },
-    { label: "Warm-up", durationSeconds: 60, poseCount: 6 },
-    { label: "Gesture", durationSeconds: 120, poseCount: 10 },
-    { label: "Long Pose", durationSeconds: 300, poseCount: 4 },
-    { label: "Final Pose", durationSeconds: 600, poseCount: 1 }
+    { label: "Warm-up", durationSeconds: 30, poseCount: 8, photoTag: "all" },
+    { label: "Warm-up", durationSeconds: 60, poseCount: 6, photoTag: "all" },
+    { label: "Gesture", durationSeconds: 120, poseCount: 10, photoTag: "all" },
+    { label: "Long Pose", durationSeconds: 300, poseCount: 4, photoTag: "all" },
+    { label: "Final Pose", durationSeconds: 600, poseCount: 1, photoTag: "all" }
   ]),
   "class-2h": Object.freeze([
-    { label: "Warm-up", durationSeconds: 30, poseCount: 10 },
-    { label: "Warm-up", durationSeconds: 60, poseCount: 10 },
-    { label: "Gesture", durationSeconds: 120, poseCount: 15 },
-    { label: "Long Pose", durationSeconds: 300, poseCount: 9 },
-    { label: "Final Pose", durationSeconds: 1800, poseCount: 1 }
+    { label: "Warm-up", durationSeconds: 30, poseCount: 10, photoTag: "all" },
+    { label: "Warm-up", durationSeconds: 60, poseCount: 10, photoTag: "all" },
+    { label: "Gesture", durationSeconds: 120, poseCount: 15, photoTag: "all" },
+    { label: "Long Pose", durationSeconds: 300, poseCount: 9, photoTag: "all" },
+    { label: "Final Pose", durationSeconds: 1800, poseCount: 1, photoTag: "all" }
   ]),
   "class-3h": Object.freeze([
-    { label: "Warm-up", durationSeconds: 30, poseCount: 12 },
-    { label: "Warm-up", durationSeconds: 60, poseCount: 12 },
-    { label: "Gesture", durationSeconds: 120, poseCount: 21 },
-    { label: "Long Pose", durationSeconds: 300, poseCount: 12 },
-    { label: "Final Pose", durationSeconds: 3600, poseCount: 1 }
+    { label: "Warm-up", durationSeconds: 30, poseCount: 12, photoTag: "all" },
+    { label: "Warm-up", durationSeconds: 60, poseCount: 12, photoTag: "all" },
+    { label: "Gesture", durationSeconds: 120, poseCount: 21, photoTag: "all" },
+    { label: "Long Pose", durationSeconds: 300, poseCount: 12, photoTag: "all" },
+    { label: "Final Pose", durationSeconds: 3600, poseCount: 1, photoTag: "all" }
   ])
 });
 
@@ -44,7 +44,8 @@ const FALLBACK_PRESET_ID = CLASS_PRESET_OPTIONS[0].id;
 const DEFAULT_BLOCK = Object.freeze({
   label: "Custom Block",
   durationSeconds: 120,
-  poseCount: 6
+  poseCount: 6,
+  photoTag: "all"
 });
 
 const MIN_BLOCK_DURATION_SECONDS = 5;
@@ -87,11 +88,13 @@ export function sanitizeClassBlocks(rawBlocks) {
         MAX_BLOCK_POSE_COUNT,
         DEFAULT_BLOCK.poseCount
       );
+      const photoTagCandidate = String(rawBlock?.photoTag ?? "").trim();
 
       return {
         label: labelCandidate || DEFAULT_BLOCK.label,
         durationSeconds: durationCandidate,
-        poseCount: poseCountCandidate
+        poseCount: poseCountCandidate,
+        photoTag: photoTagCandidate || DEFAULT_BLOCK.photoTag
       };
     })
     .filter((block) => block.poseCount > 0);

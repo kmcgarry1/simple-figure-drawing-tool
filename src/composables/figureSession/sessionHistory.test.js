@@ -1,0 +1,54 @@
+import { describe, expect, it } from "vitest";
+import { appendSessionHistory, normalizeSessionHistory } from "./sessionHistory";
+
+describe("normalizeSessionHistory", () => {
+  it("normalizes malformed entries", () => {
+    const history = normalizeSessionHistory([
+      {
+        sessionMode: "invalid",
+        result: "weird",
+        elapsedSeconds: "bad",
+        plannedSlides: 5,
+        completedSlides: 99
+      }
+    ]);
+
+    expect(history).toHaveLength(1);
+    expect(history[0]).toMatchObject({
+      sessionMode: "class",
+      result: "ended",
+      elapsedSeconds: 0,
+      plannedSlides: 5,
+      completedSlides: 5
+    });
+  });
+});
+
+describe("appendSessionHistory", () => {
+  it("adds newest entries at the top", () => {
+    const first = appendSessionHistory([], {
+      id: "one",
+      sessionMode: "quick",
+      result: "completed",
+      startedAt: "2024-01-01T00:00:00.000Z",
+      endedAt: "2024-01-01T00:10:00.000Z",
+      elapsedSeconds: 600,
+      plannedSlides: 10,
+      completedSlides: 10
+    });
+
+    const second = appendSessionHistory(first, {
+      id: "two",
+      sessionMode: "class",
+      result: "ended",
+      startedAt: "2024-01-02T00:00:00.000Z",
+      endedAt: "2024-01-02T00:05:00.000Z",
+      elapsedSeconds: 300,
+      plannedSlides: 20,
+      completedSlides: 7
+    });
+
+    expect(second[0].id).toBe("two");
+    expect(second[1].id).toBe("one");
+  });
+});

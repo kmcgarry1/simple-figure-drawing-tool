@@ -143,9 +143,13 @@ export function createPlaybackRuntime({
     phase.value = "running";
     showCurrentSlide();
     scheduleCurrentSlide();
+    const activeSlideCount =
+      sessionMode.value === SESSION_MODE_CLASS
+        ? sessionSlides.value.filter((slide) => slide.kind !== "break").length
+        : sessionSlides.value.length;
     statusMessage.value = runningMessageForMode(
       sessionMode.value,
-      sessionSlides.value.length,
+      activeSlideCount,
       SESSION_MODE_CLASS
     );
   }

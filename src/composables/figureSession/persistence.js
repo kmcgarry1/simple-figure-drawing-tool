@@ -30,15 +30,6 @@ function normalizePhotoOrder(value) {
     : PHOTO_ORDER_SHUFFLE;
 }
 
-function normalizeVolumePercent(value) {
-  const parsed = Number.parseInt(String(value), 10);
-  if (Number.isNaN(parsed)) {
-    return 60;
-  }
-
-  return Math.min(100, Math.max(0, parsed));
-}
-
 function resolvePresetId(rawPresetId) {
   return getClassPresetById(rawPresetId).id;
 }
@@ -51,6 +42,10 @@ function resolveClassBlocks(rawBlocks, fallbackPresetId) {
   return sanitizeClassBlocks(rawBlocks);
 }
 
+function normalizeBoolean(rawValue, fallback) {
+  return typeof rawValue === "boolean" ? rawValue : fallback;
+}
+
 function defaultPreferences() {
   const defaultPresetId = resolvePresetId();
   return {
@@ -60,8 +55,9 @@ function defaultPreferences() {
     classBlocks: createBlocksFromPreset(defaultPresetId),
     classPhotoOrder: PHOTO_ORDER_SHUFFLE,
     avoidImmediateRepeats: true,
-    audioMuted: false,
-    audioVolumePercent: 60
+    mirrorLiveView: false,
+    grayscaleLiveView: false,
+    hideLiveOverlay: false
   };
 }
 
@@ -75,15 +71,16 @@ export function normalizeSessionPreferences(rawPreferences) {
     classPresetId,
     classBlocks: resolveClassBlocks(rawPreferences?.classBlocks, classPresetId),
     classPhotoOrder: normalizePhotoOrder(rawPreferences?.classPhotoOrder),
-    avoidImmediateRepeats:
-      typeof rawPreferences?.avoidImmediateRepeats === "boolean"
-        ? rawPreferences.avoidImmediateRepeats
-        : defaults.avoidImmediateRepeats,
-    audioMuted:
-      typeof rawPreferences?.audioMuted === "boolean"
-        ? rawPreferences.audioMuted
-        : defaults.audioMuted,
-    audioVolumePercent: normalizeVolumePercent(rawPreferences?.audioVolumePercent)
+    avoidImmediateRepeats: normalizeBoolean(
+      rawPreferences?.avoidImmediateRepeats,
+      defaults.avoidImmediateRepeats
+    ),
+    mirrorLiveView: normalizeBoolean(rawPreferences?.mirrorLiveView, defaults.mirrorLiveView),
+    grayscaleLiveView: normalizeBoolean(
+      rawPreferences?.grayscaleLiveView,
+      defaults.grayscaleLiveView
+    ),
+    hideLiveOverlay: normalizeBoolean(rawPreferences?.hideLiveOverlay, defaults.hideLiveOverlay)
   };
 }
 

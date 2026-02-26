@@ -28,6 +28,8 @@
         @session-mode-change="setSessionMode"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
+        @export-settings="exportSettingsJson"
+        @import-settings="importSettingsFromFile"
         @class-preset-change="setClassPreset"
         @class-block-update="updateClassBlock"
         @class-block-add="addClassBlock"
@@ -122,6 +124,8 @@ const {
   removeClassBlock,
   setClassPhotoOrder,
   setAvoidImmediateRepeats,
+  exportSettingsJson,
+  importSettingsFromFile,
   saveClassTemplateByName,
   loadClassTemplateById,
   deleteClassTemplateById,

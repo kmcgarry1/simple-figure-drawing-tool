@@ -3,6 +3,13 @@ import { FILE_INPUT_ACCEPT } from "../config";
 import { CLASS_PRESET_OPTIONS, createBlocksFromPreset } from "../utils/classPlan";
 import { createClassPlanActions } from "./figureSession/classPlanActions";
 import {
+  getClassTemplateById,
+  loadClassTemplates,
+  persistClassTemplates,
+  removeClassTemplateById,
+  saveClassTemplate
+} from "./figureSession/classTemplates";
+import {
   PHOTO_ORDER_SHUFFLE,
   SESSION_MODE_CLASS,
   SESSION_MODE_QUICK
@@ -38,6 +45,7 @@ export function useFigureSession() {
   const classBlocks = ref(
     persistedPreferences.classBlocks || createBlocksFromPreset(classPresetId.value)
   );
+  const classTemplates = ref(loadClassTemplates());
   const classPhotoOrder = ref(persistedPreferences.classPhotoOrder || PHOTO_ORDER_SHUFFLE);
   const avoidImmediateRepeats = ref(
     persistedPreferences.avoidImmediateRepeats
@@ -319,6 +327,44 @@ export function useFigureSession() {
     } catch {
       statusMessage.value = "Unable to import settings file.";
     }
+  function saveClassTemplateByName(templateName) {
+    const result = saveClassTemplate(classTemplates.value, {
+      name: templateName,
+      blocks: classBlocks.value
+    });
+    if (!result.saved) {
+      statusMessage.value = "Enter a template name before saving.";
+      return;
+    }
+
+    classTemplates.value = result.templates;
+    persistClassTemplates(classTemplates.value);
+    statusMessage.value = result.updated
+      ? `Updated template "${result.template.name}".`
+      : `Saved template "${result.template.name}".`;
+  }
+
+  function loadClassTemplateById(templateId) {
+    const template = getClassTemplateById(classTemplates.value, templateId);
+    if (!template) {
+      statusMessage.value = "Template not found.";
+      return;
+    }
+
+    classBlocks.value = template.blocks.map((block) => ({ ...block }));
+    statusMessage.value = `Loaded template "${template.name}".`;
+  }
+
+  function deleteClassTemplateById(templateId) {
+    const existingCount = classTemplates.value.length;
+    classTemplates.value = removeClassTemplateById(classTemplates.value, templateId);
+    if (classTemplates.value.length === existingCount) {
+      statusMessage.value = "Template not found.";
+      return;
+    }
+
+    persistClassTemplates(classTemplates.value);
+    statusMessage.value = "Template deleted.";
   }
 
   watch(
@@ -358,6 +404,7 @@ export function useFigureSession() {
     classPresetOptions: CLASS_PRESET_OPTIONS,
     classPresetId,
     classBlocks,
+    classTemplates,
     classPhotoOrder,
     avoidImmediateRepeats,
     hasClassPlan,
@@ -392,6 +439,9 @@ export function useFigureSession() {
     setAvoidImmediateRepeats,
     exportSettingsJson,
     importSettingsFromFile,
+    saveClassTemplateByName,
+    loadClassTemplateById,
+    deleteClassTemplateById,
     startFreshSession,
     togglePause,
     goToNextSlide,

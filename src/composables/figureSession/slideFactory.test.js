@@ -15,10 +15,15 @@ describe("createQuickSlides", () => {
     const photos = makePhotos(SESSION_PHOTO_LIMIT + 5);
     const durationSeconds = 45;
 
-    const { slides, selectedPhotosCount } = createQuickSlides(photos, durationSeconds);
+    const { slides, selectedPhotos, selectedPhotosCount } = createQuickSlides(
+      photos,
+      durationSeconds
+    );
 
     expect(selectedPhotosCount).toBe(SESSION_PHOTO_LIMIT);
+    expect(selectedPhotos).toHaveLength(SESSION_PHOTO_LIMIT);
     expect(slides).toHaveLength(SESSION_PHOTO_LIMIT);
+    expect(slides.map((slide) => slide.file)).toEqual(selectedPhotos);
     expect(slides[0]).toMatchObject({
       durationSeconds: 45,
       durationMs: 45000,

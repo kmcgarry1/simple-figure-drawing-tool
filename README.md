@@ -4,8 +4,18 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
 
 ## Features
 
+- Landing experience:
+  - Setup complexity is moved into a step-based modal wizard to reduce home-screen clutter.
+  - Landing panel keeps only setup progress, primary actions, and live status.
+  - Non-live layout is single-column; the image stage appears only during live fullscreen session.
+- Advanced setup:
+  - Visual photo list with thumbnails, manual up/down reordering, and per-photo tags.
+  - Reordered list is used for class sessions in sequential photo order mode.
 - Quick session mode:
+  - Load individual images or an entire folder in one step.
+  - Accepts up to 2000 uploaded images per load.
   - Randomly picks up to 10 images.
+  - Removes unselected uploads after each random pick.
   - Uses one editable duration for every slide.
 - Life drawing class wizard:
   - Built-in 1 hour, 2 hour, and 3 hour class presets.

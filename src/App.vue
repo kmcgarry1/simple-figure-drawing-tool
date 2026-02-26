@@ -13,6 +13,7 @@
         :class-blocks="classBlocks"
         :class-photo-order="classPhotoOrder"
         :avoid-immediate-repeats="avoidImmediateRepeats"
+        :class-templates="classTemplates"
         :has-class-plan="hasClassPlan"
         :class-target-minutes="classTargetMinutes"
         :class-pose-count="classPoseCount"
@@ -27,12 +28,17 @@
         @session-mode-change="setSessionMode"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
+        @export-settings="exportSettingsJson"
+        @import-settings="importSettingsFromFile"
         @class-preset-change="setClassPreset"
         @class-block-update="updateClassBlock"
         @class-block-add="addClassBlock"
         @class-block-remove="removeClassBlock"
         @class-photo-order-change="setClassPhotoOrder"
         @class-repeat-toggle="setAvoidImmediateRepeats"
+        @class-template-save="saveClassTemplateByName"
+        @class-template-load="loadClassTemplateById"
+        @class-template-delete="deleteClassTemplateById"
         @start-session="startFreshSession"
         @new-random-set="createNewRandomSet"
       />
@@ -99,6 +105,7 @@ const {
   mirrorLiveView,
   grayscaleLiveView,
   hideLiveOverlay,
+  classTemplates,
   hasClassPlan,
   classTargetMinutes,
   classPoseCount,
@@ -132,6 +139,11 @@ const {
   toggleMirrorLiveView,
   toggleGrayscaleLiveView,
   toggleHideLiveOverlay,
+  exportSettingsJson,
+  importSettingsFromFile,
+  saveClassTemplateByName,
+  loadClassTemplateById,
+  deleteClassTemplateById,
   startFreshSession,
   togglePause,
   goToNextSlide,

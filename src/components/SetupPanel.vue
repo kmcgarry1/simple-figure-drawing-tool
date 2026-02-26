@@ -12,6 +12,7 @@
   </label>
 
   <section class="grid gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
+    <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Essentials</p>
     <p class="text-sm font-semibold text-slate-100">1. Session Type</p>
     <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
       <BaseButton :tone="modeTone('class')" @click="$emit('session-mode-change', 'class')">
@@ -33,7 +34,7 @@
       @commit="$emit('duration-change')"
     />
 
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2">
+    <div class="grid gap-2">
       <BaseButton :disabled="!hasSourcePhotos" @click="$emit('start-session')">
         {{ startActionLabel }}
       </BaseButton>
@@ -55,11 +56,13 @@
       <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>
     </div>
 
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2">
+    <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
+      <div class="col-span-2 max-[560px]:col-span-1">
+        <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
+          {{ startActionLabel }}
+        </BaseButton>
+      </div>
       <BaseButton tone="subtle" @click="openClassDialog">Edit Class Plan</BaseButton>
-      <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
-        {{ startActionLabel }}
-      </BaseButton>
       <BaseButton
         :disabled="!hasSourcePhotos || !hasClassPlan"
         tone="subtle"
@@ -143,10 +146,10 @@
     </div>
   </section>
 
-  <div class="grid gap-1">
-    <p class="text-sm text-slate-400" role="status" aria-live="polite">{{ statusMessage }}</p>
+  <div class="grid gap-1.5 rounded-md border border-slate-700 bg-slate-900/50 px-2.5 py-2">
+    <p class="text-sm text-slate-300" role="status" aria-live="polite">{{ statusMessage }}</p>
     <p v-if="uploadNotice" class="text-sm text-slate-300">{{ uploadNotice }}</p>
-    <p class="text-sm text-slate-500">Shortcuts: Space pause/resume, Right Arrow next, Esc end.</p>
+    <p class="text-xs text-slate-500">Shortcuts: Space pause/resume, Right Arrow next, Esc end.</p>
   </div>
 </template>
 

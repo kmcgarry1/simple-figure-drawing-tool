@@ -1,24 +1,29 @@
 <template>
-  <div class="grid grid-cols-2 gap-1.5">
+  <section class="grid gap-2 rounded-md border border-slate-600/60 bg-slate-900/60 p-2">
+    <p class="text-xs font-medium uppercase tracking-wide text-slate-300">Live Controls</p>
     <BaseButton compact :disabled="!isRunning && !isPaused" @click="$emit('toggle-pause')">
       {{ pauseLabel }}
     </BaseButton>
-    <BaseButton compact :disabled="!isRunning" tone="subtle" @click="$emit('next')">Next</BaseButton>
-    <BaseButton compact :disabled="!hasSourcePhotos" tone="subtle" @click="$emit('new-set')">
-      {{ restartLabel }}
-    </BaseButton>
-    <BaseButton compact tone="danger" @click="$emit('end')">End</BaseButton>
-  </div>
+    <div class="grid grid-cols-2 gap-1.5 max-[560px]:grid-cols-1">
+      <BaseButton compact :disabled="!isRunning" tone="subtle" @click="$emit('next')">Next</BaseButton>
+      <BaseButton compact :disabled="!hasSourcePhotos" tone="subtle" @click="$emit('new-set')">
+        {{ restartLabel }}
+      </BaseButton>
+    </div>
+    <BaseButton compact tone="danger" @click="$emit('end')">End Session</BaseButton>
+  </section>
 
-  <DurationInput
-    v-if="sessionMode === 'quick'"
-    id="durationInputCompact"
-    label="Sec / Photo"
-    :value="durationSeconds"
-    :compact="true"
-    @update="$emit('duration-input', $event)"
-    @commit="$emit('duration-change')"
-  />
+  <section v-if="sessionMode === 'quick'" class="grid gap-1.5 rounded-md border border-slate-600/60 bg-slate-900/60 p-2">
+    <p class="text-xs font-medium uppercase tracking-wide text-slate-300">Quick Timing</p>
+    <DurationInput
+      id="durationInputCompact"
+      label="Sec / Photo"
+      :value="durationSeconds"
+      :compact="true"
+      @update="$emit('duration-input', $event)"
+      @commit="$emit('duration-change')"
+    />
+  </section>
 
   <section class="grid gap-2 rounded-md border border-slate-600/60 bg-slate-900/60 p-2">
     <div class="flex items-center justify-between gap-2">

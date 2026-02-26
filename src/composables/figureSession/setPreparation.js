@@ -43,13 +43,25 @@ export function createSetPreparationController({
       return false;
     }
 
+    const uploadedPhotoCount = sourcePhotos.value.length;
     const duration = getQuickDurationSeconds();
-    const { slides, selectedPhotosCount } = createQuickSlides(sourcePhotos.value, duration);
+    const { slides, selectedPhotos, selectedPhotosCount } = createQuickSlides(
+      sourcePhotos.value,
+      duration
+    );
+
+    sourcePhotos.value = selectedPhotos;
 
     sessionSlides.value = slides;
     resetPlaybackState();
     phase.value = "ready";
     revokeSlideUrl();
+
+    const discardedPhotoCount = Math.max(0, uploadedPhotoCount - selectedPhotosCount);
+    if (discardedPhotoCount > 0) {
+      statusMessage.value = `Random set ready: ${selectedPhotosCount} photo(s) selected from ${uploadedPhotoCount}. ${discardedPhotoCount} unselected photo(s) removed.`;
+      return true;
+    }
 
     statusMessage.value =
       selectedPhotosCount < SESSION_PHOTO_LIMIT

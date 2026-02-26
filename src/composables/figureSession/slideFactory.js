@@ -111,6 +111,7 @@ export function createQuickSlides(sourcePhotos, durationSeconds) {
 
   return {
     slides,
+    selectedPhotos,
     selectedPhotosCount: selectedPhotos.length
   };
 }

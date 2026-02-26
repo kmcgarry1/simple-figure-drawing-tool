@@ -66,6 +66,45 @@ export function chooseRandomPhotos(files, count) {
   return shuffled.slice(0, count);
 }
 
+export function movePhotoById(files, photoId, direction) {
+  const normalizedDirection = String(direction || "").toLowerCase().trim();
+  if (!["up", "down", "top", "bottom"].includes(normalizedDirection)) {
+    return { photos: Array.from(files || []), moved: false };
+  }
+
+  const currentPhotos = Array.from(files || []);
+  const sourceIndex = currentPhotos.findIndex((file) => createPhotoId(file) === photoId);
+  if (sourceIndex < 0) {
+    return { photos: currentPhotos, moved: false };
+  }
+
+  let targetIndex = sourceIndex;
+  if (normalizedDirection === "up") {
+    targetIndex = Math.max(0, sourceIndex - 1);
+  } else if (normalizedDirection === "down") {
+    targetIndex = Math.min(currentPhotos.length - 1, sourceIndex + 1);
+  } else if (normalizedDirection === "top") {
+    targetIndex = 0;
+  } else if (normalizedDirection === "bottom") {
+    targetIndex = Math.max(0, currentPhotos.length - 1);
+  }
+
+  if (targetIndex === sourceIndex) {
+    return { photos: currentPhotos, moved: false };
+  }
+
+  const nextPhotos = [...currentPhotos];
+  const [movedPhoto] = nextPhotos.splice(sourceIndex, 1);
+  nextPhotos.splice(targetIndex, 0, movedPhoto);
+
+  return {
+    photos: nextPhotos,
+    moved: true,
+    fromIndex: sourceIndex,
+    toIndex: targetIndex
+  };
+}
+
 export function normalizeUploadedPhotos(rawFiles) {
   const incomingFiles = Array.from(rawFiles || []);
   const accepted = [];

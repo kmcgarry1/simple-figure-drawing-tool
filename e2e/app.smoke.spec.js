@@ -21,17 +21,28 @@ function parseOverlaySeconds(overlayText) {
   return Number(match[1]);
 }
 
+async function openSetupWizard(page) {
+  await page.getByRole("button", { name: /Setup Wizard/ }).click();
+}
+
+function wizardDialog(page) {
+  return page.getByRole("dialog", { name: "Setup Wizard" });
+}
+
 test("quick session flow can start, pause, and end", async ({ page }) => {
   await page.goto("/");
 
+  await openSetupWizard(page);
+  await page.getByRole("button", { name: "1. Photos" }).click();
   await page.getByLabel("Upload Photos").setInputFiles([
     createPngFilePayload("pose-1.png"),
     createPngFilePayload("pose-2.png"),
     createPngFilePayload("pose-3.png")
   ]);
 
-  await page.getByRole("button", { name: "Quick Session" }).click();
-  await page.getByRole("button", { name: "Start Session" }).click();
+  const wizard = wizardDialog(page);
+  await wizard.getByRole("button", { name: "Quick Session" }).click();
+  await wizard.getByRole("button", { name: "Start Session" }).click();
 
   await expect(page.getByRole("button", { name: "End" })).toBeVisible();
   await page.getByRole("button", { name: "Pause" }).click();
@@ -45,16 +56,19 @@ test("live quick timer does not reset when duration input is focused and blurred
 }) => {
   await page.goto("/");
 
+  await openSetupWizard(page);
+  await page.getByRole("button", { name: "1. Photos" }).click();
   await page.getByLabel("Upload Photos").setInputFiles([
     createPngFilePayload("pose-1.png"),
     createPngFilePayload("pose-2.png")
   ]);
 
-  await page.getByRole("button", { name: "Quick Session" }).click();
-  const setupDurationInput = page.getByLabel("Seconds Per Photo");
+  const wizard = wizardDialog(page);
+  await wizard.getByRole("button", { name: "Quick Session" }).click();
+  const setupDurationInput = wizard.getByLabel("Seconds Per Photo");
   await setupDurationInput.fill("5");
   await setupDurationInput.blur();
-  await page.getByRole("button", { name: "Start Session" }).click();
+  await wizard.getByRole("button", { name: "Start Session" }).click();
 
   const overlayCounter = page
     .locator("span")
@@ -79,6 +93,10 @@ test("live quick timer does not reset when duration input is focused and blurred
 test("class dialog closes on Escape and restores trigger focus", async ({ page }) => {
   await page.goto("/");
 
+  await openSetupWizard(page);
+  await page.getByRole("button", { name: "2. Session" }).click();
+  await page.getByRole("button", { name: "Life Class Wizard" }).click();
+
   const trigger = page.getByRole("button", { name: "Edit Class Plan" });
   await trigger.click();
 
@@ -94,13 +112,18 @@ test("class dialog closes on Escape and restores trigger focus", async ({ page }
 test("mode and duration persist after reload", async ({ page }) => {
   await page.goto("/");
 
+  await openSetupWizard(page);
+  await page.getByRole("button", { name: "2. Session" }).click();
   await page.getByRole("button", { name: "Quick Session" }).click();
   const durationInput = page.getByLabel("Seconds Per Photo");
   await durationInput.fill("75");
   await durationInput.blur();
+  await page.getByRole("button", { name: "Done" }).click();
 
   await page.reload();
 
+  await openSetupWizard(page);
+  await page.getByRole("button", { name: "2. Session" }).click();
   await expect(page.getByText("2. Quick Session")).toBeVisible();
   await expect(page.getByLabel("Seconds Per Photo")).toHaveValue("75");
 });

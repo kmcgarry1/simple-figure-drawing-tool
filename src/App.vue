@@ -43,6 +43,7 @@
           @duration-input="updateDurationSeconds"
           @duration-change="applyDurationChange"
           @photo-tag-update="updatePhotoTag"
+          @photo-reorder="reorderSourcePhoto"
           @export-settings="exportSettingsJson"
           @import-settings="importSettingsFromFile"
           @class-preset-change="setClassPreset"
@@ -90,6 +91,7 @@
       </section>
 
       <SlideStage
+        v-if="isSessionLive"
         :is-session-live="isSessionLive"
         :current-slide-url="currentSlideUrl"
         :current-slide-alt="currentSlideAlt"
@@ -180,6 +182,7 @@ const {
   stopSession,
   applyDurationChange,
   updatePhotoTag,
+  reorderSourcePhoto,
   handlePhotoSelection
 } = useFigureSession();
 
@@ -216,19 +219,17 @@ const {
 const shellClass = computed(() =>
   isSessionLive.value
     ? "relative min-h-dvh text-slate-100"
-    : "relative mx-auto my-4 grid w-[min(1240px,calc(100%-2rem))] gap-4 text-slate-100 max-[720px]:my-2 max-[720px]:w-[calc(100%-1rem)]"
+    : "relative mx-auto my-5 grid w-[min(980px,calc(100%-2rem))] gap-5 text-slate-100 max-[720px]:my-3 max-[720px]:w-[calc(100%-1rem)]"
 );
 
 const workspaceClass = computed(() =>
-  isSessionLive.value
-    ? "contents"
-    : "grid gap-4 xl:grid-cols-[minmax(340px,420px)_1fr] xl:items-start"
+  isSessionLive.value ? "contents" : "grid gap-4"
 );
 
 const controlPanelClass = computed(() =>
   isSessionLive.value
     ? "surface-panel fixed bottom-2 left-2 z-30 w-[min(360px,calc(100vw-1rem))] rounded-2xl p-2"
-    : "surface-panel grid gap-3 rounded-2xl p-4 max-[720px]:rounded-xl xl:sticky xl:top-4 xl:max-h-[calc(100dvh-2rem)] xl:overflow-y-auto"
+    : "surface-panel relative grid gap-3 overflow-hidden rounded-2xl p-4 max-[720px]:rounded-xl"
 );
 
 if (!isRemoteClientView) {

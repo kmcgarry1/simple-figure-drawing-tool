@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   clampDurationSeconds,
   createPhotoId,
+  movePhotoById,
   normalizeUploadedPhotos
 } from "./photoInput";
 import {
@@ -89,5 +90,54 @@ describe("createPhotoId", () => {
     });
 
     expect(photoId).toBe("pose-1.jpg|1024|42");
+  });
+});
+
+describe("movePhotoById", () => {
+  const photos = [
+    { name: "pose-1.jpg", size: 1, lastModified: 11 },
+    { name: "pose-2.jpg", size: 2, lastModified: 22 },
+    { name: "pose-3.jpg", size: 3, lastModified: 33 }
+  ];
+
+  it("moves a photo up and down in the list", () => {
+    const upResult = movePhotoById(photos, "pose-2.jpg|2|22", "up");
+    expect(upResult.moved).toBe(true);
+    expect(upResult.photos.map((photo) => photo.name)).toEqual([
+      "pose-2.jpg",
+      "pose-1.jpg",
+      "pose-3.jpg"
+    ]);
+
+    const downResult = movePhotoById(photos, "pose-2.jpg|2|22", "down");
+    expect(downResult.moved).toBe(true);
+    expect(downResult.photos.map((photo) => photo.name)).toEqual([
+      "pose-1.jpg",
+      "pose-3.jpg",
+      "pose-2.jpg"
+    ]);
+  });
+
+  it("supports top and bottom moves", () => {
+    const topResult = movePhotoById(photos, "pose-3.jpg|3|33", "top");
+    expect(topResult.moved).toBe(true);
+    expect(topResult.photos.map((photo) => photo.name)).toEqual([
+      "pose-3.jpg",
+      "pose-1.jpg",
+      "pose-2.jpg"
+    ]);
+
+    const bottomResult = movePhotoById(photos, "pose-1.jpg|1|11", "bottom");
+    expect(bottomResult.moved).toBe(true);
+    expect(bottomResult.photos.map((photo) => photo.name)).toEqual([
+      "pose-2.jpg",
+      "pose-3.jpg",
+      "pose-1.jpg"
+    ]);
+  });
+
+  it("does not move when direction is invalid or target photo is missing", () => {
+    expect(movePhotoById(photos, "missing|0|0", "up").moved).toBe(false);
+    expect(movePhotoById(photos, "pose-2.jpg|2|22", "weird").moved).toBe(false);
   });
 });

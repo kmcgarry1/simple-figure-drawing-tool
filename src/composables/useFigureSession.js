@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { FILE_INPUT_ACCEPT } from "../config";
 import { CLASS_PRESET_OPTIONS, createBlocksFromPreset } from "../utils/classPlan";
-import { createPhotoId } from "../utils/photoInput";
+import { createPhotoId, movePhotoById } from "../utils/photoInput";
 import { createClassPlanActions } from "./figureSession/classPlanActions";
 import {
   getClassTemplateById,
@@ -160,6 +160,7 @@ export function useFigureSession() {
       const photoId = createPhotoId(file);
       return {
         id: photoId,
+        file,
         name: file.name,
         tag: photoTagsById.value[photoId] || ""
       };
@@ -348,6 +349,24 @@ export function useFigureSession() {
       prepareActiveSet();
     }
   }
+
+  function reorderSourcePhoto({ photoId, direction }) {
+    const { photos, moved, toIndex } = movePhotoById(sourcePhotos.value, photoId, direction);
+    if (!moved) {
+      return;
+    }
+
+    sourcePhotos.value = photos;
+    const movedPhoto = photos[toIndex] || null;
+    statusMessage.value = movedPhoto?.name
+      ? `Photo order updated: ${movedPhoto.name} is now #${toIndex + 1}.`
+      : "Photo order updated.";
+
+    if (sessionMode.value === SESSION_MODE_CLASS && !isSessionLive.value && hasSourcePhotos.value) {
+      prepareActiveSet();
+    }
+  }
+
   function setSessionMode(nextMode) {
     if (![SESSION_MODE_QUICK, SESSION_MODE_CLASS].includes(nextMode)) {
       return;
@@ -609,6 +628,7 @@ export function useFigureSession() {
     clearSessionHistory,
     applyDurationChange,
     updatePhotoTag,
+    reorderSourcePhoto,
     handlePhotoSelection: handlePhotoSelectionWithTags
   };
 }

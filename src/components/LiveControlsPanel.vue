@@ -55,6 +55,10 @@
       </BaseButton>
       <BaseButton compact tone="subtle" :disabled="!isRemoteConnected" @click="$emit('remote-disconnect')">
         Disconnect
+      </BaseButton>
+    </div>
+  </section>
+
   <section class="grid gap-1 rounded-md border border-slate-600/60 bg-slate-900/60 p-2">
     <p class="text-xs font-medium text-slate-200">Stage View</p>
     <div class="grid grid-cols-1 gap-1">
@@ -134,6 +138,9 @@ defineProps({
 const emit = defineEmits([
   "duration-input",
   "duration-change",
+  "toggle-mirror-live-view",
+  "toggle-grayscale-live-view",
+  "toggle-hide-live-overlay",
   "toggle-pause",
   "next",
   "new-set",
@@ -149,15 +156,4 @@ function applyAnswerToken() {
   emit("remote-apply-answer", remoteAnswerToken.value);
   remoteAnswerToken.value = "";
 }
-defineEmits([
-  "duration-input",
-  "duration-change",
-  "toggle-mirror-live-view",
-  "toggle-grayscale-live-view",
-  "toggle-hide-live-overlay",
-  "toggle-pause",
-  "next",
-  "new-set",
-  "end"
-]);
 </script>

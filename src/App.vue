@@ -1,5 +1,15 @@
 <template>
-  <main :class="shellClass">
+  <PhoneRemoteClientView
+    v-if="isRemoteClientView"
+    :remote-status="clientRemoteStatus"
+    :answer-token="clientAnswerToken"
+    :is-remote-connected="isClientRemoteConnected"
+    @create-answer-token="createClientAnswerToken"
+    @send-command="sendRemoteCommand"
+    @disconnect="disconnectClientRemote"
+  />
+
+  <main v-else :class="shellClass">
     <AppHeader v-if="!isSessionLive" />
 
     <section :class="controlPanelClass">
@@ -55,6 +65,9 @@
         :has-source-photos="hasSourcePhotos"
         :pause-label="pauseLabel"
         :restart-label="restartActionLabel"
+        :remote-status="hostRemoteStatus"
+        :remote-offer-token="hostOfferToken"
+        :is-remote-connected="isHostRemoteConnected"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
         @toggle-mirror-live-view="toggleMirrorLiveView"
@@ -64,6 +77,9 @@
         @next="goToNextSlide"
         @new-set="createNewRandomSet"
         @end="stopSession"
+        @remote-create-offer="createHostOfferToken"
+        @remote-apply-answer="applyHostAnswerToken"
+        @remote-disconnect="disconnectHostRemote"
       />
     </section>
 
@@ -88,8 +104,10 @@
 import { computed } from "vue";
 import AppHeader from "./components/AppHeader.vue";
 import LiveControlsPanel from "./components/LiveControlsPanel.vue";
+import PhoneRemoteClientView from "./components/PhoneRemoteClientView.vue";
 import SetupPanel from "./components/SetupPanel.vue";
 import SlideStage from "./components/SlideStage.vue";
+import { usePhoneRemoteClient, usePhoneRemoteHost } from "./composables/usePhoneRemote";
 import { useFigureSession } from "./composables/useFigureSession";
 import { useLiveKeyboardShortcuts } from "./composables/useLiveKeyboardShortcuts";
 
@@ -157,6 +175,32 @@ function updateDurationSeconds(value) {
   durationSeconds.value = value;
 }
 
+const isRemoteClientView =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("remote") === "1";
+
+const {
+  remoteStatus: hostRemoteStatus,
+  offerToken: hostOfferToken,
+  isRemoteConnected: isHostRemoteConnected,
+  createOfferToken: createHostOfferToken,
+  applyAnswerToken: applyHostAnswerToken,
+  disconnectHostRemote
+} = usePhoneRemoteHost({
+  onTogglePause: togglePause,
+  onNextSlide: goToNextSlide,
+  onStopSession: stopSession
+});
+
+const {
+  remoteStatus: clientRemoteStatus,
+  answerToken: clientAnswerToken,
+  isRemoteConnected: isClientRemoteConnected,
+  createAnswerToken: createClientAnswerToken,
+  sendRemoteCommand,
+  disconnectClientRemote
+} = usePhoneRemoteClient();
+
 const shellClass = computed(() =>
   isSessionLive.value
     ? "relative min-h-dvh text-slate-100"
@@ -169,10 +213,12 @@ const controlPanelClass = computed(() =>
     : "grid gap-3 rounded-xl border border-slate-700 bg-slate-800 p-4 max-[720px]:rounded-lg"
 );
 
-useLiveKeyboardShortcuts({
-  isSessionLive,
-  onTogglePause: togglePause,
-  onNextSlide: goToNextSlide,
-  onStopSession: stopSession
-});
+if (!isRemoteClientView) {
+  useLiveKeyboardShortcuts({
+    isSessionLive,
+    onTogglePause: togglePause,
+    onNextSlide: goToNextSlide,
+    onStopSession: stopSession
+  });
+}
 </script>

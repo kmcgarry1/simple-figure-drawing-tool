@@ -327,6 +327,8 @@ export function useFigureSession() {
     } catch {
       statusMessage.value = "Unable to import settings file.";
     }
+  }
+
   function saveClassTemplateByName(templateName) {
     const result = saveClassTemplate(classTemplates.value, {
       name: templateName,

@@ -3,6 +3,13 @@ import { FILE_INPUT_ACCEPT } from "../config";
 import { CLASS_PRESET_OPTIONS, createBlocksFromPreset } from "../utils/classPlan";
 import { createClassPlanActions } from "./figureSession/classPlanActions";
 import {
+  getClassTemplateById,
+  loadClassTemplates,
+  persistClassTemplates,
+  removeClassTemplateById,
+  saveClassTemplate
+} from "./figureSession/classTemplates";
+import {
   PHOTO_ORDER_SHUFFLE,
   SESSION_MODE_CLASS,
   SESSION_MODE_QUICK
@@ -13,6 +20,10 @@ import {
   persistSessionPreferences
 } from "./figureSession/persistence";
 import { createPlaybackRuntime } from "./figureSession/playbackRuntime";
+import {
+  createSettingsExportPayload,
+  parseSettingsImportText
+} from "./figureSession/settingsTransfer";
 import { createSetPreparationController } from "./figureSession/setPreparation";
 import { IDLE_MESSAGE } from "./figureSession/sessionMessages";
 
@@ -34,10 +45,14 @@ export function useFigureSession() {
   const classBlocks = ref(
     persistedPreferences.classBlocks || createBlocksFromPreset(classPresetId.value)
   );
+  const classTemplates = ref(loadClassTemplates());
   const classPhotoOrder = ref(persistedPreferences.classPhotoOrder || PHOTO_ORDER_SHUFFLE);
   const avoidImmediateRepeats = ref(
     persistedPreferences.avoidImmediateRepeats
   );
+  const mirrorLiveView = ref(Boolean(persistedPreferences.mirrorLiveView));
+  const grayscaleLiveView = ref(Boolean(persistedPreferences.grayscaleLiveView));
+  const hideLiveOverlay = ref(Boolean(persistedPreferences.hideLiveOverlay));
 
   const remainingMs = ref(0);
   const activeSlideDurationMs = ref(0);
@@ -244,6 +259,131 @@ export function useFigureSession() {
     prepareActiveSet();
   }
 
+  function toggleMirrorLiveView() {
+    mirrorLiveView.value = !mirrorLiveView.value;
+  }
+
+  function toggleGrayscaleLiveView() {
+    grayscaleLiveView.value = !grayscaleLiveView.value;
+  }
+
+  function toggleHideLiveOverlay() {
+    hideLiveOverlay.value = !hideLiveOverlay.value;
+  }
+
+  function getCurrentPreferences() {
+    return {
+      sessionMode: sessionMode.value,
+      durationSeconds: durationSeconds.value,
+      classPresetId: classPresetId.value,
+      classBlocks: classBlocks.value,
+      classPhotoOrder: classPhotoOrder.value,
+      avoidImmediateRepeats: avoidImmediateRepeats.value
+    };
+  }
+
+  function exportSettingsJson() {
+    if (typeof window === "undefined") {
+      statusMessage.value = "Settings export is only available in the browser.";
+      return;
+    }
+
+    const payload = createSettingsExportPayload(getCurrentPreferences());
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const blobUrl = URL.createObjectURL(blob);
+    const downloadLink = document.createElement("a");
+
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    downloadLink.href = blobUrl;
+    downloadLink.download = `figure-drawing-settings-${dateStamp}.json`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+
+    URL.revokeObjectURL(blobUrl);
+    statusMessage.value = "Settings exported to JSON.";
+  }
+
+  async function importSettingsFromFile(file) {
+    if (!(file instanceof File)) {
+      statusMessage.value = "Choose a JSON file to import.";
+      return;
+    }
+
+    if (isSessionLive.value) {
+      statusMessage.value = "End the current run before importing settings.";
+      return;
+    }
+
+    try {
+      const importedText = await file.text();
+      const importedPreferences = parseSettingsImportText(importedText);
+
+      sessionMode.value = importedPreferences.sessionMode;
+      durationSeconds.value = importedPreferences.durationSeconds;
+      classPresetId.value = importedPreferences.classPresetId;
+      classBlocks.value = importedPreferences.classBlocks;
+      classPhotoOrder.value = importedPreferences.classPhotoOrder;
+      avoidImmediateRepeats.value = importedPreferences.avoidImmediateRepeats;
+
+      clearTimers();
+      revokeSlideUrl();
+      resetPlaybackState();
+      sessionSlides.value = [];
+
+      if (hasSourcePhotos.value) {
+        prepareActiveSet();
+      } else {
+        phase.value = "idle";
+      }
+
+      statusMessage.value = "Settings imported from JSON.";
+    } catch {
+      statusMessage.value = "Unable to import settings file.";
+    }
+  }
+
+  function saveClassTemplateByName(templateName) {
+    const result = saveClassTemplate(classTemplates.value, {
+      name: templateName,
+      blocks: classBlocks.value
+    });
+    if (!result.saved) {
+      statusMessage.value = "Enter a template name before saving.";
+      return;
+    }
+
+    classTemplates.value = result.templates;
+    persistClassTemplates(classTemplates.value);
+    statusMessage.value = result.updated
+      ? `Updated template "${result.template.name}".`
+      : `Saved template "${result.template.name}".`;
+  }
+
+  function loadClassTemplateById(templateId) {
+    const template = getClassTemplateById(classTemplates.value, templateId);
+    if (!template) {
+      statusMessage.value = "Template not found.";
+      return;
+    }
+
+    classBlocks.value = template.blocks.map((block) => ({ ...block }));
+    statusMessage.value = `Loaded template "${template.name}".`;
+  }
+
+  function deleteClassTemplateById(templateId) {
+    const existingCount = classTemplates.value.length;
+    classTemplates.value = removeClassTemplateById(classTemplates.value, templateId);
+    if (classTemplates.value.length === existingCount) {
+      statusMessage.value = "Template not found.";
+      return;
+    }
+
+    persistClassTemplates(classTemplates.value);
+    statusMessage.value = "Template deleted.";
+  }
+
   watch(
     [
       sessionMode,
@@ -251,7 +391,10 @@ export function useFigureSession() {
       classPresetId,
       classBlocks,
       classPhotoOrder,
-      avoidImmediateRepeats
+      avoidImmediateRepeats,
+      mirrorLiveView,
+      grayscaleLiveView,
+      hideLiveOverlay
     ],
     () => {
       persistSessionPreferences({
@@ -260,7 +403,10 @@ export function useFigureSession() {
         classPresetId: classPresetId.value,
         classBlocks: classBlocks.value,
         classPhotoOrder: classPhotoOrder.value,
-        avoidImmediateRepeats: avoidImmediateRepeats.value
+        avoidImmediateRepeats: avoidImmediateRepeats.value,
+        mirrorLiveView: mirrorLiveView.value,
+        grayscaleLiveView: grayscaleLiveView.value,
+        hideLiveOverlay: hideLiveOverlay.value
       });
     },
     {
@@ -281,8 +427,12 @@ export function useFigureSession() {
     classPresetOptions: CLASS_PRESET_OPTIONS,
     classPresetId,
     classBlocks,
+    classTemplates,
     classPhotoOrder,
     avoidImmediateRepeats,
+    mirrorLiveView,
+    grayscaleLiveView,
+    hideLiveOverlay,
     hasClassPlan,
     classTargetMinutes,
     classPoseCount,
@@ -313,6 +463,14 @@ export function useFigureSession() {
     removeClassBlock,
     setClassPhotoOrder,
     setAvoidImmediateRepeats,
+    toggleMirrorLiveView,
+    toggleGrayscaleLiveView,
+    toggleHideLiveOverlay,
+    exportSettingsJson,
+    importSettingsFromFile,
+    saveClassTemplateByName,
+    loadClassTemplateById,
+    deleteClassTemplateById,
     startFreshSession,
     togglePause,
     goToNextSlide,

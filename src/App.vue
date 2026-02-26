@@ -23,6 +23,7 @@
         :class-blocks="classBlocks"
         :class-photo-order="classPhotoOrder"
         :avoid-immediate-repeats="avoidImmediateRepeats"
+        :class-templates="classTemplates"
         :has-class-plan="hasClassPlan"
         :class-target-minutes="classTargetMinutes"
         :class-pose-count="classPoseCount"
@@ -37,12 +38,17 @@
         @session-mode-change="setSessionMode"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
+        @export-settings="exportSettingsJson"
+        @import-settings="importSettingsFromFile"
         @class-preset-change="setClassPreset"
         @class-block-update="updateClassBlock"
         @class-block-add="addClassBlock"
         @class-block-remove="removeClassBlock"
         @class-photo-order-change="setClassPhotoOrder"
         @class-repeat-toggle="setAvoidImmediateRepeats"
+        @class-template-save="saveClassTemplateByName"
+        @class-template-load="loadClassTemplateById"
+        @class-template-delete="deleteClassTemplateById"
         @start-session="startFreshSession"
         @new-random-set="createNewRandomSet"
       />
@@ -51,6 +57,9 @@
         v-else
         :session-mode="sessionMode"
         :duration-seconds="durationSeconds"
+        :mirror-live-view="mirrorLiveView"
+        :grayscale-live-view="grayscaleLiveView"
+        :hide-live-overlay="hideLiveOverlay"
         :is-running="isRunning"
         :is-paused="isPaused"
         :has-source-photos="hasSourcePhotos"
@@ -61,6 +70,9 @@
         :is-remote-connected="isHostRemoteConnected"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
+        @toggle-mirror-live-view="toggleMirrorLiveView"
+        @toggle-grayscale-live-view="toggleGrayscaleLiveView"
+        @toggle-hide-live-overlay="toggleHideLiveOverlay"
         @toggle-pause="togglePause"
         @next="goToNextSlide"
         @new-set="createNewRandomSet"
@@ -81,6 +93,9 @@
       :active-pose-label="activePoseLabel"
       :session-time-left-text="sessionTimeLeftText"
       :timer-fill-percent="timerFillPercent"
+      :mirror-live-view="mirrorLiveView"
+      :grayscale-live-view="grayscaleLiveView"
+      :hide-live-overlay="hideLiveOverlay"
     />
   </main>
 </template>
@@ -105,6 +120,10 @@ const {
   classBlocks,
   classPhotoOrder,
   avoidImmediateRepeats,
+  mirrorLiveView,
+  grayscaleLiveView,
+  hideLiveOverlay,
+  classTemplates,
   hasClassPlan,
   classTargetMinutes,
   classPoseCount,
@@ -135,6 +154,14 @@ const {
   removeClassBlock,
   setClassPhotoOrder,
   setAvoidImmediateRepeats,
+  toggleMirrorLiveView,
+  toggleGrayscaleLiveView,
+  toggleHideLiveOverlay,
+  exportSettingsJson,
+  importSettingsFromFile,
+  saveClassTemplateByName,
+  loadClassTemplateById,
+  deleteClassTemplateById,
   startFreshSession,
   togglePause,
   goToNextSlide,

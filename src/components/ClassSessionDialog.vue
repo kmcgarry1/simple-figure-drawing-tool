@@ -42,6 +42,7 @@
 
         <ClassPoseBlocksSection
           :class-blocks="classBlocks"
+          :available-photo-tags="availablePhotoTags"
           @class-block-update="$emit('class-block-update', $event)"
           @class-block-add="$emit('class-block-add')"
           @class-block-remove="$emit('class-block-remove', $event)"
@@ -52,6 +53,13 @@
           :avoid-immediate-repeats="avoidImmediateRepeats"
           @class-photo-order-change="$emit('class-photo-order-change', $event)"
           @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
+        />
+
+        <ClassTemplatesSection
+          :class-templates="classTemplates"
+          @class-template-save="$emit('class-template-save', $event)"
+          @class-template-load="$emit('class-template-load', $event)"
+          @class-template-delete="$emit('class-template-delete', $event)"
         />
 
         <div class="grid gap-1 rounded-md border border-slate-700 bg-slate-950/50 px-2.5 py-2 text-sm text-slate-300">
@@ -86,6 +94,7 @@ import BaseButton from "./BaseButton.vue";
 import ClassPhotoSequenceSection from "./classDialog/ClassPhotoSequenceSection.vue";
 import ClassPoseBlocksSection from "./classDialog/ClassPoseBlocksSection.vue";
 import ClassPresetSection from "./classDialog/ClassPresetSection.vue";
+import ClassTemplatesSection from "./classDialog/ClassTemplatesSection.vue";
 
 const FOCUSABLE_SELECTOR = [
   "a[href]:not([tabindex='-1'])",
@@ -113,12 +122,20 @@ const props = defineProps({
     type: Array,
     required: true
   },
+  availablePhotoTags: {
+    type: Array,
+    required: true
+  },
   classPhotoOrder: {
     type: String,
     required: true
   },
   avoidImmediateRepeats: {
     type: Boolean,
+    required: true
+  },
+  classTemplates: {
+    type: Array,
     required: true
   },
   hasClassPlan: {
@@ -163,6 +180,9 @@ const emit = defineEmits([
   "class-block-remove",
   "class-photo-order-change",
   "class-repeat-toggle",
+  "class-template-save",
+  "class-template-load",
+  "class-template-delete",
   "start-session",
   "new-random-set"
 ]);

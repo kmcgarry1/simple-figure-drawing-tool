@@ -1,6 +1,6 @@
 import { SESSION_PHOTO_LIMIT } from "../../config";
-import { expandClassBlocks, sanitizeClassBlocks } from "../../utils/classPlan";
-import { chooseRandomPhotos } from "../../utils/photoInput";
+import { sanitizeClassBlocks } from "../../utils/classPlan";
+import { chooseRandomPhotos, createPhotoId } from "../../utils/photoInput";
 import { PHOTO_ORDER_SEQUENTIAL } from "./constants";
 
 function createSlideFromPose(file, pose, index) {
@@ -13,34 +13,47 @@ function createSlideFromPose(file, pose, index) {
   };
 }
 
-function buildClassPhotoSequence({
-  sourcePhotos,
-  totalPoses,
+function buildPhotoSequenceForBlock({
+  eligiblePhotos,
+  poseCount,
   classPhotoOrder,
-  avoidImmediateRepeats
+  avoidImmediateRepeats,
+  previousPhoto
 }) {
-  if (sourcePhotos.length === 0 || totalPoses <= 0) {
+  if (eligiblePhotos.length === 0 || poseCount <= 0) {
     return [];
   }
 
   if (classPhotoOrder === PHOTO_ORDER_SEQUENTIAL) {
-    return Array.from({ length: totalPoses }, (_, index) => sourcePhotos[index % sourcePhotos.length]);
+    const startOffset =
+      avoidImmediateRepeats &&
+      previousPhoto &&
+      eligiblePhotos.length > 1 &&
+      eligiblePhotos[0] === previousPhoto
+        ? 1
+        : 0;
+
+    return Array.from(
+      { length: poseCount },
+      (_, index) => eligiblePhotos[(startOffset + index) % eligiblePhotos.length]
+    );
   }
 
   const sequence = [];
-  let shuffledPool = chooseRandomPhotos(sourcePhotos, sourcePhotos.length);
+  let shuffledPool = chooseRandomPhotos(eligiblePhotos, eligiblePhotos.length);
   let poolIndex = 0;
+  let lastPhoto = previousPhoto;
 
-  for (let poseIndex = 0; poseIndex < totalPoses; poseIndex += 1) {
+  for (let poseIndex = 0; poseIndex < poseCount; poseIndex += 1) {
     if (poolIndex >= shuffledPool.length) {
-      shuffledPool = chooseRandomPhotos(sourcePhotos, sourcePhotos.length);
+      shuffledPool = chooseRandomPhotos(eligiblePhotos, eligiblePhotos.length);
       poolIndex = 0;
     }
 
     let candidate = shuffledPool[poolIndex];
-    const previous = sequence.length > 0 ? sequence[sequence.length - 1] : null;
+    const previous = sequence.length > 0 ? sequence[sequence.length - 1] : lastPhoto;
 
-    if (avoidImmediateRepeats && previous && sourcePhotos.length > 1 && candidate === previous) {
+    if (avoidImmediateRepeats && previous && eligiblePhotos.length > 1 && candidate === previous) {
       const alternativeIndex = shuffledPool.findIndex(
         (photo, index) => index >= poolIndex && photo !== previous
       );
@@ -52,7 +65,7 @@ function buildClassPhotoSequence({
         ];
         candidate = shuffledPool[poolIndex];
       } else {
-        const replacementPool = chooseRandomPhotos(sourcePhotos, sourcePhotos.length);
+        const replacementPool = chooseRandomPhotos(eligiblePhotos, eligiblePhotos.length);
         if (replacementPool[0] && replacementPool[0] !== previous) {
           shuffledPool = replacementPool;
           poolIndex = 0;
@@ -62,10 +75,24 @@ function buildClassPhotoSequence({
     }
 
     sequence.push(candidate);
+    lastPhoto = candidate;
     poolIndex += 1;
   }
 
   return sequence;
+}
+
+function resolveEligiblePhotosForBlock({ sourcePhotos, photoTagsById, blockTag }) {
+  if (blockTag === "all") {
+    return sourcePhotos;
+  }
+
+  const eligible = sourcePhotos.filter((photo) => photoTagsById[createPhotoId(photo)] === blockTag);
+  if (eligible.length > 0) {
+    return eligible;
+  }
+
+  return sourcePhotos;
 }
 
 export function createQuickSlides(sourcePhotos, durationSeconds) {
@@ -92,21 +119,48 @@ export function createClassSlides({
   sourcePhotos,
   classBlocks,
   classPhotoOrder,
-  avoidImmediateRepeats
+  avoidImmediateRepeats,
+  photoTagsById = {}
 }) {
   const safeBlocks = sanitizeClassBlocks(classBlocks);
-  const poses = expandClassBlocks(safeBlocks);
-  const photoSequence = buildClassPhotoSequence({
-    sourcePhotos,
-    totalPoses: poses.length,
-    classPhotoOrder,
-    avoidImmediateRepeats
-  });
-  const slides = poses.map((pose, index) => createSlideFromPose(photoSequence[index], pose, index));
+  const slides = [];
+
+  let poseIndex = 0;
+  let previousPhoto = null;
+
+  for (const block of safeBlocks) {
+    const eligiblePhotos = resolveEligiblePhotosForBlock({
+      sourcePhotos,
+      photoTagsById,
+      blockTag: block.photoTag || "all"
+    });
+    const photoSequence = buildPhotoSequenceForBlock({
+      eligiblePhotos,
+      poseCount: block.poseCount,
+      classPhotoOrder,
+      avoidImmediateRepeats,
+      previousPhoto
+    });
+
+    for (const photo of photoSequence) {
+      slides.push(
+        createSlideFromPose(
+          photo,
+          {
+            label: block.label,
+            durationSeconds: block.durationSeconds
+          },
+          poseIndex
+        )
+      );
+      previousPhoto = photo;
+      poseIndex += 1;
+    }
+  }
 
   return {
     slides,
     safeBlocks,
-    poseCount: poses.length
+    poseCount: poseIndex
   };
 }

@@ -14,6 +14,7 @@ export function createSetPreparationController({
   classBlocks,
   classPhotoOrder,
   avoidImmediateRepeats,
+  photoTagsById,
   uploadNotice,
   hasSourcePhotos,
   classTotalMinutesText,
@@ -68,7 +69,8 @@ export function createSetPreparationController({
       sourcePhotos: sourcePhotos.value,
       classBlocks: classBlocks.value,
       classPhotoOrder: classPhotoOrder.value,
-      avoidImmediateRepeats: avoidImmediateRepeats.value
+      avoidImmediateRepeats: avoidImmediateRepeats.value,
+      photoTagsById: photoTagsById.value
     });
 
     classBlocks.value = safeBlocks;

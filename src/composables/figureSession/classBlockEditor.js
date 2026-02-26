@@ -3,7 +3,8 @@ import { sanitizeClassBlocks } from "../../utils/classPlan";
 const CUSTOM_BLOCK_TEMPLATE = Object.freeze({
   label: "Custom Block",
   durationSeconds: 120,
-  poseCount: 6
+  poseCount: 6,
+  photoTag: "all"
 });
 
 function parseMaybeInt(value) {
@@ -50,6 +51,13 @@ export function updateClassBlocks(blocks, { index, field, value }) {
       return {
         ...block,
         poseCount: parsed
+      };
+    }
+
+    if (field === "photoTag") {
+      return {
+        ...block,
+        photoTag: String(value ?? "").trim() || "all"
       };
     }
 

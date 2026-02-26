@@ -1,7 +1,7 @@
 <template>
   <section :class="stageClass" aria-live="polite">
     <SlideTimerOverlay
-      v-if="isSessionLive && currentSlideUrl"
+      v-if="isSessionLive && currentSlideUrl && !hideLiveOverlay"
       :slide-counter-text="slideCounterText"
       :time-left-text="timeLeftText"
       :active-pose-label="activePoseLabel"
@@ -10,7 +10,13 @@
     />
 
     <div :class="imageWrapClass">
-      <img v-if="currentSlideUrl" :class="imageClass" :src="currentSlideUrl" :alt="currentSlideAlt" />
+      <img
+        v-if="currentSlideUrl"
+        :class="imageClass"
+        :style="imageFilterStyle"
+        :src="currentSlideUrl"
+        :alt="currentSlideAlt"
+      />
       <p v-else class="m-4 text-center text-sm text-slate-400">{{ placeholderText }}</p>
     </div>
   </section>
@@ -56,6 +62,18 @@ const props = defineProps({
   timerFillPercent: {
     type: Number,
     required: true
+  },
+  mirrorLiveView: {
+    type: Boolean,
+    required: true
+  },
+  grayscaleLiveView: {
+    type: Boolean,
+    required: true
+  },
+  hideLiveOverlay: {
+    type: Boolean,
+    required: true
   }
 });
 
@@ -76,4 +94,20 @@ const imageClass = computed(() =>
     ? "block h-auto w-auto max-h-dvh max-w-screen object-contain object-center [image-orientation:from-image]"
     : "block h-auto w-auto max-h-full max-w-full object-contain object-center [image-orientation:from-image]"
 );
+
+const imageFilterStyle = computed(() => {
+  if (!props.isSessionLive) {
+    return {};
+  }
+
+  const transforms = [];
+  if (props.mirrorLiveView) {
+    transforms.push("scaleX(-1)");
+  }
+
+  return {
+    transform: transforms.length > 0 ? transforms.join(" ") : "none",
+    filter: props.grayscaleLiveView ? "grayscale(1)" : "none"
+  };
+});
 </script>

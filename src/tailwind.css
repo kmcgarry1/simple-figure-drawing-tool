@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+:root {
+  --fd-bg-ink: 3 9 24;
+  --fd-bg-deep: 11 39 50;
+  --fd-accent: 45 212 191;
+  --fd-accent-strong: 15 169 147;
+  --fd-warm: 245 158 11;
+  --fd-surface: 15 23 42;
+  --fd-surface-soft: 30 41 59;
+}
+
 html,
 body,
 #app {
@@ -8,9 +18,81 @@ body,
 
 body {
   margin: 0;
-  background-color: rgb(15 23 42);
+  background-color: rgb(var(--fd-bg-ink));
+  background-image:
+    radial-gradient(circle at 8% 14%, rgb(var(--fd-accent) / 0.22), transparent 34%),
+    radial-gradient(circle at 86% 9%, rgb(var(--fd-warm) / 0.16), transparent 33%),
+    linear-gradient(165deg, rgb(var(--fd-bg-ink)) 0%, rgb(var(--fd-bg-deep)) 100%);
   color: rgb(241 245 249);
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Avenir Next", Avenir, "Trebuchet MS", "Noto Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgb(148 163 184 / 0.04) 1px, transparent 1px),
+    linear-gradient(0deg, rgb(148 163 184 / 0.04) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(circle at center, black 32%, transparent 100%);
+}
+
+#app {
+  position: relative;
+  isolation: isolate;
+}
+
+.surface-panel {
+  border: 1px solid rgb(148 163 184 / 0.26);
+  background: linear-gradient(170deg, rgb(var(--fd-surface) / 0.9), rgb(var(--fd-surface-soft) / 0.86));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.04),
+    0 22px 45px rgb(2 6 23 / 0.42);
+  backdrop-filter: blur(5px);
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-in > * {
+  animation: fade-rise 260ms ease-out both;
+}
+
+.stagger-in > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.stagger-in > *:nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.stagger-in > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+
+.stagger-in > *:nth-child(5) {
+  animation-delay: 150ms;
+}
+
+.stagger-in > *:nth-child(n + 6) {
+  animation-delay: 180ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-in > * {
+    animation: none;
+  }
 }

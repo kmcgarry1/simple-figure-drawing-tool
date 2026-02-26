@@ -216,19 +216,19 @@ const {
 const shellClass = computed(() =>
   isSessionLive.value
     ? "relative min-h-dvh text-slate-100"
-    : "mx-auto my-4 grid w-[min(1240px,calc(100%-2rem))] gap-3 text-slate-100 max-[720px]:my-2 max-[720px]:w-[calc(100%-1rem)]"
+    : "relative mx-auto my-4 grid w-[min(1240px,calc(100%-2rem))] gap-4 text-slate-100 max-[720px]:my-2 max-[720px]:w-[calc(100%-1rem)]"
 );
 
 const workspaceClass = computed(() =>
   isSessionLive.value
     ? "contents"
-    : "grid gap-3 xl:grid-cols-[minmax(340px,420px)_1fr] xl:items-start"
+    : "grid gap-4 xl:grid-cols-[minmax(340px,420px)_1fr] xl:items-start"
 );
 
 const controlPanelClass = computed(() =>
   isSessionLive.value
-    ? "fixed bottom-2 left-2 z-30 w-[min(360px,calc(100vw-1rem))] rounded-lg border border-slate-500/40 bg-slate-800/90 p-2 backdrop-blur"
-    : "grid gap-3 rounded-xl border border-slate-700 bg-slate-800 p-4 max-[720px]:rounded-lg xl:sticky xl:top-4 xl:max-h-[calc(100dvh-2rem)] xl:overflow-y-auto"
+    ? "surface-panel fixed bottom-2 left-2 z-30 w-[min(360px,calc(100vw-1rem))] rounded-2xl p-2"
+    : "surface-panel grid gap-3 rounded-2xl p-4 max-[720px]:rounded-xl xl:sticky xl:top-4 xl:max-h-[calc(100dvh-2rem)] xl:overflow-y-auto"
 );
 
 if (!isRemoteClientView) {

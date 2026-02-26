@@ -21,6 +21,8 @@
         :class-preset-options="classPresetOptions"
         :class-preset-id="classPresetId"
         :class-blocks="classBlocks"
+        :tagged-photos="taggedPhotos"
+        :available-photo-tags="availablePhotoTags"
         :class-photo-order="classPhotoOrder"
         :avoid-immediate-repeats="avoidImmediateRepeats"
         :class-templates="classTemplates"
@@ -38,6 +40,7 @@
         @session-mode-change="setSessionMode"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
+        @photo-tag-update="updatePhotoTag"
         @export-settings="exportSettingsJson"
         @import-settings="importSettingsFromFile"
         @class-preset-change="setClassPreset"
@@ -118,6 +121,8 @@ const {
   classPresetOptions,
   classPresetId,
   classBlocks,
+  taggedPhotos,
+  availablePhotoTags,
   classPhotoOrder,
   avoidImmediateRepeats,
   mirrorLiveView,
@@ -168,6 +173,7 @@ const {
   createNewRandomSet,
   stopSession,
   applyDurationChange,
+  updatePhotoTag,
   handlePhotoSelection
 } = useFigureSession();
 

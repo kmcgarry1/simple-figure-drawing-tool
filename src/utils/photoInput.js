@@ -41,6 +41,13 @@ function randomInt(upperExclusive) {
   return Math.floor(Math.random() * upperExclusive);
 }
 
+export function createPhotoId(file) {
+  const safeName = String(file?.name ?? "").trim();
+  const safeSize = Number(file?.size) || 0;
+  const safeModified = Number(file?.lastModified) || 0;
+  return `${safeName}|${safeSize}|${safeModified}`;
+}
+
 export function clampDurationSeconds(value) {
   const parsed = Number.parseInt(String(value), 10);
   if (Number.isNaN(parsed)) {
@@ -85,7 +92,7 @@ export function normalizeUploadedPhotos(rawFiles) {
       continue;
     }
 
-    const fileKey = `${file.name}|${file.size}|${file.lastModified}`;
+    const fileKey = createPhotoId(file);
     if (seen.has(fileKey)) {
       rejectedDuplicate += 1;
       continue;

@@ -50,6 +50,9 @@ export function useFigureSession() {
   const avoidImmediateRepeats = ref(
     persistedPreferences.avoidImmediateRepeats
   );
+  const mirrorLiveView = ref(Boolean(persistedPreferences.mirrorLiveView));
+  const grayscaleLiveView = ref(Boolean(persistedPreferences.grayscaleLiveView));
+  const hideLiveOverlay = ref(Boolean(persistedPreferences.hideLiveOverlay));
 
   const remainingMs = ref(0);
   const activeSlideDurationMs = ref(0);
@@ -256,6 +259,18 @@ export function useFigureSession() {
     prepareActiveSet();
   }
 
+  function toggleMirrorLiveView() {
+    mirrorLiveView.value = !mirrorLiveView.value;
+  }
+
+  function toggleGrayscaleLiveView() {
+    grayscaleLiveView.value = !grayscaleLiveView.value;
+  }
+
+  function toggleHideLiveOverlay() {
+    hideLiveOverlay.value = !hideLiveOverlay.value;
+  }
+
   function getCurrentPreferences() {
     return {
       sessionMode: sessionMode.value,
@@ -376,7 +391,10 @@ export function useFigureSession() {
       classPresetId,
       classBlocks,
       classPhotoOrder,
-      avoidImmediateRepeats
+      avoidImmediateRepeats,
+      mirrorLiveView,
+      grayscaleLiveView,
+      hideLiveOverlay
     ],
     () => {
       persistSessionPreferences({
@@ -385,7 +403,10 @@ export function useFigureSession() {
         classPresetId: classPresetId.value,
         classBlocks: classBlocks.value,
         classPhotoOrder: classPhotoOrder.value,
-        avoidImmediateRepeats: avoidImmediateRepeats.value
+        avoidImmediateRepeats: avoidImmediateRepeats.value,
+        mirrorLiveView: mirrorLiveView.value,
+        grayscaleLiveView: grayscaleLiveView.value,
+        hideLiveOverlay: hideLiveOverlay.value
       });
     },
     {
@@ -409,6 +430,9 @@ export function useFigureSession() {
     classTemplates,
     classPhotoOrder,
     avoidImmediateRepeats,
+    mirrorLiveView,
+    grayscaleLiveView,
+    hideLiveOverlay,
     hasClassPlan,
     classTargetMinutes,
     classPoseCount,
@@ -439,6 +463,9 @@ export function useFigureSession() {
     removeClassBlock,
     setClassPhotoOrder,
     setAvoidImmediateRepeats,
+    toggleMirrorLiveView,
+    toggleGrayscaleLiveView,
+    toggleHideLiveOverlay,
     exportSettingsJson,
     importSettingsFromFile,
     saveClassTemplateByName,

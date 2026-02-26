@@ -42,6 +42,10 @@ function resolveClassBlocks(rawBlocks, fallbackPresetId) {
   return sanitizeClassBlocks(rawBlocks);
 }
 
+function normalizeBoolean(rawValue, fallback) {
+  return typeof rawValue === "boolean" ? rawValue : fallback;
+}
+
 function defaultPreferences() {
   const defaultPresetId = resolvePresetId();
   return {
@@ -50,7 +54,10 @@ function defaultPreferences() {
     classPresetId: defaultPresetId,
     classBlocks: createBlocksFromPreset(defaultPresetId),
     classPhotoOrder: PHOTO_ORDER_SHUFFLE,
-    avoidImmediateRepeats: true
+    avoidImmediateRepeats: true,
+    mirrorLiveView: false,
+    grayscaleLiveView: false,
+    hideLiveOverlay: false
   };
 }
 
@@ -64,10 +71,16 @@ export function normalizeSessionPreferences(rawPreferences) {
     classPresetId,
     classBlocks: resolveClassBlocks(rawPreferences?.classBlocks, classPresetId),
     classPhotoOrder: normalizePhotoOrder(rawPreferences?.classPhotoOrder),
-    avoidImmediateRepeats:
-      typeof rawPreferences?.avoidImmediateRepeats === "boolean"
-        ? rawPreferences.avoidImmediateRepeats
-        : defaults.avoidImmediateRepeats
+    avoidImmediateRepeats: normalizeBoolean(
+      rawPreferences?.avoidImmediateRepeats,
+      defaults.avoidImmediateRepeats
+    ),
+    mirrorLiveView: normalizeBoolean(rawPreferences?.mirrorLiveView, defaults.mirrorLiveView),
+    grayscaleLiveView: normalizeBoolean(
+      rawPreferences?.grayscaleLiveView,
+      defaults.grayscaleLiveView
+    ),
+    hideLiveOverlay: normalizeBoolean(rawPreferences?.hideLiveOverlay, defaults.hideLiveOverlay)
   };
 }
 

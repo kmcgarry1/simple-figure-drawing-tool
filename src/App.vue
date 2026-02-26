@@ -47,6 +47,9 @@
         v-else
         :session-mode="sessionMode"
         :duration-seconds="durationSeconds"
+        :mirror-live-view="mirrorLiveView"
+        :grayscale-live-view="grayscaleLiveView"
+        :hide-live-overlay="hideLiveOverlay"
         :is-running="isRunning"
         :is-paused="isPaused"
         :has-source-photos="hasSourcePhotos"
@@ -54,6 +57,9 @@
         :restart-label="restartActionLabel"
         @duration-input="updateDurationSeconds"
         @duration-change="applyDurationChange"
+        @toggle-mirror-live-view="toggleMirrorLiveView"
+        @toggle-grayscale-live-view="toggleGrayscaleLiveView"
+        @toggle-hide-live-overlay="toggleHideLiveOverlay"
         @toggle-pause="togglePause"
         @next="goToNextSlide"
         @new-set="createNewRandomSet"
@@ -71,6 +77,9 @@
       :active-pose-label="activePoseLabel"
       :session-time-left-text="sessionTimeLeftText"
       :timer-fill-percent="timerFillPercent"
+      :mirror-live-view="mirrorLiveView"
+      :grayscale-live-view="grayscaleLiveView"
+      :hide-live-overlay="hideLiveOverlay"
     />
   </main>
 </template>
@@ -93,6 +102,9 @@ const {
   classBlocks,
   classPhotoOrder,
   avoidImmediateRepeats,
+  mirrorLiveView,
+  grayscaleLiveView,
+  hideLiveOverlay,
   classTemplates,
   hasClassPlan,
   classTargetMinutes,
@@ -124,6 +136,9 @@ const {
   removeClassBlock,
   setClassPhotoOrder,
   setAvoidImmediateRepeats,
+  toggleMirrorLiveView,
+  toggleGrayscaleLiveView,
+  toggleHideLiveOverlay,
   exportSettingsJson,
   importSettingsFromFile,
   saveClassTemplateByName,

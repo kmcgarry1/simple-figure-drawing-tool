@@ -78,6 +78,7 @@
     :class-blocks="classBlocks"
     :class-photo-order="classPhotoOrder"
     :avoid-immediate-repeats="avoidImmediateRepeats"
+    :class-templates="classTemplates"
     :has-class-plan="hasClassPlan"
     :class-target-minutes="classTargetMinutes"
     :class-pose-count="classPoseCount"
@@ -93,6 +94,9 @@
     @class-block-remove="$emit('class-block-remove', $event)"
     @class-photo-order-change="$emit('class-photo-order-change', $event)"
     @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
+    @class-template-save="$emit('class-template-save', $event)"
+    @class-template-load="$emit('class-template-load', $event)"
+    @class-template-delete="$emit('class-template-delete', $event)"
     @start-session="$emit('start-session')"
     @new-random-set="$emit('new-random-set')"
   />
@@ -141,6 +145,10 @@ const props = defineProps({
   },
   avoidImmediateRepeats: {
     type: Boolean,
+    required: true
+  },
+  classTemplates: {
+    type: Array,
     required: true
   },
   hasClassPlan: {
@@ -196,6 +204,9 @@ const emit = defineEmits([
   "class-block-remove",
   "class-photo-order-change",
   "class-repeat-toggle",
+  "class-template-save",
+  "class-template-load",
+  "class-template-delete",
   "start-session",
   "new-random-set"
 ]);

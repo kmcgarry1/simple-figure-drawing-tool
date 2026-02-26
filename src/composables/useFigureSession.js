@@ -269,6 +269,8 @@ export function useFigureSession() {
 
   function toggleHideLiveOverlay() {
     hideLiveOverlay.value = !hideLiveOverlay.value;
+  }
+
   function getCurrentPreferences() {
     return {
       sessionMode: sessionMode.value,

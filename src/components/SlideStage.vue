@@ -80,7 +80,7 @@ const props = defineProps({
 const stageClass = computed(() =>
   props.isSessionLive
     ? "fixed inset-0 z-10 h-dvh w-screen overflow-hidden bg-black"
-    : "relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 max-[720px]:rounded-lg"
+    : "relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 max-[720px]:rounded-lg xl:sticky xl:top-4"
 );
 
 const imageWrapClass = computed(() =>

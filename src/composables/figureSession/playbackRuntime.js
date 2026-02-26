@@ -19,7 +19,9 @@ export function createPlaybackRuntime({
   isRunning,
   isPaused,
   activeSlide,
-  slideCounterText
+  slideCounterText,
+  onCountdownCue,
+  onSlideCompleteCue
 }) {
   let slideTimeoutId = null;
   let tickIntervalId = null;
@@ -111,6 +113,7 @@ export function createPlaybackRuntime({
     const delay = Math.max(1, remainingMs.value);
     remainingMs.value = delay;
     deadline = Date.now() + delay;
+    let lastCountdownSecond = null;
 
     slideTimeoutId = setTimeout(() => {
       advanceSlide();
@@ -118,6 +121,14 @@ export function createPlaybackRuntime({
 
     tickIntervalId = setInterval(() => {
       remainingMs.value = Math.max(0, deadline - Date.now());
+      const secondsLeft = Math.ceil(remainingMs.value / 1000);
+      const shouldPlayCountdownCue = secondsLeft > 0 && secondsLeft <= 3;
+      if (shouldPlayCountdownCue && secondsLeft !== lastCountdownSecond) {
+        onCountdownCue?.(secondsLeft);
+        lastCountdownSecond = secondsLeft;
+      } else if (!shouldPlayCountdownCue) {
+        lastCountdownSecond = null;
+      }
     }, 100);
   }
 
@@ -157,6 +168,8 @@ export function createPlaybackRuntime({
     if (!isRunning.value) {
       return;
     }
+
+    onSlideCompleteCue?.();
 
     if (currentIndex.value >= sessionSlides.value.length - 1) {
       finishSession();

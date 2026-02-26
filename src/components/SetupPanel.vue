@@ -23,29 +23,6 @@
     </div>
   </section>
 
-  <PhotoTagManagerSection
-    v-if="taggedPhotos.length > 0"
-    :tagged-photos="taggedPhotos"
-    :available-photo-tags="availablePhotoTags"
-    @photo-tag-update="$emit('photo-tag-update', $event)"
-  />
-
-  <section class="grid gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-    <p class="text-sm font-semibold text-slate-100">Settings Transfer</p>
-    <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-      <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
-      <label class="grid gap-1 text-xs text-slate-300">
-        <span>Import JSON</span>
-        <input
-          type="file"
-          accept="application/json,.json"
-          class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-xs text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-          @change="onImportSettingsSelected"
-        />
-      </label>
-    </div>
-  </section>
-
   <section v-if="sessionMode === 'quick'" class="grid gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
     <p class="text-sm font-semibold text-slate-100">2. Quick Session</p>
     <DurationInput
@@ -125,7 +102,46 @@
     @new-random-set="$emit('new-random-set')"
   />
 
-  <SessionHistorySection :session-history="sessionHistory" @clear-history="$emit('clear-history')" />
+  <section class="grid gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
+    <div class="flex items-center justify-between gap-2">
+      <div class="grid gap-0.5">
+        <p class="text-sm font-semibold text-slate-100">Advanced Tools</p>
+        <p class="text-xs text-slate-400">
+          Tags, templates, import/export, and session history.
+        </p>
+      </div>
+      <BaseButton compact tone="subtle" @click="toggleAdvancedTools">
+        {{ isAdvancedToolsOpen ? "Hide" : "Show" }}
+      </BaseButton>
+    </div>
+
+    <div v-if="isAdvancedToolsOpen" class="grid gap-3">
+      <PhotoTagManagerSection
+        v-if="taggedPhotos.length > 0"
+        :tagged-photos="taggedPhotos"
+        :available-photo-tags="availablePhotoTags"
+        @photo-tag-update="$emit('photo-tag-update', $event)"
+      />
+
+      <section class="grid gap-2 rounded-md border border-slate-700 bg-slate-950/40 p-2.5">
+        <p class="text-sm font-semibold text-slate-100">Settings Transfer</p>
+        <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
+          <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
+          <label class="grid gap-1 text-xs text-slate-300">
+            <span>Import JSON</span>
+            <input
+              type="file"
+              accept="application/json,.json"
+              class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-xs text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              @change="onImportSettingsSelected"
+            />
+          </label>
+        </div>
+      </section>
+
+      <SessionHistorySection :session-history="sessionHistory" @clear-history="$emit('clear-history')" />
+    </div>
+  </section>
 
   <div class="grid gap-1">
     <p class="text-sm text-slate-400" role="status" aria-live="polite">{{ statusMessage }}</p>
@@ -277,6 +293,7 @@ function modeTone(mode) {
 }
 
 const isClassDialogOpen = ref(false);
+const isAdvancedToolsOpen = ref(false);
 
 watch(
   () => props.sessionMode,
@@ -298,5 +315,9 @@ function openClassDialog() {
 
 function closeClassDialog() {
   isClassDialogOpen.value = false;
+}
+
+function toggleAdvancedTools() {
+  isAdvancedToolsOpen.value = !isAdvancedToolsOpen.value;
 }
 </script>

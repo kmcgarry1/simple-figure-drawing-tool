@@ -219,7 +219,7 @@ const shellClass = computed(() =>
 
 const controlPanelClass = computed(() =>
   isSessionLive.value
-    ? "fixed bottom-2 left-2 z-30 w-[min(230px,calc(100vw-1rem))] rounded-lg border border-slate-500/40 bg-slate-800/90 p-2 backdrop-blur"
+    ? "fixed bottom-2 left-2 z-30 w-[min(360px,calc(100vw-1rem))] rounded-lg border border-slate-500/40 bg-slate-800/90 p-2 backdrop-blur"
     : "grid gap-3 rounded-xl border border-slate-700 bg-slate-800 p-4 max-[720px]:rounded-lg"
 );
 

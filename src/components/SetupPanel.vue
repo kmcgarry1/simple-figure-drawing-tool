@@ -23,6 +23,29 @@
     </div>
   </section>
 
+  <PhotoTagManagerSection
+    v-if="taggedPhotos.length > 0"
+    :tagged-photos="taggedPhotos"
+    :available-photo-tags="availablePhotoTags"
+    @photo-tag-update="$emit('photo-tag-update', $event)"
+  />
+
+  <section class="grid gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
+    <p class="text-sm font-semibold text-slate-100">Settings Transfer</p>
+    <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
+      <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
+      <label class="grid gap-1 text-xs text-slate-300">
+        <span>Import JSON</span>
+        <input
+          type="file"
+          accept="application/json,.json"
+          class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-xs text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+          @change="onImportSettingsSelected"
+        />
+      </label>
+    </div>
+  </section>
+
   <section v-if="sessionMode === 'quick'" class="grid gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
     <p class="text-sm font-semibold text-slate-100">2. Quick Session</p>
     <DurationInput
@@ -76,8 +99,10 @@
     :class-preset-options="classPresetOptions"
     :class-preset-id="classPresetId"
     :class-blocks="classBlocks"
+    :available-photo-tags="availablePhotoTags"
     :class-photo-order="classPhotoOrder"
     :avoid-immediate-repeats="avoidImmediateRepeats"
+    :class-templates="classTemplates"
     :has-class-plan="hasClassPlan"
     :class-target-minutes="classTargetMinutes"
     :class-pose-count="classPoseCount"
@@ -93,9 +118,14 @@
     @class-block-remove="$emit('class-block-remove', $event)"
     @class-photo-order-change="$emit('class-photo-order-change', $event)"
     @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
+    @class-template-save="$emit('class-template-save', $event)"
+    @class-template-load="$emit('class-template-load', $event)"
+    @class-template-delete="$emit('class-template-delete', $event)"
     @start-session="$emit('start-session')"
     @new-random-set="$emit('new-random-set')"
   />
+
+  <SessionHistorySection :session-history="sessionHistory" @clear-history="$emit('clear-history')" />
 
   <div class="grid gap-1">
     <p class="text-sm text-slate-400" role="status" aria-live="polite">{{ statusMessage }}</p>
@@ -109,6 +139,8 @@ import { ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
 import ClassSessionDialog from "./ClassSessionDialog.vue";
 import DurationInput from "./DurationInput.vue";
+import PhotoTagManagerSection from "./PhotoTagManagerSection.vue";
+import SessionHistorySection from "./SessionHistorySection.vue";
 
 const props = defineProps({
   sessionMode: {
@@ -135,12 +167,24 @@ const props = defineProps({
     type: Array,
     required: true
   },
+  taggedPhotos: {
+    type: Array,
+    required: true
+  },
+  availablePhotoTags: {
+    type: Array,
+    required: true
+  },
   classPhotoOrder: {
     type: String,
     required: true
   },
   avoidImmediateRepeats: {
     type: Boolean,
+    required: true
+  },
+  classTemplates: {
+    type: Array,
     required: true
   },
   hasClassPlan: {
@@ -175,6 +219,10 @@ const props = defineProps({
     type: Boolean,
     required: true
   },
+  sessionHistory: {
+    type: Array,
+    required: true
+  },
   statusMessage: {
     type: String,
     required: true
@@ -190,18 +238,34 @@ const emit = defineEmits([
   "session-mode-change",
   "duration-input",
   "duration-change",
+  "photo-tag-update",
+  "export-settings",
+  "import-settings",
   "class-preset-change",
   "class-block-update",
   "class-block-add",
   "class-block-remove",
   "class-photo-order-change",
   "class-repeat-toggle",
+  "class-template-save",
+  "class-template-load",
+  "class-template-delete",
   "start-session",
-  "new-random-set"
+  "new-random-set",
+  "clear-history"
 ]);
 
 function onPhotosSelected(event) {
   emit("photos-selected", event.target?.files || []);
+
+  if (event.target instanceof HTMLInputElement) {
+    event.target.value = "";
+  }
+}
+
+function onImportSettingsSelected(event) {
+  const file = event.target?.files?.[0] || null;
+  emit("import-settings", file);
 
   if (event.target instanceof HTMLInputElement) {
     event.target.value = "";

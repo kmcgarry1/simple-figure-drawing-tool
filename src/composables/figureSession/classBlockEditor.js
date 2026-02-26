@@ -4,7 +4,7 @@ const CUSTOM_BLOCK_TEMPLATE = Object.freeze({
   label: "Custom Block",
   durationSeconds: 120,
   poseCount: 6,
-  breakAfterSeconds: 0
+  photoTag: "all"
 });
 
 function parseMaybeInt(value) {
@@ -54,14 +54,10 @@ export function updateClassBlocks(blocks, { index, field, value }) {
       };
     }
 
-    if (field === "breakAfterSeconds") {
-      const parsed = parseMaybeInt(value);
-      if (parsed === null) {
-        return { ...block };
-      }
+    if (field === "photoTag") {
       return {
         ...block,
-        breakAfterSeconds: parsed
+        photoTag: String(value ?? "").trim() || "all"
       };
     }
 

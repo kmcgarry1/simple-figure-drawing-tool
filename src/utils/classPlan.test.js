@@ -20,7 +20,7 @@ describe("sanitizeClassBlocks", () => {
         label: "Custom Block",
         durationSeconds: 120,
         poseCount: 1,
-        breakAfterSeconds: 0
+        photoTag: "all"
       }
     ]);
   });
@@ -29,14 +29,13 @@ describe("sanitizeClassBlocks", () => {
 describe("calculateClassPlanSummary", () => {
   it("returns total poses and total seconds", () => {
     const summary = calculateClassPlanSummary([
-      { label: "Gesture", durationSeconds: 30, poseCount: 4, breakAfterSeconds: 300 },
+      { label: "Gesture", durationSeconds: 30, poseCount: 4 },
       { label: "Long Pose", durationSeconds: 300, poseCount: 2 }
     ]);
 
     expect(summary).toEqual({
       totalPoses: 6,
-      totalSeconds: 1020,
-      totalBreakSeconds: 300
+      totalSeconds: 720
     });
   });
 });

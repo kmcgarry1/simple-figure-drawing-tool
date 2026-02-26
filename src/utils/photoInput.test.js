@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   clampDurationSeconds,
+  createPhotoId,
   normalizeUploadedPhotos
 } from "./photoInput";
 import {
@@ -76,5 +77,17 @@ describe("normalizeUploadedPhotos", () => {
 
     expect(photos).toHaveLength(0);
     expect(notices.join(" ")).toContain("unsupported image type");
+  });
+});
+
+describe("createPhotoId", () => {
+  it("creates a stable id from file metadata", () => {
+    const photoId = createPhotoId({
+      name: "pose-1.jpg",
+      size: 1024,
+      lastModified: 42
+    });
+
+    expect(photoId).toBe("pose-1.jpg|1024|42");
   });
 });

@@ -2,7 +2,7 @@
   <label
     :class="[
       'grid',
-      compact ? 'gap-1 text-[11px] text-slate-300' : 'gap-1.5 text-sm text-slate-200'
+      compact ? 'gap-1 text-[11px] text-stone-600' : 'gap-1.5 text-sm text-stone-700'
     ]"
     :for="id"
   >
@@ -13,7 +13,7 @@
       :min="min"
       :max="max"
       :value="value"
-      class="w-full rounded-md border border-slate-600 bg-slate-900 text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+      class="fd-input w-full rounded-md"
       :class="compact ? 'px-2 py-1.5 text-sm' : 'px-2.5 py-2 text-sm'"
       @input="onInput"
       @change="$emit('commit')"

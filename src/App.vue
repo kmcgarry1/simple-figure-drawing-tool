@@ -10,7 +10,11 @@
   />
 
   <main v-else :class="shellClass">
-    <AppHeader v-if="!isSessionLive" />
+    <AppHeader
+      v-if="!isSessionLive"
+      :theme-mode="themeMode"
+      @toggle-theme="toggleThemeMode"
+    />
 
     <section :class="workspaceClass">
       <section :class="controlPanelClass">
@@ -119,6 +123,7 @@ import SlideStage from "./components/SlideStage.vue";
 import { usePhoneRemoteClient, usePhoneRemoteHost } from "./composables/usePhoneRemote";
 import { useFigureSession } from "./composables/useFigureSession";
 import { useLiveKeyboardShortcuts } from "./composables/useLiveKeyboardShortcuts";
+import { useThemeMode } from "./composables/useThemeMode";
 
 const {
   fileInputAccept,
@@ -216,10 +221,12 @@ const {
   disconnectClientRemote
 } = usePhoneRemoteClient();
 
+const { themeMode, toggleThemeMode } = useThemeMode();
+
 const shellClass = computed(() =>
   isSessionLive.value
-    ? "relative min-h-dvh text-slate-100"
-    : "relative mx-auto my-5 grid w-[min(980px,calc(100%-2rem))] gap-5 text-slate-100 max-[720px]:my-3 max-[720px]:w-[calc(100%-1rem)]"
+    ? "relative min-h-dvh text-[rgb(var(--fd-ink))]"
+    : "relative mx-auto my-5 grid w-[min(980px,calc(100%-2rem))] gap-5 text-[rgb(var(--fd-ink))] max-[720px]:my-3 max-[720px]:w-[calc(100%-1rem)]"
 );
 
 const workspaceClass = computed(() =>

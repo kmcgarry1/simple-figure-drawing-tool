@@ -1,17 +1,17 @@
 <template>
-  <main class="mx-auto my-3 grid w-[min(640px,calc(100%-1rem))] gap-3 rounded-xl border border-slate-700 bg-slate-800 p-4 text-slate-100">
+  <main class="surface-panel mx-auto my-3 grid w-[min(640px,calc(100%-1rem))] gap-3 rounded-xl p-4 text-stone-800">
     <header class="grid gap-1">
       <h1 class="text-lg font-semibold">Phone Remote Control</h1>
-      <p class="text-sm text-slate-300">{{ remoteStatus }}</p>
+      <p class="text-sm text-stone-600">{{ remoteStatus }}</p>
     </header>
 
-    <label class="grid gap-1 text-sm text-slate-200" for="desktopOfferToken">
+    <label class="grid gap-1 text-sm text-stone-700" for="desktopOfferToken">
       <span>Desktop Offer Token</span>
       <textarea
         id="desktopOfferToken"
         v-model.trim="desktopOfferToken"
         rows="5"
-        class="w-full rounded-md border border-slate-600 bg-slate-900 px-2.5 py-2 text-xs text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+        class="fd-input w-full rounded-md px-2.5 py-2 text-xs"
       />
     </label>
 
@@ -19,19 +19,19 @@
       Generate Answer Token
     </BaseButton>
 
-    <label v-if="answerToken" class="grid gap-1 text-sm text-slate-200" for="phoneAnswerToken">
+    <label v-if="answerToken" class="grid gap-1 text-sm text-stone-700" for="phoneAnswerToken">
       <span>Answer Token (paste this on desktop)</span>
       <textarea
         id="phoneAnswerToken"
         readonly
         :value="answerToken"
         rows="5"
-        class="w-full rounded-md border border-slate-600 bg-slate-950 px-2.5 py-2 text-xs text-slate-100"
+        class="fd-input w-full rounded-md px-2.5 py-2 text-xs"
       />
     </label>
 
-    <section class="grid gap-2 rounded-md border border-slate-700 bg-slate-900/60 p-3">
-      <p class="text-sm font-medium text-slate-100">Remote Controls</p>
+    <section class="fd-card grid gap-2 rounded-md p-3">
+      <p class="text-sm font-medium text-stone-800">Remote Controls</p>
       <div class="grid grid-cols-3 gap-2 max-[480px]:grid-cols-1">
         <BaseButton :disabled="!isRemoteConnected" @click="$emit('send-command', 'toggle-pause')">
           Pause / Resume

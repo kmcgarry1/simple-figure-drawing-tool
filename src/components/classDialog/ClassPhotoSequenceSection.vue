@@ -1,6 +1,6 @@
 <template>
   <div class="grid gap-2">
-    <p class="text-xs uppercase tracking-wide text-slate-400">Photo Sequence</p>
+    <p class="fd-section-label">Photo Sequence</p>
     <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
       <BaseButton compact :tone="photoOrderTone('shuffle')" @click="$emit('class-photo-order-change', 'shuffle')">
         Shuffle Photos
@@ -13,10 +13,10 @@
         Upload Order
       </BaseButton>
     </div>
-    <label class="inline-flex items-center gap-2 text-sm text-slate-300">
+    <label class="inline-flex items-center gap-2 text-sm text-stone-600">
       <input
         type="checkbox"
-        class="h-4 w-4 rounded border-slate-600 bg-slate-900 text-sky-500 focus-visible:ring-sky-400"
+        class="h-4 w-4 rounded border-amber-300/90 bg-white text-sky-500 focus-visible:ring-sky-300/80"
         :checked="avoidImmediateRepeats"
         :disabled="classPhotoOrder === 'sequential'"
         @change="onRepeatToggle"

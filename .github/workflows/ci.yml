@@ -24,7 +24,7 @@ jobs:
         run: npm ci
 
       - name: Dependency audit
-        run: npm audit --audit-level=high
+        run: npm run audit:high
 
       - name: Lint
         run: npm run lint
@@ -57,6 +57,9 @@ jobs:
 
       - name: E2E smoke tests
         run: npm run e2e
+
+      - name: E2E accessibility checks
+        run: npm run e2e:a11y
 
       - name: Upload Playwright report
         if: always()

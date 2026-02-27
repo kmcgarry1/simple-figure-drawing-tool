@@ -22,7 +22,29 @@ function parseOverlaySeconds(overlayText) {
 }
 
 async function openSetupWizard(page) {
-  await page.getByRole("button", { name: /Setup Wizard/ }).click();
+  const wizard = wizardDialog(page);
+  const anyModalDialog = page.locator('[role="dialog"][aria-modal="true"]');
+  if (
+    (await wizard.isVisible({ timeout: 1500 }).catch(() => false)) ||
+    (await anyModalDialog.isVisible({ timeout: 1500 }).catch(() => false))
+  ) {
+    return;
+  }
+
+  const trigger = page.getByRole("button", { name: /Setup Wizard/ });
+  try {
+    await trigger.click({ timeout: 1500 });
+  } catch (error) {
+    if (
+      (await wizard.isVisible({ timeout: 1500 }).catch(() => false)) ||
+      (await anyModalDialog.isVisible({ timeout: 1500 }).catch(() => false))
+    ) {
+      return;
+    }
+    throw error;
+  }
+
+  await expect(wizard).toBeVisible();
 }
 
 function wizardDialog(page) {

@@ -1,6 +1,10 @@
 import {
+  buildSettingsShareUrl,
   createSettingsExportPayload,
-  parseSettingsImportText
+  createSettingsShareToken,
+  parseSettingsImportText,
+  parseSettingsShareToken,
+  readSettingsShareTokenFromSearch
 } from "./settingsTransfer";
 
 export function createSettingsTransferActions({
@@ -11,6 +15,8 @@ export function createSettingsTransferActions({
   classPhotoOrder,
   avoidImmediateRepeats,
   photoTagsById,
+  audioMuted,
+  audioVolumePercent,
   hasSourcePhotos,
   isSessionLive,
   phase,
@@ -21,6 +27,19 @@ export function createSettingsTransferActions({
   sessionSlides,
   prepareActiveSet
 }) {
+  async function writeClipboardText(rawText) {
+    if (typeof navigator === "undefined" || typeof navigator.clipboard?.writeText !== "function") {
+      return false;
+    }
+
+    try {
+      await navigator.clipboard.writeText(String(rawText || ""));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function getCurrentPreferences() {
     return {
       sessionMode: sessionMode.value,
@@ -29,8 +48,32 @@ export function createSettingsTransferActions({
       classBlocks: classBlocks.value,
       classPhotoOrder: classPhotoOrder.value,
       avoidImmediateRepeats: avoidImmediateRepeats.value,
-      photoTagsById: photoTagsById.value
+      photoTagsById: photoTagsById.value,
+      audioMuted: audioMuted.value,
+      audioVolumePercent: audioVolumePercent.value
     };
+  }
+
+  function applyImportedPreferences(importedPreferences, successMessage) {
+    sessionMode.value = importedPreferences.sessionMode;
+    durationSeconds.value = importedPreferences.durationSeconds;
+    classPresetId.value = importedPreferences.classPresetId;
+    classBlocks.value = importedPreferences.classBlocks;
+    classPhotoOrder.value = importedPreferences.classPhotoOrder;
+    avoidImmediateRepeats.value = importedPreferences.avoidImmediateRepeats;
+    photoTagsById.value = importedPreferences.photoTagsById;
+    audioMuted.value = importedPreferences.audioMuted;
+    audioVolumePercent.value = importedPreferences.audioVolumePercent;
+
+    resetPreparedSession();
+
+    if (hasSourcePhotos.value) {
+      prepareActiveSet();
+    } else {
+      phase.value = "idle";
+    }
+
+    statusMessage.value = successMessage;
   }
 
   function resetPreparedSession() {
@@ -77,31 +120,87 @@ export function createSettingsTransferActions({
     try {
       const importedText = await file.text();
       const importedPreferences = parseSettingsImportText(importedText);
-
-      sessionMode.value = importedPreferences.sessionMode;
-      durationSeconds.value = importedPreferences.durationSeconds;
-      classPresetId.value = importedPreferences.classPresetId;
-      classBlocks.value = importedPreferences.classBlocks;
-      classPhotoOrder.value = importedPreferences.classPhotoOrder;
-      avoidImmediateRepeats.value = importedPreferences.avoidImmediateRepeats;
-      photoTagsById.value = importedPreferences.photoTagsById;
-
-      resetPreparedSession();
-
-      if (hasSourcePhotos.value) {
-        prepareActiveSet();
-      } else {
-        phase.value = "idle";
-      }
-
-      statusMessage.value = "Settings imported from JSON.";
+      applyImportedPreferences(importedPreferences, "Settings imported from JSON.");
     } catch {
       statusMessage.value = "Unable to import settings file.";
     }
   }
 
+  async function copySettingsShareLink() {
+    if (typeof window === "undefined") {
+      statusMessage.value = "Share links are only available in the browser.";
+      return;
+    }
+
+    try {
+      const shareToken = createSettingsShareToken(getCurrentPreferences());
+      const shareUrl = buildSettingsShareUrl({
+        currentUrl: window.location.href,
+        shareToken
+      });
+      if (!shareUrl) {
+        statusMessage.value = "Unable to generate a share link.";
+        return;
+      }
+
+      const copied = await writeClipboardText(shareUrl);
+      statusMessage.value = copied
+        ? "Share link copied."
+        : "Clipboard unavailable. Use Export JSON instead.";
+    } catch {
+      statusMessage.value = "Unable to generate a share link.";
+    }
+  }
+
+  function clearShareTokenFromCurrentUrl() {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("share")) {
+      return;
+    }
+
+    url.searchParams.delete("share");
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${url.pathname}${url.search}${url.hash}`
+    );
+  }
+
+  function applySettingsFromShareUrl() {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    const shareToken = readSettingsShareTokenFromSearch(window.location.search);
+    if (!shareToken) {
+      return false;
+    }
+
+    if (isSessionLive.value) {
+      statusMessage.value = "End the current run before importing a shared configuration link.";
+      return false;
+    }
+
+    try {
+      const importedPreferences = parseSettingsShareToken(shareToken);
+      applyImportedPreferences(importedPreferences, "Settings loaded from shared link.");
+      clearShareTokenFromCurrentUrl();
+      return true;
+    } catch {
+      statusMessage.value = "Shared configuration link is invalid.";
+      clearShareTokenFromCurrentUrl();
+      return false;
+    }
+  }
+
   return {
     exportSettingsJson,
-    importSettingsFromFile
+    importSettingsFromFile,
+    copySettingsShareLink,
+    applySettingsFromShareUrl
   };
 }

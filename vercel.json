@@ -6,7 +6,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' blob: data:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com; connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com https://*.ingest.sentry.io; upgrade-insecure-requests"
+          "value": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' blob: data:; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com; connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com https://*.ingest.sentry.io; upgrade-insecure-requests"
         },
         {
           "key": "X-Content-Type-Options",

@@ -46,6 +46,15 @@ function normalizeBoolean(rawValue, fallback) {
   return typeof rawValue === "boolean" ? rawValue : fallback;
 }
 
+function normalizeAudioVolumePercent(rawValue, fallback) {
+  const parsedValue = Number(rawValue);
+  if (!Number.isFinite(parsedValue)) {
+    return fallback;
+  }
+
+  return Math.min(100, Math.max(0, Math.round(parsedValue)));
+}
+
 function normalizePhotoTag(rawTag) {
   return String(rawTag ?? "").trim();
 }
@@ -82,7 +91,9 @@ function defaultPreferences() {
     photoTagsById: {},
     mirrorLiveView: false,
     grayscaleLiveView: false,
-    hideLiveOverlay: false
+    hideLiveOverlay: false,
+    audioMuted: false,
+    audioVolumePercent: 60
   };
 }
 
@@ -106,7 +117,12 @@ export function normalizeSessionPreferences(rawPreferences) {
       rawPreferences?.grayscaleLiveView,
       defaults.grayscaleLiveView
     ),
-    hideLiveOverlay: normalizeBoolean(rawPreferences?.hideLiveOverlay, defaults.hideLiveOverlay)
+    hideLiveOverlay: normalizeBoolean(rawPreferences?.hideLiveOverlay, defaults.hideLiveOverlay),
+    audioMuted: normalizeBoolean(rawPreferences?.audioMuted, defaults.audioMuted),
+    audioVolumePercent: normalizeAudioVolumePercent(
+      rawPreferences?.audioVolumePercent,
+      defaults.audioVolumePercent
+    )
   };
 }
 
@@ -129,13 +145,15 @@ export function loadSessionPreferences() {
 
 export function persistSessionPreferences(preferences) {
   if (!canUseStorage()) {
-    return;
+    return false;
   }
 
   try {
     const normalized = normalizeSessionPreferences(preferences);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    return true;
   } catch {
     // Ignore storage write failures to avoid interrupting session flow.
+    return false;
   }
 }

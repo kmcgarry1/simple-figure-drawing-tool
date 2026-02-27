@@ -80,6 +80,8 @@
             :regenerate-action-label="regenerateActionLabel"
             :has-source-photos="hasSourcePhotos"
             :can-start-session="canStartSession"
+            :session-preview-items="sessionPreviewItems"
+            :session-preview-summary-text="sessionPreviewSummaryText"
             @session-mode-change="$emit('session-mode-change', $event)"
             @duration-input="$emit('duration-input', $event)"
             @duration-change="$emit('duration-change')"
@@ -96,6 +98,7 @@
             @photo-tag-update="$emit('photo-tag-update', $event)"
             @photo-reorder="$emit('photo-reorder', $event)"
             @export-settings="$emit('export-settings')"
+            @share-settings-link="$emit('share-settings-link')"
             @import-settings="onImportSettingsSelected"
             @clear-history="$emit('clear-history')"
           />
@@ -123,7 +126,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import BaseButton from "../BaseButton.vue";
 import { setupPanelProps } from "./setupPanelContract";
 import SetupWizardStepAdvanced from "./SetupWizardStepAdvanced.vue";
@@ -148,11 +151,13 @@ const emit = defineEmits([
   "photo-tag-update",
   "photo-reorder",
   "export-settings",
+  "share-settings-link",
   "import-settings",
   "start-session",
   "new-random-set",
   "clear-history",
-  "open-class-dialog"
+  "open-class-dialog",
+  "wizard-step-change"
 ]);
 
 const {
@@ -211,6 +216,18 @@ function startSessionFromWizard() {
   emit("start-session");
   closeWizard();
 }
+
+watch(
+  [wizardStep, isWizardOpen],
+  ([nextStep, nextIsOpen]) => {
+    if (!nextIsOpen) {
+      return;
+    }
+
+    emit("wizard-step-change", nextStep);
+  },
+  { immediate: true }
+);
 
 defineExpose({
   openWizard,

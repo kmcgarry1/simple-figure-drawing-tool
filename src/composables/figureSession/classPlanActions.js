@@ -1,4 +1,8 @@
-import { createBlocksFromPreset, getClassPresetById } from "../../utils/classPlan";
+import {
+  buildGuidedClassBlocks,
+  createBlocksFromPreset,
+  getClassPresetById
+} from "../../utils/classPlan";
 import {
   appendClassBlock,
   removeClassBlock as removeClassBlockByIndex,
@@ -15,6 +19,7 @@ export function createClassPlanActions({
   classBlocks,
   classPhotoOrder,
   avoidImmediateRepeats,
+  availablePhotoTags,
   sessionMode,
   isSessionLive,
   statusMessage
@@ -37,11 +42,14 @@ export function createClassPlanActions({
     }
   }
 
-  function addClassBlock() {
-    classBlocks.value = appendClassBlock(classBlocks.value);
+  function addClassBlock(blockType = "pose") {
+    classBlocks.value = appendClassBlock(classBlocks.value, blockType);
 
     if (sessionMode.value === SESSION_MODE_CLASS && !isSessionLive.value) {
-      statusMessage.value = "Added a custom block.";
+      statusMessage.value =
+        String(blockType || "").toLowerCase() === "break"
+          ? "Added a break block."
+          : "Added a custom block.";
     }
   }
 
@@ -69,12 +77,40 @@ export function createClassPlanActions({
     avoidImmediateRepeats.value = Boolean(nextValue);
   }
 
+  function resolveAssistantTag(rawTag) {
+    const normalizedTag = String(rawTag ?? "").trim();
+    if (!normalizedTag || normalizedTag === "all") {
+      return "all";
+    }
+
+    return availablePhotoTags.value.includes(normalizedTag) ? normalizedTag : "all";
+  }
+
+  function applyClassBuilderAssistant(payload) {
+    const resolvedPreset = getClassPresetById(payload?.targetPresetId);
+    const nextBlocks = buildGuidedClassBlocks({
+      targetMinutes: resolvedPreset.targetMinutes,
+      gestureSharePercent: payload?.gestureSharePercent,
+      gestureTag: resolveAssistantTag(payload?.gestureTag),
+      longPoseTag: resolveAssistantTag(payload?.longPoseTag),
+      includeBreaks: payload?.includeBreaks !== false
+    });
+
+    classPresetId.value = resolvedPreset.id;
+    classBlocks.value = nextBlocks;
+
+    if (sessionMode.value === SESSION_MODE_CLASS && !isSessionLive.value) {
+      statusMessage.value = `Assistant built a ${resolvedPreset.targetMinutes}-minute class plan.`;
+    }
+  }
+
   return {
     setClassPreset,
     updateClassBlock,
     addClassBlock,
     removeClassBlock,
     setClassPhotoOrder,
-    setAvoidImmediateRepeats
+    setAvoidImmediateRepeats,
+    applyClassBuilderAssistant
   };
 }

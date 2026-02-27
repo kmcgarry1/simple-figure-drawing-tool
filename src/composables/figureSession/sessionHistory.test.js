@@ -9,7 +9,9 @@ describe("normalizeSessionHistory", () => {
         result: "weird",
         elapsedSeconds: "bad",
         plannedSlides: 5,
-        completedSlides: 99
+        completedSlides: 99,
+        templateName: "  Gesture Warmups  ",
+        appliedTags: ["hands", "hands", " torso "]
       }
     ]);
 
@@ -19,7 +21,9 @@ describe("normalizeSessionHistory", () => {
       result: "ended",
       elapsedSeconds: 0,
       plannedSlides: 5,
-      completedSlides: 5
+      completedSlides: 5,
+      templateName: "Gesture Warmups",
+      appliedTags: ["hands", "torso"]
     });
   });
 });

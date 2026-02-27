@@ -22,7 +22,29 @@ function parseOverlaySeconds(overlayText) {
 }
 
 async function openSetupWizard(page) {
-  await page.getByRole("button", { name: /Setup Wizard/ }).click();
+  const wizard = wizardDialog(page);
+  const anyModalDialog = page.locator('[role="dialog"][aria-modal="true"]');
+  if (
+    (await wizard.isVisible({ timeout: 1500 }).catch(() => false)) ||
+    (await anyModalDialog.isVisible({ timeout: 1500 }).catch(() => false))
+  ) {
+    return;
+  }
+
+  const trigger = page.getByRole("button", { name: /Setup Wizard/ });
+  try {
+    await trigger.click({ timeout: 1500 });
+  } catch (error) {
+    if (
+      (await wizard.isVisible({ timeout: 1500 }).catch(() => false)) ||
+      (await anyModalDialog.isVisible({ timeout: 1500 }).catch(() => false))
+    ) {
+      return;
+    }
+    throw error;
+  }
+
+  await expect(wizard).toBeVisible();
 }
 
 function wizardDialog(page) {
@@ -49,6 +71,24 @@ test("quick session flow can start, pause, and end", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Resume" })).toBeVisible();
   await page.getByRole("button", { name: "End" }).click();
   await expect(page.getByText("Session stopped.")).toBeVisible();
+});
+
+test("session preview appears before starting from setup wizard", async ({ page }) => {
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await page.getByRole("button", { name: "1. Photos" }).click();
+  await page.getByLabel("Upload Photos").setInputFiles([
+    createPngFilePayload("pose-1.png"),
+    createPngFilePayload("pose-2.png"),
+    createPngFilePayload("pose-3.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizard.getByRole("button", { name: "2. Session" }).click();
+  await expect(wizard.getByText("Session Preview")).toBeVisible();
+  await expect(wizard.getByText(/Showing (first|all)/)).toBeVisible();
+  await expect(wizard.getByText(/Pose 1/)).toBeVisible();
 });
 
 test("live quick timer does not reset when duration input is focused and blurred unchanged", async ({
@@ -126,4 +166,10 @@ test("mode and duration persist after reload", async ({ page }) => {
   await page.getByRole("button", { name: "2. Session" }).click();
   await expect(page.getByText("2. Quick Session")).toBeVisible();
   await expect(page.getByLabel("Seconds Per Photo")).toHaveValue("75");
+});
+
+test("remote page pre-fills offer token from pairing link", async ({ page }) => {
+  const offerToken = "test-offer-token-123";
+  await page.goto(`/?remote=1&offer=${encodeURIComponent(offerToken)}`);
+  await expect(page.getByLabel("Desktop Offer Token")).toHaveValue(offerToken);
 });

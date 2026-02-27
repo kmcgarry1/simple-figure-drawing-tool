@@ -49,6 +49,7 @@
     <div class="grid gap-1.5 rounded-lg border border-amber-200/85 bg-white/68 px-3 py-2.5">
       <p class="text-sm text-stone-700" role="status" aria-live="polite">{{ statusMessage }}</p>
       <p v-if="uploadNotice" class="text-sm text-stone-700">{{ uploadNotice }}</p>
+      <p class="text-xs text-stone-500" aria-live="polite">{{ settingsSaveStatusText }}</p>
       <p class="text-xs text-stone-500">Shortcuts: Space pause/resume, Right Arrow next, Esc end.</p>
     </div>
   </div>
@@ -91,6 +92,10 @@ defineProps({
     required: true
   },
   statusMessage: {
+    type: String,
+    required: true
+  },
+  settingsSaveStatusText: {
     type: String,
     required: true
   },

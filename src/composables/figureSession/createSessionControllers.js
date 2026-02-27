@@ -1,5 +1,8 @@
+import { CLASS_BLOCK_TYPE_BREAK, sanitizeClassBlocks } from "../../utils/classPlan";
 import { createClassPlanActions } from "./classPlanActions";
 import { createClassTemplateActions } from "./classTemplateActions";
+import { findClassTemplateMatch } from "./classTemplates";
+import { SESSION_MODE_CLASS } from "./constants";
 import { createPlaybackRuntime } from "./playbackRuntime";
 import { createPhotoTagActions } from "./photoTagActions";
 import { createSessionHistoryActions } from "./sessionHistoryActions";
@@ -25,6 +28,8 @@ export function createSessionControllers({
   mirrorLiveView,
   grayscaleLiveView,
   hideLiveOverlay,
+  audioMuted,
+  audioVolumePercent,
   uploadNotice,
   hasSourcePhotos,
   isRunning,
@@ -39,7 +44,9 @@ export function createSessionControllers({
   runPlannedSlides,
   currentSlideUrl,
   currentSlideAlt,
-  slideCounterText
+  slideCounterText,
+  onCountdownCue,
+  onSlideCompleteCue
 }) {
   const {
     clearTimers,
@@ -65,7 +72,9 @@ export function createSessionControllers({
     isRunning,
     isPaused,
     activeSlide,
-    slideCounterText
+    slideCounterText,
+    onCountdownCue,
+    onSlideCompleteCue
   });
 
   const {
@@ -115,12 +124,14 @@ export function createSessionControllers({
     addClassBlock,
     removeClassBlock,
     setClassPhotoOrder,
-    setAvoidImmediateRepeats
+    setAvoidImmediateRepeats,
+    applyClassBuilderAssistant
   } = createClassPlanActions({
     classPresetId,
     classBlocks,
     classPhotoOrder,
     avoidImmediateRepeats,
+    availablePhotoTags,
     sessionMode,
     isSessionLive,
     statusMessage
@@ -136,10 +147,39 @@ export function createSessionControllers({
     sessionSlides,
     statusMessage,
     runStartedAtMs,
-    runPlannedSlides
+    runPlannedSlides,
+    getSessionHistoryContext: () => {
+      if (sessionMode.value !== SESSION_MODE_CLASS) {
+        return {
+          templateName: "",
+          appliedTags: []
+        };
+      }
+
+      const safeClassBlocks = sanitizeClassBlocks(classBlocks.value);
+      const matchingTemplate = findClassTemplateMatch(classTemplates.value, safeClassBlocks);
+      const appliedTags = Array.from(
+        new Set(
+          safeClassBlocks
+            .filter((block) => block.blockType !== CLASS_BLOCK_TYPE_BREAK)
+            .map((block) => String(block.photoTag || "").trim())
+            .filter((tag) => tag && tag !== "all")
+        )
+      );
+
+      return {
+        templateName: matchingTemplate?.name || "Custom Class Plan",
+        appliedTags
+      };
+    }
   });
 
-  const { exportSettingsJson, importSettingsFromFile } = createSettingsTransferActions({
+  const {
+    exportSettingsJson,
+    importSettingsFromFile,
+    copySettingsShareLink,
+    applySettingsFromShareUrl
+  } = createSettingsTransferActions({
     sessionMode,
     durationSeconds,
     classPresetId,
@@ -147,6 +187,8 @@ export function createSessionControllers({
     classPhotoOrder,
     avoidImmediateRepeats,
     photoTagsById,
+    audioMuted,
+    audioVolumePercent,
     hasSourcePhotos,
     isSessionLive,
     phase,
@@ -158,7 +200,15 @@ export function createSessionControllers({
     prepareActiveSet
   });
 
-  const { saveClassTemplateByName, loadClassTemplateById, deleteClassTemplateById } =
+  const {
+    saveClassTemplateByName,
+    loadClassTemplateById,
+    deleteClassTemplateById,
+    renameClassTemplateById,
+    duplicateClassTemplateById,
+    exportClassTemplatesJson,
+    importClassTemplatesFromFile
+  } =
     createClassTemplateActions({
       classTemplates,
       classBlocks,
@@ -173,7 +223,9 @@ export function createSessionControllers({
     setSessionMode,
     toggleMirrorLiveView,
     toggleGrayscaleLiveView,
-    toggleHideLiveOverlay
+    toggleHideLiveOverlay,
+    toggleAudioMuted,
+    setAudioVolumePercent
   } = createSessionRuntimeActions({
     sessionMode,
     phase,
@@ -198,7 +250,9 @@ export function createSessionControllers({
     recordSessionHistory,
     mirrorLiveView,
     grayscaleLiveView,
-    hideLiveOverlay
+    hideLiveOverlay,
+    audioMuted,
+    audioVolumePercent
   });
 
   return {
@@ -219,12 +273,19 @@ export function createSessionControllers({
     removeClassBlock,
     setClassPhotoOrder,
     setAvoidImmediateRepeats,
+    applyClassBuilderAssistant,
     clearSessionHistory,
     exportSettingsJson,
     importSettingsFromFile,
+    copySettingsShareLink,
+    applySettingsFromShareUrl,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
+    renameClassTemplateById,
+    duplicateClassTemplateById,
+    exportClassTemplatesJson,
+    importClassTemplatesFromFile,
     startFreshSession,
     applyDurationChange,
     createNewRandomSet,
@@ -232,6 +293,8 @@ export function createSessionControllers({
     setSessionMode,
     toggleMirrorLiveView,
     toggleGrayscaleLiveView,
-    toggleHideLiveOverlay
+    toggleHideLiveOverlay,
+    toggleAudioMuted,
+    setAudioVolumePercent
   };
 }

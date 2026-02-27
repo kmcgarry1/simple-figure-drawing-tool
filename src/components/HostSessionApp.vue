@@ -32,6 +32,9 @@
           :session-history="sessionHistory"
           :status-message="statusMessage"
           :upload-notice="uploadNotice"
+          :settings-save-status-text="settingsSaveStatusText"
+          :session-preview-items="sessionPreviewItems"
+          :session-preview-summary-text="sessionPreviewSummaryText"
           @photos-selected="handlePhotoSelection"
           @session-mode-change="setSessionMode"
           @duration-input="updateDurationSeconds"
@@ -39,6 +42,7 @@
           @photo-tag-update="updatePhotoTag"
           @photo-reorder="reorderSourcePhoto"
           @export-settings="exportSettingsJson"
+          @share-settings-link="copySettingsShareLink"
           @import-settings="importSettingsFromFile"
           @class-preset-change="setClassPreset"
           @class-block-update="updateClassBlock"
@@ -46,9 +50,14 @@
           @class-block-remove="removeClassBlock"
           @class-photo-order-change="setClassPhotoOrder"
           @class-repeat-toggle="setAvoidImmediateRepeats"
+          @class-assistant-generate="applyClassBuilderAssistant"
           @class-template-save="saveClassTemplateByName"
           @class-template-load="loadClassTemplateById"
           @class-template-delete="deleteClassTemplateById"
+          @class-template-rename="renameClassTemplateById"
+          @class-template-duplicate="duplicateClassTemplateById"
+          @class-template-export="exportClassTemplatesJson"
+          @class-template-import="importClassTemplatesFromFile"
           @start-session="startFreshSession"
           @new-random-set="createNewRandomSet"
           @clear-history="clearSessionHistory"
@@ -61,6 +70,8 @@
           :mirror-live-view="mirrorLiveView"
           :grayscale-live-view="grayscaleLiveView"
           :hide-live-overlay="hideLiveOverlay"
+          :audio-muted="audioMuted"
+          :audio-volume-percent="audioVolumePercent"
           :is-running="isRunning"
           :is-paused="isPaused"
           :has-source-photos="hasSourcePhotos"
@@ -68,17 +79,23 @@
           :restart-label="restartActionLabel"
           :remote-status="hostRemoteStatus"
           :remote-offer-token="hostOfferToken"
+          :remote-pairing-url="hostRemotePairingUrl"
+          :remote-pairing-qr-data-url="hostRemotePairingQrDataUrl"
           :is-remote-connected="isHostRemoteConnected"
           @duration-input="updateDurationSeconds"
           @duration-change="applyDurationChange"
           @toggle-mirror-live-view="toggleMirrorLiveView"
           @toggle-grayscale-live-view="toggleGrayscaleLiveView"
           @toggle-hide-live-overlay="toggleHideLiveOverlay"
+          @toggle-audio-muted="toggleAudioMuted"
+          @audio-volume-input="setAudioVolumePercent"
           @toggle-pause="togglePause"
           @next="goToNextSlide"
           @new-set="createNewRandomSet"
           @end="stopSession"
           @remote-create-offer="createHostOfferToken"
+          @remote-copy-offer-token="copyHostOfferToken"
+          @remote-copy-pairing-link="copyHostPairingLink"
           @remote-apply-answer="applyHostAnswerToken"
           @remote-disconnect="disconnectHostRemote"
         />
@@ -129,6 +146,8 @@ const {
   mirrorLiveView,
   grayscaleLiveView,
   hideLiveOverlay,
+  audioMuted,
+  audioVolumePercent,
   classTemplates,
   hasClassPlan,
   classTargetMinutes,
@@ -141,6 +160,9 @@ const {
   sessionHistory,
   statusMessage,
   uploadNotice,
+  settingsSaveStatusText,
+  sessionPreviewItems,
+  sessionPreviewSummaryText,
   currentSlideUrl,
   currentSlideAlt,
   activePoseLabel,
@@ -161,14 +183,22 @@ const {
   removeClassBlock,
   setClassPhotoOrder,
   setAvoidImmediateRepeats,
+  applyClassBuilderAssistant,
   toggleMirrorLiveView,
   toggleGrayscaleLiveView,
   toggleHideLiveOverlay,
+  toggleAudioMuted,
+  setAudioVolumePercent,
   exportSettingsJson,
   importSettingsFromFile,
+  copySettingsShareLink,
   saveClassTemplateByName,
   loadClassTemplateById,
   deleteClassTemplateById,
+  renameClassTemplateById,
+  duplicateClassTemplateById,
+  exportClassTemplatesJson,
+  importClassTemplatesFromFile,
   startFreshSession,
   togglePause,
   goToNextSlide,
@@ -188,8 +218,12 @@ function updateDurationSeconds(value) {
 const {
   remoteStatus: hostRemoteStatus,
   offerToken: hostOfferToken,
+  pairingUrl: hostRemotePairingUrl,
+  pairingQrDataUrl: hostRemotePairingQrDataUrl,
   isRemoteConnected: isHostRemoteConnected,
   createOfferToken: createHostOfferToken,
+  copyHostOfferToken,
+  copyHostPairingLink,
   applyAnswerToken: applyHostAnswerToken,
   disconnectHostRemote
 } = usePhoneRemoteHost({

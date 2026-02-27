@@ -42,11 +42,18 @@
               @class-preset-change="$emit('class-preset-change', $event)"
             />
 
+            <ClassBuilderAssistantSection
+              :class-preset-options="classPresetOptions"
+              :class-preset-id="classPresetId"
+              :available-photo-tags="availablePhotoTags"
+              @class-assistant-generate="$emit('class-assistant-generate', $event)"
+            />
+
             <ClassPoseBlocksSection
               :class-blocks="classBlocks"
               :available-photo-tags="availablePhotoTags"
               @class-block-update="$emit('class-block-update', $event)"
-              @class-block-add="$emit('class-block-add')"
+              @class-block-add="$emit('class-block-add', $event)"
               @class-block-remove="$emit('class-block-remove', $event)"
             />
 
@@ -62,6 +69,10 @@
               @class-template-save="$emit('class-template-save', $event)"
               @class-template-load="$emit('class-template-load', $event)"
               @class-template-delete="$emit('class-template-delete', $event)"
+              @class-template-rename="$emit('class-template-rename', $event)"
+              @class-template-duplicate="$emit('class-template-duplicate', $event)"
+              @class-template-export="$emit('class-template-export')"
+              @class-template-import="$emit('class-template-import', $event)"
             />
 
             <div class="grid gap-1 rounded-md border border-amber-200/80 bg-white/60 px-2.5 py-2 text-sm text-stone-600">
@@ -72,6 +83,11 @@
               </p>
               <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>
             </div>
+
+            <SessionPreviewSection
+              :preview-items="sessionPreviewItems"
+              :preview-summary-text="sessionPreviewSummaryText"
+            />
 
             <div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2">
               <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
@@ -95,6 +111,8 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
+import SessionPreviewSection from "./SessionPreviewSection.vue";
+import ClassBuilderAssistantSection from "./classDialog/ClassBuilderAssistantSection.vue";
 import ClassPhotoSequenceSection from "./classDialog/ClassPhotoSequenceSection.vue";
 import ClassPoseBlocksSection from "./classDialog/ClassPoseBlocksSection.vue";
 import ClassPresetSection from "./classDialog/ClassPresetSection.vue";
@@ -173,6 +191,14 @@ const props = defineProps({
   hasSourcePhotos: {
     type: Boolean,
     required: true
+  },
+  sessionPreviewItems: {
+    type: Array,
+    required: true
+  },
+  sessionPreviewSummaryText: {
+    type: String,
+    required: true
   }
 });
 
@@ -182,11 +208,16 @@ const emit = defineEmits([
   "class-block-update",
   "class-block-add",
   "class-block-remove",
+  "class-assistant-generate",
   "class-photo-order-change",
   "class-repeat-toggle",
   "class-template-save",
   "class-template-load",
   "class-template-delete",
+  "class-template-rename",
+  "class-template-duplicate",
+  "class-template-export",
+  "class-template-import",
   "start-session",
   "new-random-set"
 ]);

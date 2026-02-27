@@ -1,6 +1,11 @@
 import {
+  createClassTemplatesExportPayload,
+  duplicateClassTemplateById as duplicateTemplateById,
   getClassTemplateById,
+  mergeClassTemplatesByName,
+  parseClassTemplatesImportText,
   persistClassTemplates,
+  renameClassTemplateById as renameTemplateById,
   removeClassTemplateById,
   saveClassTemplate
 } from "./classTemplates";
@@ -50,9 +55,101 @@ export function createClassTemplateActions({
     statusMessage.value = "Template deleted.";
   }
 
+  function renameClassTemplateById(payloadOrTemplateId, nextName) {
+    const templateId =
+      payloadOrTemplateId && typeof payloadOrTemplateId === "object"
+        ? payloadOrTemplateId.templateId
+        : payloadOrTemplateId;
+    const resolvedName =
+      payloadOrTemplateId && typeof payloadOrTemplateId === "object"
+        ? payloadOrTemplateId.nextName
+        : nextName;
+
+    const result = renameTemplateById(classTemplates.value, templateId, resolvedName);
+    if (!result.renamed) {
+      if (result.reason === "missing-name") {
+        statusMessage.value = "Enter a template name before renaming.";
+        return;
+      }
+
+      if (result.reason === "duplicate-name") {
+        statusMessage.value = "A template with that name already exists.";
+        return;
+      }
+
+      statusMessage.value = "Template not found.";
+      return;
+    }
+
+    classTemplates.value = result.templates;
+    persistClassTemplates(classTemplates.value);
+    statusMessage.value = `Renamed template to "${result.template.name}".`;
+  }
+
+  function duplicateClassTemplateById(templateId) {
+    const result = duplicateTemplateById(classTemplates.value, templateId);
+    if (!result.duplicated) {
+      statusMessage.value = "Template not found.";
+      return;
+    }
+
+    classTemplates.value = result.templates;
+    persistClassTemplates(classTemplates.value);
+    statusMessage.value = `Duplicated template "${result.template.name}".`;
+  }
+
+  function exportClassTemplatesJson() {
+    if (typeof window === "undefined") {
+      statusMessage.value = "Template export is only available in the browser.";
+      return;
+    }
+
+    const payload = createClassTemplatesExportPayload(classTemplates.value);
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const blobUrl = URL.createObjectURL(blob);
+    const downloadLink = document.createElement("a");
+    const dateStamp = new Date().toISOString().slice(0, 10);
+
+    downloadLink.href = blobUrl;
+    downloadLink.download = `figure-drawing-class-templates-${dateStamp}.json`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+
+    URL.revokeObjectURL(blobUrl);
+    statusMessage.value = "Class templates exported.";
+  }
+
+  async function importClassTemplatesFromFile(file) {
+    if (!(file instanceof File)) {
+      statusMessage.value = "Choose a JSON file to import templates.";
+      return;
+    }
+
+    try {
+      const importedText = await file.text();
+      const importedTemplates = parseClassTemplatesImportText(importedText);
+      const mergeResult = mergeClassTemplatesByName(
+        classTemplates.value,
+        importedTemplates
+      );
+
+      classTemplates.value = mergeResult.templates;
+      persistClassTemplates(classTemplates.value);
+      statusMessage.value = `Templates imported (${mergeResult.addedCount} added, ${mergeResult.updatedCount} updated).`;
+    } catch {
+      statusMessage.value = "Unable to import class templates.";
+    }
+  }
+
   return {
     saveClassTemplateByName,
     loadClassTemplateById,
-    deleteClassTemplateById
+    deleteClassTemplateById,
+    renameClassTemplateById,
+    duplicateClassTemplateById,
+    exportClassTemplatesJson,
+    importClassTemplatesFromFile
   };
 }

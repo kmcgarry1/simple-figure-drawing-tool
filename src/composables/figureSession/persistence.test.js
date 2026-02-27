@@ -31,7 +31,9 @@ describe("normalizeSessionPreferences", () => {
       classPresetId: "missing",
       classBlocks: [],
       classPhotoOrder: "invalid",
-      avoidImmediateRepeats: 0
+      avoidImmediateRepeats: 0,
+      audioMuted: "no",
+      audioVolumePercent: 1111
     });
 
     expect(result.sessionMode).toBe("class");
@@ -43,6 +45,8 @@ describe("normalizeSessionPreferences", () => {
     expect(result.mirrorLiveView).toBe(false);
     expect(result.grayscaleLiveView).toBe(false);
     expect(result.hideLiveOverlay).toBe(false);
+    expect(result.audioMuted).toBe(false);
+    expect(result.audioVolumePercent).toBe(100);
     expect(result.classBlocks.length).toBeGreaterThan(0);
   });
 });
@@ -72,7 +76,9 @@ describe("session preference storage", () => {
       },
       mirrorLiveView: true,
       grayscaleLiveView: true,
-      hideLiveOverlay: true
+      hideLiveOverlay: true,
+      audioMuted: true,
+      audioVolumePercent: 82
     });
 
     const loaded = loadSessionPreferences();
@@ -88,10 +94,13 @@ describe("session preference storage", () => {
       },
       mirrorLiveView: true,
       grayscaleLiveView: true,
-      hideLiveOverlay: true
+      hideLiveOverlay: true,
+      audioMuted: true,
+      audioVolumePercent: 82
     });
     expect(loaded.classBlocks).toEqual([
       {
+        blockType: "pose",
         label: "Gestures",
         durationSeconds: 45,
         poseCount: 4,

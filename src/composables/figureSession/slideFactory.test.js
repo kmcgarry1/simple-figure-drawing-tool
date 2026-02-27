@@ -49,6 +49,7 @@ describe("createClassSlides", () => {
     expect(poseCount).toBe(3);
     expect(safeBlocks).toEqual([
       {
+        blockType: "pose",
         label: "Warm-up",
         durationSeconds: 30,
         poseCount: 3,
@@ -109,5 +110,37 @@ describe("createClassSlides", () => {
         photoTag: "hands"
       }
     ]);
+  });
+
+  it("creates timed break slides and keeps pose numbering for pose slides only", () => {
+    const sourcePhotos = [
+      { name: "pose-a.jpg", size: 10, lastModified: 1 },
+      { name: "pose-b.jpg", size: 20, lastModified: 2 }
+    ];
+
+    const { slides, poseCount, breakCount } = createClassSlides({
+      sourcePhotos,
+      classBlocks: [
+        { label: "Warm-up", durationSeconds: 30, poseCount: 2, blockType: "pose" },
+        { label: "Water Break", durationSeconds: 180, poseCount: 1, blockType: "break" },
+        { label: "Long Pose", durationSeconds: 300, poseCount: 1, blockType: "pose" }
+      ],
+      classPhotoOrder: "sequential",
+      avoidImmediateRepeats: true,
+      photoTagsById: {}
+    });
+
+    expect(poseCount).toBe(3);
+    expect(breakCount).toBe(1);
+    expect(slides).toHaveLength(4);
+    expect(slides[0]).toMatchObject({ kind: "pose", poseNumber: 1, label: "Warm-up" });
+    expect(slides[1]).toMatchObject({ kind: "pose", poseNumber: 2, label: "Warm-up" });
+    expect(slides[2]).toMatchObject({
+      kind: "break",
+      breakNumber: 1,
+      label: "Water Break",
+      durationSeconds: 180
+    });
+    expect(slides[3]).toMatchObject({ kind: "pose", poseNumber: 3, label: "Long Pose" });
   });
 });

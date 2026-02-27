@@ -86,6 +86,18 @@ export const setupPanelProps = {
   uploadNotice: {
     type: String,
     default: ""
+  },
+  settingsSaveStatusText: {
+    type: String,
+    required: true
+  },
+  sessionPreviewItems: {
+    type: Array,
+    required: true
+  },
+  sessionPreviewSummaryText: {
+    type: String,
+    required: true
   }
 };
 
@@ -97,16 +109,22 @@ export const setupPanelEmits = [
   "photo-tag-update",
   "photo-reorder",
   "export-settings",
+  "share-settings-link",
   "import-settings",
   "class-preset-change",
   "class-block-update",
   "class-block-add",
   "class-block-remove",
+  "class-assistant-generate",
   "class-photo-order-change",
   "class-repeat-toggle",
   "class-template-save",
   "class-template-load",
   "class-template-delete",
+  "class-template-rename",
+  "class-template-duplicate",
+  "class-template-export",
+  "class-template-import",
   "start-session",
   "new-random-set",
   "clear-history"

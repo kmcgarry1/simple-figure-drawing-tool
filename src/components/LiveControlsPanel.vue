@@ -53,13 +53,64 @@
           </div>
         </section>
 
+        <section class="fd-subtle-card grid gap-1 rounded-md p-2">
+          <p class="text-xs font-semibold text-stone-700">Audio Cues</p>
+          <div class="grid grid-cols-1 gap-1">
+            <BaseButton compact :tone="audioMuted ? 'subtle' : 'primary'" @click="$emit('toggle-audio-muted')">
+              {{ audioMuted ? "Audio Cues: Muted" : "Audio Cues: On" }}
+            </BaseButton>
+            <label class="grid gap-1 text-xs text-stone-600" for="audioVolumePercent">
+              <span>Volume: {{ audioVolumePercent }}%</span>
+              <input
+                id="audioVolumePercent"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                :value="audioVolumePercent"
+                class="fd-input w-full accent-amber-500"
+                @input="$emit('audio-volume-input', $event.target.value)"
+              />
+            </label>
+          </div>
+        </section>
+
         <section class="fd-subtle-card grid gap-1.5 rounded-md p-2">
           <p class="text-xs font-semibold text-stone-700">Phone Remote</p>
           <p class="text-[11px] text-stone-500">{{ remoteStatus }}</p>
 
-          <BaseButton compact tone="subtle" @click="$emit('remote-create-offer')">
-            Generate Offer
+          <div class="grid grid-cols-2 gap-2">
+            <BaseButton compact tone="subtle" @click="$emit('remote-create-offer')">
+              Generate Offer
+            </BaseButton>
+            <BaseButton compact tone="subtle" :disabled="!remoteOfferToken" @click="$emit('remote-copy-offer-token')">
+              Copy Offer
+            </BaseButton>
+          </div>
+
+          <label v-if="remotePairingUrl" class="grid gap-1 text-xs text-stone-600" for="remotePairingUrl">
+            <span>Pairing Link (open on phone)</span>
+            <textarea
+              id="remotePairingUrl"
+              readonly
+              :value="remotePairingUrl"
+              rows="3"
+              class="fd-input w-full rounded-md px-2 py-1.5 text-[11px]"
+            />
+          </label>
+
+          <BaseButton compact tone="subtle" :disabled="!remotePairingUrl" @click="$emit('remote-copy-pairing-link')">
+            Copy Pairing Link
           </BaseButton>
+
+          <div v-if="remotePairingQrDataUrl" class="grid gap-1 rounded-md border border-amber-200/80 bg-white/60 p-2">
+            <p class="text-[11px] text-stone-600">Scan QR on phone to open pairing page</p>
+            <img
+              :src="remotePairingQrDataUrl"
+              alt="QR code for phone remote pairing link"
+              class="mx-auto h-36 w-36 rounded-md border border-amber-200/80 bg-white p-1"
+            />
+          </div>
 
           <label v-if="remoteOfferToken" class="grid gap-1 text-xs text-stone-600" for="remoteOfferToken">
             <span>Offer Token (send to phone)</span>
@@ -122,6 +173,14 @@ defineProps({
     type: Boolean,
     required: true
   },
+  audioMuted: {
+    type: Boolean,
+    required: true
+  },
+  audioVolumePercent: {
+    type: [Number, String],
+    required: true
+  },
   isRunning: {
     type: Boolean,
     required: true
@@ -150,6 +209,14 @@ defineProps({
     type: String,
     required: true
   },
+  remotePairingUrl: {
+    type: String,
+    required: true
+  },
+  remotePairingQrDataUrl: {
+    type: String,
+    required: true
+  },
   isRemoteConnected: {
     type: Boolean,
     required: true
@@ -162,11 +229,15 @@ const emit = defineEmits([
   "toggle-mirror-live-view",
   "toggle-grayscale-live-view",
   "toggle-hide-live-overlay",
+  "toggle-audio-muted",
+  "audio-volume-input",
   "toggle-pause",
   "next",
   "new-set",
   "end",
   "remote-create-offer",
+  "remote-copy-offer-token",
+  "remote-copy-pairing-link",
   "remote-apply-answer",
   "remote-disconnect"
 ]);

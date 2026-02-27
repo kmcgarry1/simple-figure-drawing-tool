@@ -78,20 +78,31 @@ export function useSetupWizardFlow({
     wizardStep.value = Math.max(1, wizardStep.value - 1);
   }
 
-  function openWizard() {
-    isWizardOpen.value = true;
-
+  function resolveDefaultOpenStep() {
     if (!hasSourcePhotos.value) {
-      wizardStep.value = 1;
-      return;
+      return 1;
     }
 
     if (canNavigateToStep(3)) {
-      wizardStep.value = 3;
-      return;
+      return 3;
     }
 
-    wizardStep.value = 2;
+    return 2;
+  }
+
+  function resolvePreferredStep(preferredStep) {
+    const parsedStep = Number(preferredStep);
+    if (!Number.isInteger(parsedStep)) {
+      return null;
+    }
+
+    const normalizedStep = Math.min(wizardStepCount, Math.max(1, parsedStep));
+    return canNavigateToStep(normalizedStep) ? normalizedStep : null;
+  }
+
+  function openWizard(preferredStep = null) {
+    isWizardOpen.value = true;
+    wizardStep.value = resolvePreferredStep(preferredStep) || resolveDefaultOpenStep();
   }
 
   function closeWizard() {

@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { FILE_INPUT_ACCEPT } from "../config";
 import { CLASS_PRESET_OPTIONS, createBlocksFromPreset } from "../utils/classPlan";
 import { PHOTO_ORDER_SHUFFLE } from "./figureSession/constants";
@@ -9,6 +9,10 @@ import { IDLE_MESSAGE } from "./figureSession/sessionMessages";
 import { loadClassTemplates } from "./figureSession/classTemplates";
 import { loadSessionHistory } from "./figureSession/sessionHistory";
 import { useFigureSessionLifecycle } from "./figureSession/useFigureSessionLifecycle";
+import { formatDurationShort } from "./figureSession/formatters";
+import { useAudioCues } from "./useAudioCues";
+
+const SESSION_PREVIEW_LIMIT = 5;
 
 export function useFigureSession() {
   const persistedPreferences = loadSessionPreferences();
@@ -38,6 +42,8 @@ export function useFigureSession() {
   const mirrorLiveView = ref(Boolean(persistedPreferences.mirrorLiveView));
   const grayscaleLiveView = ref(Boolean(persistedPreferences.grayscaleLiveView));
   const hideLiveOverlay = ref(Boolean(persistedPreferences.hideLiveOverlay));
+  const audioMuted = ref(Boolean(persistedPreferences.audioMuted));
+  const audioVolumePercent = ref(Number(persistedPreferences.audioVolumePercent));
 
   const remainingMs = ref(0);
   const activeSlideDurationMs = ref(0);
@@ -79,6 +85,10 @@ export function useFigureSession() {
     remainingMs,
     activeSlideDurationMs
   });
+  const { playCountdownCue, playSlideCompleteCue } = useAudioCues({
+    audioMuted,
+    audioVolumePercent
+  });
 
   const {
     clearTimers,
@@ -98,12 +108,19 @@ export function useFigureSession() {
     removeClassBlock,
     setClassPhotoOrder,
     setAvoidImmediateRepeats,
+    applyClassBuilderAssistant,
     clearSessionHistory,
     exportSettingsJson,
     importSettingsFromFile,
+    copySettingsShareLink,
+    applySettingsFromShareUrl,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
+    renameClassTemplateById,
+    duplicateClassTemplateById,
+    exportClassTemplatesJson,
+    importClassTemplatesFromFile,
     startFreshSession,
     applyDurationChange,
     createNewRandomSet,
@@ -111,7 +128,9 @@ export function useFigureSession() {
     setSessionMode,
     toggleMirrorLiveView,
     toggleGrayscaleLiveView,
-    toggleHideLiveOverlay
+    toggleHideLiveOverlay,
+    toggleAudioMuted,
+    setAudioVolumePercent
   } = createSessionControllers({
     sourcePhotos,
     sessionSlides,
@@ -130,6 +149,8 @@ export function useFigureSession() {
     mirrorLiveView,
     grayscaleLiveView,
     hideLiveOverlay,
+    audioMuted,
+    audioVolumePercent,
     uploadNotice,
     hasSourcePhotos,
     isRunning,
@@ -144,10 +165,12 @@ export function useFigureSession() {
     runPlannedSlides,
     currentSlideUrl,
     currentSlideAlt,
-    slideCounterText
+    slideCounterText,
+    onCountdownCue: playCountdownCue,
+    onSlideCompleteCue: playSlideCompleteCue
   });
 
-  useFigureSessionLifecycle({
+  const { preferencesSaveState, preferencesLastSavedAt } = useFigureSessionLifecycle({
     sessionMode,
     durationSeconds,
     classPresetId,
@@ -158,12 +181,89 @@ export function useFigureSession() {
     mirrorLiveView,
     grayscaleLiveView,
     hideLiveOverlay,
+    audioMuted,
+    audioVolumePercent,
     phase,
     runPlannedSlides,
     recordSessionHistory,
     clearTimers,
     revokeSlideUrl,
     clearPreloadedSlide
+  });
+
+  onMounted(() => {
+    applySettingsFromShareUrl();
+  });
+
+  const saveTimeFormatter = new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit"
+  });
+
+  const settingsSaveStatusText = computed(() => {
+    if (preferencesSaveState.value === "saving") {
+      return "Saving settings...";
+    }
+
+    if (preferencesSaveState.value === "error") {
+      return "Unable to save settings in this browser.";
+    }
+
+    if (!preferencesLastSavedAt.value) {
+      return "Settings autosave is ready.";
+    }
+
+    return `Settings saved at ${saveTimeFormatter.format(preferencesLastSavedAt.value)}.`;
+  });
+
+  const sessionPreviewItems = computed(() =>
+    sessionSlides.value.slice(0, SESSION_PREVIEW_LIMIT).map((slide, index) => {
+      const isBreak = slide.kind === "break";
+      const sequenceNumber =
+        slide.breakNumber || slide.poseNumber || index + 1;
+      const durationSeconds =
+        Number.parseInt(String(slide.durationSeconds), 10) ||
+        Math.max(0, Math.round((slide.durationMs || 0) / 1000));
+      const subtitleParts = [slide.label || (isBreak ? "Break" : "Pose")];
+
+      if (!isBreak && slide.file?.name) {
+        subtitleParts.push(slide.file.name);
+      }
+
+      return {
+        id: `${isBreak ? "break" : "pose"}-${sequenceNumber}-${index}`,
+        kind: isBreak ? "break" : "pose",
+        title: isBreak ? `Break ${sequenceNumber}` : `Pose ${sequenceNumber}`,
+        subtitle: subtitleParts.join(" | "),
+        durationText: formatDurationShort(durationSeconds)
+      };
+    })
+  );
+
+  const sessionPreviewSummaryText = computed(() => {
+    const totalSlides = sessionSlides.value.length;
+    if (totalSlides <= 0) {
+      return "No preview available yet.";
+    }
+
+    const poseCount = sessionSlides.value.filter((slide) => slide.kind !== "break").length;
+    const breakCount = sessionSlides.value.filter((slide) => slide.kind === "break").length;
+    const compositionParts = [];
+
+    if (poseCount > 0) {
+      compositionParts.push(`${poseCount} pose(s)`);
+    }
+    if (breakCount > 0) {
+      compositionParts.push(`${breakCount} break(s)`);
+    }
+
+    const compositionText = compositionParts.join(" + ");
+    const showingCount = Math.min(totalSlides, SESSION_PREVIEW_LIMIT);
+    if (showingCount < totalSlides) {
+      return `Showing first ${showingCount} of ${totalSlides} slides (${compositionText}).`;
+    }
+
+    return `Showing all ${totalSlides} slides (${compositionText}).`;
   });
 
   return {
@@ -182,6 +282,8 @@ export function useFigureSession() {
     mirrorLiveView,
     grayscaleLiveView,
     hideLiveOverlay,
+    audioMuted,
+    audioVolumePercent,
     hasClassPlan,
     classTargetMinutes,
     classPoseCount,
@@ -192,6 +294,9 @@ export function useFigureSession() {
     restartActionLabel,
     statusMessage,
     uploadNotice,
+    settingsSaveStatusText,
+    sessionPreviewItems,
+    sessionPreviewSummaryText,
     currentSlideUrl,
     currentSlideAlt,
     activePoseLabel,
@@ -212,14 +317,22 @@ export function useFigureSession() {
     removeClassBlock,
     setClassPhotoOrder,
     setAvoidImmediateRepeats,
+    applyClassBuilderAssistant,
     toggleMirrorLiveView,
     toggleGrayscaleLiveView,
     toggleHideLiveOverlay,
+    toggleAudioMuted,
+    setAudioVolumePercent,
     exportSettingsJson,
     importSettingsFromFile,
+    copySettingsShareLink,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
+    renameClassTemplateById,
+    duplicateClassTemplateById,
+    exportClassTemplatesJson,
+    importClassTemplatesFromFile,
     startFreshSession,
     togglePause,
     goToNextSlide,

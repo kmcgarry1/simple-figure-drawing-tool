@@ -17,8 +17,9 @@
 
     <section class="grid gap-2 rounded-md border border-amber-200/80 bg-white/56 p-2.5">
       <p class="text-sm font-semibold text-stone-800">Settings Transfer</p>
-      <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
+      <div class="grid grid-cols-3 gap-2 max-[680px]:grid-cols-1">
         <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
+        <BaseButton tone="subtle" @click="$emit('share-settings-link')">Copy Share Link</BaseButton>
         <label class="grid gap-1 text-xs text-stone-600">
           <span>Import JSON</span>
           <input
@@ -59,6 +60,7 @@ defineEmits([
   "photo-tag-update",
   "photo-reorder",
   "export-settings",
+  "share-settings-link",
   "import-settings",
   "clear-history"
 ]);

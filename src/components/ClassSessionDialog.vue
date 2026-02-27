@@ -42,6 +42,13 @@
               @class-preset-change="$emit('class-preset-change', $event)"
             />
 
+            <ClassBuilderAssistantSection
+              :class-preset-options="classPresetOptions"
+              :class-preset-id="classPresetId"
+              :available-photo-tags="availablePhotoTags"
+              @class-assistant-generate="$emit('class-assistant-generate', $event)"
+            />
+
             <ClassPoseBlocksSection
               :class-blocks="classBlocks"
               :available-photo-tags="availablePhotoTags"
@@ -105,6 +112,7 @@
 import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
 import SessionPreviewSection from "./SessionPreviewSection.vue";
+import ClassBuilderAssistantSection from "./classDialog/ClassBuilderAssistantSection.vue";
 import ClassPhotoSequenceSection from "./classDialog/ClassPhotoSequenceSection.vue";
 import ClassPoseBlocksSection from "./classDialog/ClassPoseBlocksSection.vue";
 import ClassPresetSection from "./classDialog/ClassPresetSection.vue";
@@ -200,6 +208,7 @@ const emit = defineEmits([
   "class-block-update",
   "class-block-add",
   "class-block-remove",
+  "class-assistant-generate",
   "class-photo-order-change",
   "class-repeat-toggle",
   "class-template-save",

@@ -49,6 +49,7 @@
           @class-block-remove="removeClassBlock"
           @class-photo-order-change="setClassPhotoOrder"
           @class-repeat-toggle="setAvoidImmediateRepeats"
+          @class-assistant-generate="applyClassBuilderAssistant"
           @class-template-save="saveClassTemplateByName"
           @class-template-load="loadClassTemplateById"
           @class-template-delete="deleteClassTemplateById"
@@ -181,6 +182,7 @@ const {
   removeClassBlock,
   setClassPhotoOrder,
   setAvoidImmediateRepeats,
+  applyClassBuilderAssistant,
   toggleMirrorLiveView,
   toggleGrayscaleLiveView,
   toggleHideLiveOverlay,

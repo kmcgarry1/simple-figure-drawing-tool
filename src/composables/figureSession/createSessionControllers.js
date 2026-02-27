@@ -121,12 +121,14 @@ export function createSessionControllers({
     addClassBlock,
     removeClassBlock,
     setClassPhotoOrder,
-    setAvoidImmediateRepeats
+    setAvoidImmediateRepeats,
+    applyClassBuilderAssistant
   } = createClassPlanActions({
     classPresetId,
     classBlocks,
     classPhotoOrder,
     avoidImmediateRepeats,
+    availablePhotoTags,
     sessionMode,
     isSessionLive,
     statusMessage
@@ -239,6 +241,7 @@ export function createSessionControllers({
     removeClassBlock,
     setClassPhotoOrder,
     setAvoidImmediateRepeats,
+    applyClassBuilderAssistant,
     clearSessionHistory,
     exportSettingsJson,
     importSettingsFromFile,

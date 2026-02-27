@@ -42,6 +42,7 @@
       @class-block-update="$emit('class-block-update', $event)"
       @class-block-add="$emit('class-block-add', $event)"
       @class-block-remove="$emit('class-block-remove', $event)"
+      @class-assistant-generate="$emit('class-assistant-generate', $event)"
       @class-photo-order-change="$emit('class-photo-order-change', $event)"
       @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
       @class-template-save="$emit('class-template-save', $event)"

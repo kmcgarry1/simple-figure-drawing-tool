@@ -114,6 +114,7 @@ export const setupPanelEmits = [
   "class-block-update",
   "class-block-add",
   "class-block-remove",
+  "class-assistant-generate",
   "class-photo-order-change",
   "class-repeat-toggle",
   "class-template-save",

@@ -125,7 +125,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import BaseButton from "../BaseButton.vue";
 import { setupPanelProps } from "./setupPanelContract";
 import SetupWizardStepAdvanced from "./SetupWizardStepAdvanced.vue";
@@ -154,7 +154,8 @@ const emit = defineEmits([
   "start-session",
   "new-random-set",
   "clear-history",
-  "open-class-dialog"
+  "open-class-dialog",
+  "wizard-step-change"
 ]);
 
 const {
@@ -213,6 +214,18 @@ function startSessionFromWizard() {
   emit("start-session");
   closeWizard();
 }
+
+watch(
+  [wizardStep, isWizardOpen],
+  ([nextStep, nextIsOpen]) => {
+    if (!nextIsOpen) {
+      return;
+    }
+
+    emit("wizard-step-change", nextStep);
+  },
+  { immediate: true }
+);
 
 defineExpose({
   openWizard,

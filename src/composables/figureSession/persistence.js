@@ -129,13 +129,15 @@ export function loadSessionPreferences() {
 
 export function persistSessionPreferences(preferences) {
   if (!canUseStorage()) {
-    return;
+    return false;
   }
 
   try {
     const normalized = normalizeSessionPreferences(preferences);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    return true;
   } catch {
     // Ignore storage write failures to avoid interrupting session flow.
+    return false;
   }
 }

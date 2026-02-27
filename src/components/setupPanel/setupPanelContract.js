@@ -86,6 +86,10 @@ export const setupPanelProps = {
   uploadNotice: {
     type: String,
     default: ""
+  },
+  settingsSaveStatusText: {
+    type: String,
+    required: true
   }
 };
 

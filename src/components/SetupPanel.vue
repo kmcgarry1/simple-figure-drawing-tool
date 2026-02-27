@@ -11,6 +11,7 @@
       :has-source-photos="hasSourcePhotos"
       :status-message="statusMessage"
       :upload-notice="uploadNotice"
+      :settings-save-status-text="settingsSaveStatusText"
       @open-wizard="openWizard"
       @start-session="$emit('start-session')"
       @new-random-set="$emit('new-random-set')"

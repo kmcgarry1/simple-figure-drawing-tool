@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { FILE_INPUT_ACCEPT } from "../config";
 import { CLASS_PRESET_OPTIONS, createBlocksFromPreset } from "../utils/classPlan";
 import { PHOTO_ORDER_SHUFFLE } from "./figureSession/constants";
@@ -147,7 +147,7 @@ export function useFigureSession() {
     slideCounterText
   });
 
-  useFigureSessionLifecycle({
+  const { preferencesSaveState, preferencesLastSavedAt } = useFigureSessionLifecycle({
     sessionMode,
     durationSeconds,
     classPresetId,
@@ -164,6 +164,27 @@ export function useFigureSession() {
     clearTimers,
     revokeSlideUrl,
     clearPreloadedSlide
+  });
+
+  const saveTimeFormatter = new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit"
+  });
+
+  const settingsSaveStatusText = computed(() => {
+    if (preferencesSaveState.value === "saving") {
+      return "Saving settings...";
+    }
+
+    if (preferencesSaveState.value === "error") {
+      return "Unable to save settings in this browser.";
+    }
+
+    if (!preferencesLastSavedAt.value) {
+      return "Settings autosave is ready.";
+    }
+
+    return `Settings saved at ${saveTimeFormatter.format(preferencesLastSavedAt.value)}.`;
   });
 
   return {
@@ -192,6 +213,7 @@ export function useFigureSession() {
     restartActionLabel,
     statusMessage,
     uploadNotice,
+    settingsSaveStatusText,
     currentSlideUrl,
     currentSlideAlt,
     activePoseLabel,

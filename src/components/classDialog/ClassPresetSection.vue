@@ -1,6 +1,6 @@
 <template>
   <div class="grid gap-2">
-    <p class="text-xs uppercase tracking-wide text-slate-400">Class Length Preset</p>
+    <p class="fd-section-label">Class Length Preset</p>
     <div class="grid grid-cols-3 gap-2 max-[560px]:grid-cols-1">
       <BaseButton
         v-for="preset in classPresetOptions"

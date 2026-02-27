@@ -1,7 +1,7 @@
 <template>
   <div class="grid gap-2.5 stagger-in">
-    <section class="grid gap-2 rounded-md border border-slate-600/60 bg-slate-900/60 p-2">
-      <p class="text-xs font-medium uppercase tracking-wide text-slate-300">Live Controls</p>
+    <section class="fd-card grid gap-2 rounded-md p-2">
+      <p class="fd-section-label text-sm">Live Controls</p>
       <BaseButton compact :disabled="!isRunning && !isPaused" @click="$emit('toggle-pause')">
         {{ pauseLabel }}
       </BaseButton>
@@ -14,8 +14,8 @@
       <BaseButton compact tone="danger" @click="$emit('end')">End Session</BaseButton>
     </section>
 
-    <section v-if="sessionMode === 'quick'" class="grid gap-1.5 rounded-md border border-slate-600/60 bg-slate-900/60 p-2">
-      <p class="text-xs font-medium uppercase tracking-wide text-slate-300">Quick Timing</p>
+    <section v-if="sessionMode === 'quick'" class="fd-card grid gap-1.5 rounded-md p-2">
+      <p class="fd-section-label text-sm">Quick Timing</p>
       <DurationInput
         id="durationInputCompact"
         label="Sec / Photo"
@@ -26,11 +26,11 @@
       />
     </section>
 
-    <section class="grid gap-2 rounded-md border border-slate-600/60 bg-slate-900/60 p-2">
+    <section class="fd-card grid gap-2 rounded-md p-2">
       <div class="flex items-center justify-between gap-2">
         <div class="grid gap-0.5">
-          <p class="text-xs font-medium text-slate-200">Advanced Controls</p>
-          <p class="text-[11px] text-slate-400">Stage view and phone remote pairing.</p>
+          <p class="text-xs font-semibold text-stone-700">Advanced Controls</p>
+          <p class="text-[11px] text-stone-500">Stage view and phone remote pairing.</p>
         </div>
         <BaseButton compact tone="subtle" @click="toggleAdvancedControls">
           {{ isAdvancedControlsOpen ? "Hide" : "Show" }}
@@ -38,8 +38,8 @@
       </div>
 
       <div v-if="isAdvancedControlsOpen" class="grid gap-2">
-        <section class="grid gap-1 rounded-md border border-slate-600/60 bg-slate-950/40 p-2">
-          <p class="text-xs font-medium text-slate-200">Stage View</p>
+        <section class="fd-subtle-card grid gap-1 rounded-md p-2">
+          <p class="text-xs font-semibold text-stone-700">Stage View</p>
           <div class="grid grid-cols-1 gap-1">
             <BaseButton compact :tone="mirrorLiveView ? 'primary' : 'subtle'" @click="$emit('toggle-mirror-live-view')">
               {{ mirrorLiveView ? "Mirror: On" : "Mirror: Off" }}
@@ -53,32 +53,32 @@
           </div>
         </section>
 
-        <section class="grid gap-1.5 rounded-md border border-slate-600/60 bg-slate-950/40 p-2">
-          <p class="text-xs font-medium text-slate-200">Phone Remote</p>
-          <p class="text-[11px] text-slate-400">{{ remoteStatus }}</p>
+        <section class="fd-subtle-card grid gap-1.5 rounded-md p-2">
+          <p class="text-xs font-semibold text-stone-700">Phone Remote</p>
+          <p class="text-[11px] text-stone-500">{{ remoteStatus }}</p>
 
           <BaseButton compact tone="subtle" @click="$emit('remote-create-offer')">
             Generate Offer
           </BaseButton>
 
-          <label v-if="remoteOfferToken" class="grid gap-1 text-xs text-slate-300" for="remoteOfferToken">
+          <label v-if="remoteOfferToken" class="grid gap-1 text-xs text-stone-600" for="remoteOfferToken">
             <span>Offer Token (send to phone)</span>
             <textarea
               id="remoteOfferToken"
               readonly
               :value="remoteOfferToken"
               rows="4"
-              class="w-full rounded-md border border-slate-600 bg-slate-950 px-2 py-1.5 text-[11px] text-slate-100"
+              class="fd-input w-full rounded-md px-2 py-1.5 text-[11px]"
             />
           </label>
 
-          <label class="grid gap-1 text-xs text-slate-300" for="remoteAnswerToken">
+          <label class="grid gap-1 text-xs text-stone-600" for="remoteAnswerToken">
             <span>Answer Token (from phone)</span>
             <textarea
               id="remoteAnswerToken"
               v-model.trim="remoteAnswerToken"
               rows="3"
-              class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-[11px] text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              class="fd-input w-full rounded-md px-2 py-1.5 text-[11px]"
             />
           </label>
 

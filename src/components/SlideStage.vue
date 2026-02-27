@@ -17,7 +17,7 @@
         :src="currentSlideUrl"
         :alt="currentSlideAlt"
       />
-      <p v-else class="m-4 text-center text-sm text-slate-400">{{ placeholderText }}</p>
+      <p v-else class="m-4 text-center text-sm text-stone-500">{{ placeholderText }}</p>
     </div>
   </section>
 </template>
@@ -86,7 +86,7 @@ const stageClass = computed(() =>
 const imageWrapClass = computed(() =>
   props.isSessionLive
     ? "absolute inset-0 grid h-dvh min-h-dvh w-screen place-items-center bg-black"
-    : "grid h-[min(72vh,760px)] min-h-[min(72vh,760px)] w-full place-items-center bg-zinc-950 max-[720px]:h-[58vh] max-[720px]:min-h-[58vh]"
+    : "fd-stage-placeholder grid h-[min(72vh,760px)] min-h-[min(72vh,760px)] w-full place-items-center max-[720px]:h-[58vh] max-[720px]:min-h-[58vh]"
 );
 
 const imageClass = computed(() =>

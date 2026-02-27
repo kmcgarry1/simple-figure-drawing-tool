@@ -1,35 +1,35 @@
-<template>
+﻿<template>
   <div class="landing-stack grid gap-3 stagger-in">
     <section
-      class="relative grid gap-3 overflow-hidden rounded-xl border border-cyan-300/30 bg-[linear-gradient(150deg,rgba(8,25,52,0.92),rgba(12,35,62,0.84),rgba(11,28,42,0.88))] p-4 shadow-[0_20px_48px_rgb(2_6_23_/_0.48)]"
+      class="fd-hero-surface relative grid gap-3 overflow-hidden rounded-xl p-4"
     >
       <div
         aria-hidden="true"
-        class="pointer-events-none absolute -right-10 top-0 h-28 w-28 rounded-full bg-cyan-300/20 blur-3xl"
+        class="pointer-events-none absolute -right-10 top-0 h-28 w-28 rounded-full bg-sky-300/24 blur-3xl"
       />
       <div
         aria-hidden="true"
-        class="pointer-events-none absolute -left-8 bottom-0 h-24 w-24 rounded-full bg-emerald-300/20 blur-3xl"
+        class="pointer-events-none absolute -left-8 bottom-0 h-24 w-24 rounded-full bg-emerald-300/24 blur-3xl"
       />
       <div class="flex items-center justify-between gap-2">
         <div class="grid gap-0.5">
-          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100/80">Setup Overview</p>
-          <p class="text-[15px] font-semibold text-slate-50">{{ landingSummary }}</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">Setup Overview</p>
+          <p class="text-[15px] font-semibold text-stone-800">{{ landingSummary }}</p>
         </div>
-        <p class="rounded-full border border-cyan-300/35 bg-cyan-400/10 px-2.5 py-0.5 text-xs font-medium text-cyan-100/90">
+        <p class="rounded-full border border-amber-300/70 bg-orange-100/60 px-2.5 py-0.5 text-xs font-medium text-stone-700">
           {{ progressLabel }}
         </p>
       </div>
-      <div class="h-1.5 overflow-hidden rounded-full bg-slate-800/90">
+      <div class="h-1.5 overflow-hidden rounded-full bg-amber-100/80">
         <div
-          class="h-full rounded-full bg-gradient-to-r from-cyan-300 via-emerald-300 to-amber-300 transition-[width] duration-200"
+          class="h-full rounded-full bg-gradient-to-r from-sky-300 via-emerald-300 to-orange-300 transition-[width] duration-200"
           :style="{ width: `${progressPercent}%` }"
         />
       </div>
-      <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-300/90">
-        <span class="rounded-full border border-cyan-300/35 bg-cyan-500/10 px-2 py-0.5">Step-based setup</span>
-        <span class="rounded-full border border-emerald-300/35 bg-emerald-500/10 px-2 py-0.5">Fast randomizer</span>
-        <span class="rounded-full border border-amber-300/35 bg-amber-500/10 px-2 py-0.5">Live fullscreen</span>
+      <div class="flex flex-wrap items-center gap-2 text-[11px] text-stone-700">
+        <span class="rounded-full border border-amber-300/70 bg-sky-100/72 px-2 py-0.5">Step-based setup</span>
+        <span class="rounded-full border border-emerald-300/35 bg-emerald-100/70 px-2 py-0.5">Fast randomizer</span>
+        <span class="rounded-full border border-amber-300/35 bg-orange-100/70 px-2 py-0.5">Live fullscreen</span>
       </div>
       <div class="grid gap-2">
         <BaseButton @click="openWizard">
@@ -46,10 +46,10 @@
       </div>
     </section>
 
-    <div class="grid gap-1.5 rounded-lg border border-slate-600/70 bg-slate-900/55 px-3 py-2.5">
-      <p class="text-sm text-slate-200" role="status" aria-live="polite">{{ statusMessage }}</p>
-      <p v-if="uploadNotice" class="text-sm text-slate-200/95">{{ uploadNotice }}</p>
-      <p class="text-xs text-slate-400">Shortcuts: Space pause/resume, Right Arrow next, Esc end.</p>
+    <div class="grid gap-1.5 rounded-lg border border-amber-200/85 bg-white/68 px-3 py-2.5">
+      <p class="text-sm text-stone-700" role="status" aria-live="polite">{{ statusMessage }}</p>
+      <p v-if="uploadNotice" class="text-sm text-stone-700">{{ uploadNotice }}</p>
+      <p class="text-xs text-stone-500">Shortcuts: Space pause/resume, Right Arrow next, Esc end.</p>
     </div>
 
     <ClassSessionDialog
@@ -88,7 +88,7 @@
       <Transition appear name="dialog-fade">
         <div
           v-if="isWizardOpen"
-          class="fixed inset-0 z-[70] grid place-items-center bg-[radial-gradient(circle_at_10%_10%,rgba(34,211,238,0.22),transparent_35%),radial-gradient(circle_at_85%_15%,rgba(251,191,36,0.15),transparent_30%),rgba(2,6,23,0.82)] p-3 backdrop-blur-[4px]"
+          class="fixed inset-0 z-[70] grid place-items-center fd-dialog-backdrop p-3 backdrop-blur-[4px]"
           @click.self="closeWizard"
         >
           <section
@@ -98,25 +98,25 @@
             aria-labelledby="setup-wizard-title"
             aria-describedby="setup-wizard-description"
             tabindex="-1"
-            class="max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-xl border border-cyan-300/35 bg-[linear-gradient(160deg,rgba(9,18,38,0.96),rgba(15,26,48,0.93),rgba(18,24,37,0.96))] p-4 shadow-[0_30px_70px_rgb(2_6_23_/_0.7)]"
+            class="fd-modal-surface max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-xl p-4"
             @keydown="onWizardKeydown"
           >
             <header class="mb-3 flex items-start justify-between gap-3">
               <div class="grid gap-1">
                 <h2
                   id="setup-wizard-title"
-                  class="bg-gradient-to-r from-cyan-100 via-slate-100 to-emerald-100 bg-clip-text text-base font-semibold text-transparent"
+                  class="fd-title-gradient text-base font-semibold"
                 >
                   Setup Wizard
                 </h2>
-                <p id="setup-wizard-description" class="text-sm text-slate-200/90">
+                <p id="setup-wizard-description" class="text-sm text-stone-700">
                   Configure photos, session behavior, and advanced tools step by step.
                 </p>
               </div>
               <button
                 type="button"
                 aria-label="Close setup wizard dialog"
-                class="rounded-md border border-cyan-300/40 bg-slate-900/80 px-2.5 py-1.5 text-xs font-semibold text-cyan-100 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                class="rounded-md border border-amber-300/75 bg-white/78 px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
                 @click="closeWizard"
               >
                 Close
@@ -151,28 +151,28 @@
 
             <section
               v-if="wizardStep === 1"
-              class="grid gap-3 rounded-lg border border-cyan-300/25 bg-slate-950/35 p-3"
+              class="grid gap-3 rounded-lg border border-amber-200/80 bg-white/58 p-3"
             >
               <div class="grid gap-1">
-                <p class="text-sm font-semibold text-slate-100">Step 1: Add source photos</p>
-                <p class="text-xs text-slate-400">
+                <p class="text-sm font-semibold text-stone-800">Step 1: Add source photos</p>
+                <p class="text-xs text-stone-500">
                   Add files manually or load a folder. The app will validate and randomize from the accepted set.
                 </p>
               </div>
 
-              <label class="grid gap-1.5 text-sm text-slate-200" for="photoInput">
+              <label class="grid gap-1.5 text-sm text-stone-700" for="photoInput">
                 <span class="font-medium">Upload Photos</span>
                 <input
                   id="photoInput"
                   type="file"
                   :accept="fileInputAccept"
                   multiple
-                  class="w-full rounded-md border border-slate-600 bg-slate-900 px-2.5 py-2 text-sm text-slate-100 file:mr-2 file:cursor-pointer file:rounded file:border file:border-slate-600 file:bg-slate-700 file:px-2 file:py-1 file:text-sm file:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                  class="w-full rounded-md border border-amber-200/90 bg-white/84 px-2.5 py-2 text-sm text-stone-800 file:mr-2 file:cursor-pointer file:rounded file:border file:border-amber-200/90 file:bg-amber-50 file:px-2 file:py-1 file:text-sm file:text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
                   @change="onPhotosSelected"
                 />
               </label>
 
-              <label class="grid gap-1.5 text-sm text-slate-200" for="photoFolderInput">
+              <label class="grid gap-1.5 text-sm text-stone-700" for="photoFolderInput">
                 <span class="font-medium">Load Photo Folder</span>
                 <input
                   id="photoFolderInput"
@@ -181,23 +181,23 @@
                   multiple
                   webkitdirectory
                   directory
-                  class="w-full rounded-md border border-slate-600 bg-slate-900 px-2.5 py-2 text-sm text-slate-100 file:mr-2 file:cursor-pointer file:rounded file:border file:border-slate-600 file:bg-slate-700 file:px-2 file:py-1 file:text-sm file:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                  class="w-full rounded-md border border-amber-200/90 bg-white/84 px-2.5 py-2 text-sm text-stone-800 file:mr-2 file:cursor-pointer file:rounded file:border file:border-amber-200/90 file:bg-amber-50 file:px-2 file:py-1 file:text-sm file:text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
                   @change="onPhotosSelected"
                 />
               </label>
 
-              <p class="text-xs text-slate-500">
+              <p class="text-xs text-stone-500">
                 Current source pool: {{ taggedPhotos.length }} photo(s).
               </p>
             </section>
 
             <section
               v-else-if="wizardStep === 2"
-              class="grid gap-3 rounded-lg border border-cyan-300/25 bg-slate-950/35 p-3"
+              class="grid gap-3 rounded-lg border border-amber-200/80 bg-white/58 p-3"
             >
               <div class="grid gap-1">
-                <p class="text-sm font-semibold text-slate-100">Step 2: Configure session</p>
-                <p class="text-xs text-slate-400">
+                <p class="text-sm font-semibold text-stone-800">Step 2: Configure session</p>
+                <p class="text-xs text-stone-500">
                   Choose quick practice or class mode, then set timing and plan options.
                 </p>
               </div>
@@ -213,9 +213,9 @@
 
               <section
                 v-if="sessionMode === 'quick'"
-                class="grid gap-2 rounded-md border border-slate-700 bg-slate-900/60 p-2.5"
+                class="grid gap-2 rounded-md border border-amber-200/80 bg-white/64 p-2.5"
               >
-                <p class="text-sm font-semibold text-slate-100">2. Quick Session</p>
+                <p class="text-sm font-semibold text-stone-800">2. Quick Session</p>
                 <DurationInput
                   id="durationInput"
                   label="Seconds Per Photo"
@@ -227,15 +227,15 @@
 
               <section
                 v-else
-                class="grid gap-2 rounded-md border border-slate-700 bg-slate-900/60 p-2.5"
+                class="grid gap-2 rounded-md border border-amber-200/80 bg-white/64 p-2.5"
               >
-                <p class="text-sm font-semibold text-slate-100">2. Life Drawing Class Wizard</p>
+                <p class="text-sm font-semibold text-stone-800">2. Life Drawing Class Wizard</p>
                 <div
-                  class="grid gap-1 rounded-md border border-slate-700 bg-slate-950/50 px-2.5 py-2 text-sm text-slate-300"
+                  class="grid gap-1 rounded-md border border-amber-200/80 bg-white/60 px-2.5 py-2 text-sm text-stone-600"
                 >
                   <p>
                     Plan total:
-                    <span class="font-semibold text-slate-100">{{ classTotalMinutesText }}</span>
+                    <span class="font-semibold text-stone-800">{{ classTotalMinutesText }}</span>
                     across {{ classPoseCount }} poses.
                   </p>
                   <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>
@@ -255,11 +255,11 @@
 
             <section
               v-else
-              class="grid gap-3 rounded-lg border border-cyan-300/25 bg-slate-950/35 p-3"
+              class="grid gap-3 rounded-lg border border-amber-200/80 bg-white/58 p-3"
             >
               <div class="grid gap-1">
-                <p class="text-sm font-semibold text-slate-100">Step 3: Advanced tools</p>
-                <p class="text-xs text-slate-400">
+                <p class="text-sm font-semibold text-stone-800">Step 3: Advanced tools</p>
+                <p class="text-xs text-stone-500">
                   Fine-tune tags, transfer settings, and manage session history.
                 </p>
               </div>
@@ -272,16 +272,16 @@
                 @photo-reorder="$emit('photo-reorder', $event)"
               />
 
-              <section class="grid gap-2 rounded-md border border-slate-700 bg-slate-950/40 p-2.5">
-                <p class="text-sm font-semibold text-slate-100">Settings Transfer</p>
+              <section class="grid gap-2 rounded-md border border-amber-200/80 bg-white/56 p-2.5">
+                <p class="text-sm font-semibold text-stone-800">Settings Transfer</p>
                 <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
                   <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
-                  <label class="grid gap-1 text-xs text-slate-300">
+                  <label class="grid gap-1 text-xs text-stone-600">
                     <span>Import JSON</span>
                     <input
                       type="file"
                       accept="application/json,.json"
-                      class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-xs text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      class="w-full rounded-md border border-amber-200/90 bg-white/84 px-2 py-1.5 text-xs text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
                       @change="onImportSettingsSelected"
                     />
                   </label>
@@ -291,7 +291,7 @@
               <SessionHistorySection :session-history="sessionHistory" @clear-history="$emit('clear-history')" />
             </section>
 
-            <footer class="mt-3 flex items-center justify-between gap-2 border-t border-slate-700 pt-3">
+            <footer class="mt-3 flex items-center justify-between gap-2 border-t border-amber-200/80 pt-3">
               <BaseButton compact tone="subtle" :disabled="wizardStep === 1" @click="goToPreviousWizardStep">
                 Back
               </BaseButton>
@@ -544,21 +544,21 @@ function canNavigateToStep(stepNumber) {
 
 function wizardStepButtonClass(stepNumber) {
   const baseClass =
-    "rounded-md border px-2.5 py-2 text-xs font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+    "rounded-md border px-2.5 py-2 text-xs font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent";
 
   if (stepNumber === wizardStep.value) {
-    return `${baseClass} border-cyan-300/70 bg-cyan-400/15 text-cyan-100`;
+    return `${baseClass} border-sky-300/80 bg-sky-100/72 text-sky-900`;
   }
 
   if (!canNavigateToStep(stepNumber)) {
-    return `${baseClass} border-slate-700 bg-slate-950/40 text-slate-500`;
+    return `${baseClass} border-amber-200/80 bg-white/56 text-stone-500`;
   }
 
   if (stepNumber < wizardStep.value) {
-    return `${baseClass} border-emerald-400/70 bg-emerald-400/15 text-emerald-100`;
+    return `${baseClass} border-emerald-300/80 bg-emerald-100/70 text-emerald-800`;
   }
 
-  return `${baseClass} border-slate-600 bg-slate-900/70 text-slate-200 hover:bg-slate-800`;
+  return `${baseClass} border-amber-200/90 bg-white/70 text-stone-700 hover:bg-white`;
 }
 
 function setWizardStep(stepNumber) {
@@ -742,3 +742,4 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+

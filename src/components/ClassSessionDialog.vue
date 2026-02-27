@@ -3,7 +3,7 @@
     <Transition appear name="dialog-fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[80] grid place-items-center bg-slate-950/75 p-3 backdrop-blur-[2px]"
+        class="fd-dialog-backdrop fixed inset-0 z-[80] grid place-items-center p-3"
         @click.self="closeDialog"
       >
         <section
@@ -13,22 +13,22 @@
           aria-labelledby="class-dialog-title"
           aria-describedby="class-dialog-description"
           tabindex="-1"
-          class="max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-xl border border-slate-600 bg-slate-900 p-4 shadow-2xl"
+          class="fd-modal-surface max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-xl p-4"
           @keydown="onDialogKeydown"
         >
           <header class="mb-3 flex items-start justify-between gap-3">
             <div class="grid gap-1">
-              <h2 id="class-dialog-title" class="text-base font-semibold text-slate-100">
+              <h2 id="class-dialog-title" class="fd-title-gradient text-base font-semibold">
                 Life Drawing Class Wizard
               </h2>
-              <p id="class-dialog-description" class="text-sm text-slate-300">
+              <p id="class-dialog-description" class="text-sm text-stone-600">
                 Build your class plan and launch from this dialog.
               </p>
             </div>
             <button
               type="button"
               aria-label="Close class wizard dialog"
-              class="rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-100 transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              class="rounded-md border border-amber-300/75 bg-white/78 px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
               @click="closeDialog"
             >
               Close
@@ -64,10 +64,10 @@
               @class-template-delete="$emit('class-template-delete', $event)"
             />
 
-            <div class="grid gap-1 rounded-md border border-slate-700 bg-slate-950/50 px-2.5 py-2 text-sm text-slate-300">
+            <div class="grid gap-1 rounded-md border border-amber-200/80 bg-white/60 px-2.5 py-2 text-sm text-stone-600">
               <p>
                 Plan total:
-                <span class="font-semibold text-slate-100">{{ classTotalMinutesText }}</span>
+                <span class="font-semibold text-stone-800">{{ classTotalMinutesText }}</span>
                 across {{ classPoseCount }} poses.
               </p>
               <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>

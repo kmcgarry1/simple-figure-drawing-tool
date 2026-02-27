@@ -1,23 +1,23 @@
 <template>
-  <section class="grid gap-2 rounded-lg border border-cyan-300/25 bg-slate-900/55 p-3">
-    <p class="text-sm font-semibold text-slate-100">Photo Order and Tags</p>
-    <p class="text-xs text-slate-300">
+  <section class="fd-card grid gap-2 rounded-lg p-3">
+    <p class="text-sm font-semibold text-stone-800">Photo Order and Tags</p>
+    <p class="text-xs text-stone-600">
       Reorder photos and assign tags for specific class blocks. Order affects class runs when photo order is set to
       <strong>Sequential</strong>.
     </p>
-    <p v-if="availablePhotoTags.length > 0" class="text-xs text-slate-300">
+    <p v-if="availablePhotoTags.length > 0" class="text-xs text-stone-600">
       Active tags: {{ availablePhotoTags.join(", ") }}
     </p>
-    <p v-else class="text-xs text-slate-400">No tags assigned yet.</p>
+    <p v-else class="text-xs text-stone-500">No tags assigned yet.</p>
 
     <div class="grid max-h-[24rem] gap-2 overflow-y-auto pr-1">
       <article
         v-for="(photo, index) in taggedPhotos"
         :key="photo.id"
-        class="grid gap-2 rounded-lg border border-slate-700 bg-slate-950/60 p-2"
+        class="fd-subtle-card grid gap-2 rounded-lg p-2"
       >
         <div class="flex items-start gap-2">
-          <div class="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-slate-600 bg-slate-900">
+          <div class="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-amber-200/90 bg-white/84">
             <img
               v-if="previewUrlsById[photo.id]"
               class="h-full w-full object-cover"
@@ -26,7 +26,7 @@
             />
             <div
               v-else
-              class="grid h-full w-full place-items-center text-[10px] font-semibold uppercase tracking-wide text-slate-400"
+              class="grid h-full w-full place-items-center text-[10px] font-semibold uppercase tracking-wide text-stone-500"
             >
               IMG
             </div>
@@ -34,7 +34,7 @@
 
           <div class="min-w-0 flex-1 grid gap-1">
             <div class="flex items-center justify-between gap-2">
-              <span class="truncate text-xs font-medium text-slate-100">
+              <span class="truncate text-xs font-medium text-stone-800">
                 {{ index + 1 }}. {{ photo.name }}
               </span>
 
@@ -42,7 +42,7 @@
                 <button
                   type="button"
                   :disabled="index === 0"
-                  class="rounded border border-slate-600 bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-slate-200 transition-colors hover:bg-slate-800 disabled:opacity-35 disabled:hover:bg-slate-900"
+                  class="rounded border border-amber-200/90 bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
                   :aria-label="`Move ${photo.name} up`"
                   @click="requestPhotoReorder(photo.id, 'up')"
                 >
@@ -51,7 +51,7 @@
                 <button
                   type="button"
                   :disabled="index === taggedPhotos.length - 1"
-                  class="rounded border border-slate-600 bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-slate-200 transition-colors hover:bg-slate-800 disabled:opacity-35 disabled:hover:bg-slate-900"
+                  class="rounded border border-amber-200/90 bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
                   :aria-label="`Move ${photo.name} down`"
                   @click="requestPhotoReorder(photo.id, 'down')"
                 >
@@ -64,7 +64,7 @@
               type="text"
               :value="photo.tag"
               placeholder="Tag name (leave empty for all)"
-              class="w-full rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 text-xs text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
               @change="onTagChange(photo.id, $event)"
             />
           </div>

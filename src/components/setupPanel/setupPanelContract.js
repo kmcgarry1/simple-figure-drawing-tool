@@ -90,6 +90,14 @@ export const setupPanelProps = {
   settingsSaveStatusText: {
     type: String,
     required: true
+  },
+  sessionPreviewItems: {
+    type: Array,
+    required: true
+  },
+  sessionPreviewSummaryText: {
+    type: String,
+    required: true
   }
 };
 

@@ -9,6 +9,9 @@ import { IDLE_MESSAGE } from "./figureSession/sessionMessages";
 import { loadClassTemplates } from "./figureSession/classTemplates";
 import { loadSessionHistory } from "./figureSession/sessionHistory";
 import { useFigureSessionLifecycle } from "./figureSession/useFigureSessionLifecycle";
+import { formatDurationShort } from "./figureSession/formatters";
+
+const SESSION_PREVIEW_LIMIT = 5;
 
 export function useFigureSession() {
   const persistedPreferences = loadSessionPreferences();
@@ -187,6 +190,56 @@ export function useFigureSession() {
     return `Settings saved at ${saveTimeFormatter.format(preferencesLastSavedAt.value)}.`;
   });
 
+  const sessionPreviewItems = computed(() =>
+    sessionSlides.value.slice(0, SESSION_PREVIEW_LIMIT).map((slide, index) => {
+      const isBreak = slide.kind === "break";
+      const sequenceNumber =
+        slide.breakNumber || slide.poseNumber || index + 1;
+      const durationSeconds =
+        Number.parseInt(String(slide.durationSeconds), 10) ||
+        Math.max(0, Math.round((slide.durationMs || 0) / 1000));
+      const subtitleParts = [slide.label || (isBreak ? "Break" : "Pose")];
+
+      if (!isBreak && slide.file?.name) {
+        subtitleParts.push(slide.file.name);
+      }
+
+      return {
+        id: `${isBreak ? "break" : "pose"}-${sequenceNumber}-${index}`,
+        kind: isBreak ? "break" : "pose",
+        title: isBreak ? `Break ${sequenceNumber}` : `Pose ${sequenceNumber}`,
+        subtitle: subtitleParts.join(" | "),
+        durationText: formatDurationShort(durationSeconds)
+      };
+    })
+  );
+
+  const sessionPreviewSummaryText = computed(() => {
+    const totalSlides = sessionSlides.value.length;
+    if (totalSlides <= 0) {
+      return "No preview available yet.";
+    }
+
+    const poseCount = sessionSlides.value.filter((slide) => slide.kind !== "break").length;
+    const breakCount = sessionSlides.value.filter((slide) => slide.kind === "break").length;
+    const compositionParts = [];
+
+    if (poseCount > 0) {
+      compositionParts.push(`${poseCount} pose(s)`);
+    }
+    if (breakCount > 0) {
+      compositionParts.push(`${breakCount} break(s)`);
+    }
+
+    const compositionText = compositionParts.join(" + ");
+    const showingCount = Math.min(totalSlides, SESSION_PREVIEW_LIMIT);
+    if (showingCount < totalSlides) {
+      return `Showing first ${showingCount} of ${totalSlides} slides (${compositionText}).`;
+    }
+
+    return `Showing all ${totalSlides} slides (${compositionText}).`;
+  });
+
   return {
     fileInputAccept: FILE_INPUT_ACCEPT,
     sessionMode,
@@ -214,6 +267,8 @@ export function useFigureSession() {
     statusMessage,
     uploadNotice,
     settingsSaveStatusText,
+    sessionPreviewItems,
+    sessionPreviewSummaryText,
     currentSlideUrl,
     currentSlideAlt,
     activePoseLabel,

@@ -73,6 +73,11 @@
               <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>
             </div>
 
+            <SessionPreviewSection
+              :preview-items="sessionPreviewItems"
+              :preview-summary-text="sessionPreviewSummaryText"
+            />
+
             <div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2">
               <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
                 {{ startActionLabel }}
@@ -95,6 +100,7 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
+import SessionPreviewSection from "./SessionPreviewSection.vue";
 import ClassPhotoSequenceSection from "./classDialog/ClassPhotoSequenceSection.vue";
 import ClassPoseBlocksSection from "./classDialog/ClassPoseBlocksSection.vue";
 import ClassPresetSection from "./classDialog/ClassPresetSection.vue";
@@ -172,6 +178,14 @@ const props = defineProps({
   },
   hasSourcePhotos: {
     type: Boolean,
+    required: true
+  },
+  sessionPreviewItems: {
+    type: Array,
+    required: true
+  },
+  sessionPreviewSummaryText: {
+    type: String,
     required: true
   }
 });

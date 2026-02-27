@@ -33,6 +33,8 @@
           :status-message="statusMessage"
           :upload-notice="uploadNotice"
           :settings-save-status-text="settingsSaveStatusText"
+          :session-preview-items="sessionPreviewItems"
+          :session-preview-summary-text="sessionPreviewSummaryText"
           @photos-selected="handlePhotoSelection"
           @session-mode-change="setSessionMode"
           @duration-input="updateDurationSeconds"
@@ -147,6 +149,8 @@ const {
   statusMessage,
   uploadNotice,
   settingsSaveStatusText,
+  sessionPreviewItems,
+  sessionPreviewSummaryText,
   currentSlideUrl,
   currentSlideAlt,
   activePoseLabel,

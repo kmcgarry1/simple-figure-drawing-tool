@@ -35,6 +35,8 @@
       :start-action-label="startActionLabel"
       :regenerate-action-label="regenerateActionLabel"
       :has-source-photos="hasSourcePhotos"
+      :session-preview-items="sessionPreviewItems"
+      :session-preview-summary-text="sessionPreviewSummaryText"
       @close="closeClassDialog"
       @class-preset-change="$emit('class-preset-change', $event)"
       @class-block-update="$emit('class-block-update', $event)"

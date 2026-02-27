@@ -51,6 +51,24 @@ test("quick session flow can start, pause, and end", async ({ page }) => {
   await expect(page.getByText("Session stopped.")).toBeVisible();
 });
 
+test("session preview appears before starting from setup wizard", async ({ page }) => {
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await page.getByRole("button", { name: "1. Photos" }).click();
+  await page.getByLabel("Upload Photos").setInputFiles([
+    createPngFilePayload("pose-1.png"),
+    createPngFilePayload("pose-2.png"),
+    createPngFilePayload("pose-3.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizard.getByRole("button", { name: "2. Session" }).click();
+  await expect(wizard.getByText("Session Preview")).toBeVisible();
+  await expect(wizard.getByText(/Showing (first|all)/)).toBeVisible();
+  await expect(wizard.getByText(/Pose 1/)).toBeVisible();
+});
+
 test("live quick timer does not reset when duration input is focused and blurred unchanged", async ({
   page
 }) => {

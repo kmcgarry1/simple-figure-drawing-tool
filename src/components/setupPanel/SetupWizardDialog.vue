@@ -80,6 +80,8 @@
             :regenerate-action-label="regenerateActionLabel"
             :has-source-photos="hasSourcePhotos"
             :can-start-session="canStartSession"
+            :session-preview-items="sessionPreviewItems"
+            :session-preview-summary-text="sessionPreviewSummaryText"
             @session-mode-change="$emit('session-mode-change', $event)"
             @duration-input="$emit('duration-input', $event)"
             @duration-change="$emit('duration-change')"

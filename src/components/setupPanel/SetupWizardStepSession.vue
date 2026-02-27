@@ -48,6 +48,11 @@
       <BaseButton tone="subtle" @click="$emit('open-class-dialog')">Edit Class Plan</BaseButton>
     </section>
 
+    <SessionPreviewSection
+      :preview-items="sessionPreviewItems"
+      :preview-summary-text="sessionPreviewSummaryText"
+    />
+
     <div class="grid gap-2">
       <BaseButton :disabled="!canStartSession" @click="$emit('start-session')">
         {{ startActionLabel }}
@@ -62,6 +67,7 @@
 <script setup>
 import BaseButton from "../BaseButton.vue";
 import DurationInput from "../DurationInput.vue";
+import SessionPreviewSection from "../SessionPreviewSection.vue";
 
 const props = defineProps({
   sessionMode: {
@@ -102,6 +108,14 @@ const props = defineProps({
   },
   canStartSession: {
     type: Boolean,
+    required: true
+  },
+  sessionPreviewItems: {
+    type: Array,
+    required: true
+  },
+  sessionPreviewSummaryText: {
+    type: String,
     required: true
   }
 });

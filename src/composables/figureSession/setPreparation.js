@@ -75,7 +75,7 @@ export function createSetPreparationController({
       return false;
     }
 
-    const { slides, safeBlocks, poseCount, fallbackTagBlocks } = createClassSlides({
+    const { slides, safeBlocks, poseCount, breakCount, fallbackTagBlocks } = createClassSlides({
       sourcePhotos: sourcePhotos.value,
       classBlocks: classBlocks.value,
       classPhotoOrder: classPhotoOrder.value,
@@ -94,6 +94,11 @@ export function createSetPreparationController({
     phase.value = "ready";
     revokeSlideUrl();
 
+    const breakSummaryText =
+      breakCount > 0
+        ? `${poseCount} poses + ${breakCount} break(s)`
+        : `${poseCount} poses`;
+
     const fallbackTagCount = fallbackTagBlocks.length;
     if (fallbackTagCount > 0) {
       const fallbackTags = Array.from(
@@ -103,11 +108,11 @@ export function createSetPreparationController({
             .filter(Boolean)
         )
       ).join(", ");
-      statusMessage.value = `Class set ready: ${poseCount} poses, ${classTotalMinutesText.value} total (${classDeltaText.value}). ${fallbackTagCount} block(s) had no photo matches for tag(s): ${fallbackTags}. Used all photos for those blocks.`;
+      statusMessage.value = `Class set ready: ${breakSummaryText}, ${classTotalMinutesText.value} total (${classDeltaText.value}). ${fallbackTagCount} block(s) had no photo matches for tag(s): ${fallbackTags}. Used all photos for those blocks.`;
       return true;
     }
 
-    statusMessage.value = `Class set ready: ${poseCount} poses, ${classTotalMinutesText.value} total (${classDeltaText.value}).`;
+    statusMessage.value = `Class set ready: ${breakSummaryText}, ${classTotalMinutesText.value} total (${classDeltaText.value}).`;
     return true;
   }
 

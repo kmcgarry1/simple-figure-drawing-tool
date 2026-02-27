@@ -37,11 +37,14 @@ export function createClassPlanActions({
     }
   }
 
-  function addClassBlock() {
-    classBlocks.value = appendClassBlock(classBlocks.value);
+  function addClassBlock(blockType = "pose") {
+    classBlocks.value = appendClassBlock(classBlocks.value, blockType);
 
     if (sessionMode.value === SESSION_MODE_CLASS && !isSessionLive.value) {
-      statusMessage.value = "Added a custom block.";
+      statusMessage.value =
+        String(blockType || "").toLowerCase() === "break"
+          ? "Added a break block."
+          : "Added a custom block.";
     }
   }
 

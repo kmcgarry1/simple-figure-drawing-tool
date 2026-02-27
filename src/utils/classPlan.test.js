@@ -17,6 +17,7 @@ describe("sanitizeClassBlocks", () => {
 
     expect(result).toEqual([
       {
+        blockType: "pose",
         label: "Custom Block",
         durationSeconds: 120,
         poseCount: 1,
@@ -29,13 +30,15 @@ describe("sanitizeClassBlocks", () => {
 describe("calculateClassPlanSummary", () => {
   it("returns total poses and total seconds", () => {
     const summary = calculateClassPlanSummary([
-      { label: "Gesture", durationSeconds: 30, poseCount: 4 },
-      { label: "Long Pose", durationSeconds: 300, poseCount: 2 }
+      { label: "Gesture", durationSeconds: 30, poseCount: 4, blockType: "pose" },
+      { label: "Break", durationSeconds: 300, poseCount: 1, blockType: "break" },
+      { label: "Long Pose", durationSeconds: 300, poseCount: 2, blockType: "pose" }
     ]);
 
     expect(summary).toEqual({
       totalPoses: 6,
-      totalSeconds: 720
+      totalBreaks: 1,
+      totalSeconds: 1020
     });
   });
 });
@@ -48,9 +51,9 @@ describe("expandClassBlocks", () => {
     ]);
 
     expect(poses).toEqual([
-      { label: "Warm-up", durationSeconds: 60 },
-      { label: "Warm-up", durationSeconds: 60 },
-      { label: "Long Pose", durationSeconds: 300 }
+      { label: "Warm-up", durationSeconds: 60, blockType: "pose" },
+      { label: "Warm-up", durationSeconds: 60, blockType: "pose" },
+      { label: "Long Pose", durationSeconds: 300, blockType: "pose" }
     ]);
   });
 });

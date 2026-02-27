@@ -46,7 +46,7 @@
               :class-blocks="classBlocks"
               :available-photo-tags="availablePhotoTags"
               @class-block-update="$emit('class-block-update', $event)"
-              @class-block-add="$emit('class-block-add')"
+              @class-block-add="$emit('class-block-add', $event)"
               @class-block-remove="$emit('class-block-remove', $event)"
             />
 

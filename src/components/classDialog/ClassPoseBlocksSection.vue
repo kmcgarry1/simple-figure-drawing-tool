@@ -1,11 +1,23 @@
 <template>
   <div class="grid gap-2">
-    <p class="fd-section-label">Pose Blocks</p>
+    <p class="fd-section-label">Class Blocks</p>
     <article
       v-for="(block, index) in classBlocks"
       :key="`pose-block-${index}`"
       class="fd-subtle-card grid gap-2 rounded-md p-2.5"
     >
+      <label class="grid gap-1 text-xs text-stone-600">
+        <span>Block Type</span>
+        <select
+          :value="resolveBlockType(block)"
+          class="fd-input w-full rounded-md px-2 py-1.5 text-sm"
+          @change="onBlockTypeChange(index, $event)"
+        >
+          <option value="pose">Pose Block</option>
+          <option value="break">Break Block</option>
+        </select>
+      </label>
+
       <label class="grid gap-1 text-xs text-stone-600">
         <span>Block Name</span>
         <input
@@ -18,7 +30,7 @@
 
       <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
         <label class="grid gap-1 text-xs text-stone-600">
-          <span>Seconds Per Pose</span>
+          <span>{{ resolveBlockType(block) === "break" ? "Seconds Per Break" : "Seconds Per Pose" }}</span>
           <input
             type="number"
             min="5"
@@ -30,7 +42,7 @@
         </label>
 
         <label class="grid gap-1 text-xs text-stone-600">
-          <span>Pose Count</span>
+          <span>{{ resolveBlockType(block) === "break" ? "Break Count" : "Pose Count" }}</span>
           <input
             type="number"
             min="1"
@@ -42,7 +54,7 @@
         </label>
       </div>
 
-      <label class="grid gap-1 text-xs text-stone-600">
+      <label v-if="resolveBlockType(block) === 'pose'" class="grid gap-1 text-xs text-stone-600">
         <span>Photo Tag</span>
         <select
           :value="block.photoTag || 'all'"
@@ -64,7 +76,14 @@
       </BaseButton>
     </article>
 
-    <BaseButton compact tone="subtle" @click="$emit('class-block-add')">Add Block</BaseButton>
+    <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
+      <BaseButton compact tone="subtle" @click="$emit('class-block-add', 'pose')">
+        Add Pose Block
+      </BaseButton>
+      <BaseButton compact tone="subtle" @click="$emit('class-block-add', 'break')">
+        Add Break Block
+      </BaseButton>
+    </div>
   </div>
 </template>
 
@@ -114,5 +133,17 @@ function onBlockPhotoTagChange(index, event) {
     field: "photoTag",
     value: event.target.value
   });
+}
+
+function onBlockTypeChange(index, event) {
+  emit("class-block-update", {
+    index,
+    field: "blockType",
+    value: event.target.value
+  });
+}
+
+function resolveBlockType(block) {
+  return String(block?.blockType || "").trim().toLowerCase() === "break" ? "break" : "pose";
 }
 </script>

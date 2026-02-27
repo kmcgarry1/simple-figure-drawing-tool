@@ -92,6 +92,7 @@ describe("session preference storage", () => {
     });
     expect(loaded.classBlocks).toEqual([
       {
+        blockType: "pose",
         label: "Gestures",
         durationSeconds: 45,
         poseCount: 4,

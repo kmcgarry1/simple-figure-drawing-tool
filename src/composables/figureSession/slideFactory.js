@@ -1,15 +1,29 @@
 import { SESSION_PHOTO_LIMIT } from "../../config";
-import { sanitizeClassBlocks } from "../../utils/classPlan";
+import {
+  CLASS_BLOCK_TYPE_BREAK,
+  sanitizeClassBlocks
+} from "../../utils/classPlan";
 import { chooseRandomPhotos, createPhotoId } from "../../utils/photoInput";
 import { PHOTO_ORDER_SEQUENTIAL } from "./constants";
 
 function createSlideFromPose(file, pose, index) {
   return {
+    kind: "pose",
     file,
     durationSeconds: pose.durationSeconds,
     durationMs: pose.durationSeconds * 1000,
     label: pose.label,
     poseNumber: index + 1
+  };
+}
+
+function createBreakSlide({ label, durationSeconds, breakNumber }) {
+  return {
+    kind: "break",
+    durationSeconds,
+    durationMs: durationSeconds * 1000,
+    label,
+    breakNumber
   };
 }
 
@@ -137,9 +151,24 @@ export function createClassSlides({
   const fallbackTagBlocks = [];
 
   let poseIndex = 0;
+  let breakIndex = 0;
   let previousPhoto = null;
 
   for (const block of safeBlocks) {
+    if (block.blockType === CLASS_BLOCK_TYPE_BREAK) {
+      for (let index = 0; index < block.poseCount; index += 1) {
+        breakIndex += 1;
+        slides.push(
+          createBreakSlide({
+            label: block.label,
+            durationSeconds: block.durationSeconds,
+            breakNumber: breakIndex
+          })
+        );
+      }
+      continue;
+    }
+
     const { eligiblePhotos, usedTagFallback } = resolveEligiblePhotosForBlock({
       sourcePhotos,
       photoTagsById,
@@ -179,6 +208,7 @@ export function createClassSlides({
     slides,
     safeBlocks,
     poseCount: poseIndex,
+    breakCount: breakIndex,
     fallbackTagBlocks
   };
 }

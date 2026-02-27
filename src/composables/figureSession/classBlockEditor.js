@@ -1,9 +1,18 @@
 import { sanitizeClassBlocks } from "../../utils/classPlan";
 
-const CUSTOM_BLOCK_TEMPLATE = Object.freeze({
+const CUSTOM_POSE_BLOCK_TEMPLATE = Object.freeze({
   label: "Custom Block",
   durationSeconds: 120,
   poseCount: 6,
+  blockType: "pose",
+  photoTag: "all"
+});
+
+const CUSTOM_BREAK_BLOCK_TEMPLATE = Object.freeze({
+  label: "Break",
+  durationSeconds: 300,
+  poseCount: 1,
+  blockType: "break",
   photoTag: "all"
 });
 
@@ -13,6 +22,14 @@ function parseMaybeInt(value) {
     return null;
   }
   return parsed;
+}
+
+function normalizeBlockType(value) {
+  return String(value || "").trim().toLowerCase() === "break" ? "break" : "pose";
+}
+
+function resolveBlockTemplate(blockType) {
+  return blockType === "break" ? CUSTOM_BREAK_BLOCK_TEMPLATE : CUSTOM_POSE_BLOCK_TEMPLATE;
 }
 
 export function updateClassBlocks(blocks, { index, field, value }) {
@@ -61,14 +78,34 @@ export function updateClassBlocks(blocks, { index, field, value }) {
       };
     }
 
+    if (field === "blockType") {
+      const blockType = normalizeBlockType(value);
+      const nextLabel = String(block.label ?? "").trim();
+
+      return {
+        ...block,
+        blockType,
+        label:
+          blockType === "break"
+            ? nextLabel && nextLabel !== CUSTOM_POSE_BLOCK_TEMPLATE.label
+              ? nextLabel
+              : CUSTOM_BREAK_BLOCK_TEMPLATE.label
+            : nextLabel === CUSTOM_BREAK_BLOCK_TEMPLATE.label
+              ? CUSTOM_POSE_BLOCK_TEMPLATE.label
+              : nextLabel || CUSTOM_POSE_BLOCK_TEMPLATE.label,
+        photoTag: "all"
+      };
+    }
+
     return { ...block };
   });
 
   return sanitizeClassBlocks(nextBlocks);
 }
 
-export function appendClassBlock(blocks) {
-  return sanitizeClassBlocks([...blocks, { ...CUSTOM_BLOCK_TEMPLATE }]);
+export function appendClassBlock(blocks, blockType = "pose") {
+  const template = resolveBlockTemplate(normalizeBlockType(blockType));
+  return sanitizeClassBlocks([...blocks, { ...template }]);
 }
 
 export function removeClassBlock(blocks, index) {

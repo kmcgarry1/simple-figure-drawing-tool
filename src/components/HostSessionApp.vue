@@ -52,6 +52,10 @@
           @class-template-save="saveClassTemplateByName"
           @class-template-load="loadClassTemplateById"
           @class-template-delete="deleteClassTemplateById"
+          @class-template-rename="renameClassTemplateById"
+          @class-template-duplicate="duplicateClassTemplateById"
+          @class-template-export="exportClassTemplatesJson"
+          @class-template-import="importClassTemplatesFromFile"
           @start-session="startFreshSession"
           @new-random-set="createNewRandomSet"
           @clear-history="clearSessionHistory"
@@ -187,6 +191,10 @@ const {
   saveClassTemplateByName,
   loadClassTemplateById,
   deleteClassTemplateById,
+  renameClassTemplateById,
+  duplicateClassTemplateById,
+  exportClassTemplatesJson,
+  importClassTemplatesFromFile,
   startFreshSession,
   togglePause,
   goToNextSlide,

@@ -119,6 +119,10 @@ export const setupPanelEmits = [
   "class-template-save",
   "class-template-load",
   "class-template-delete",
+  "class-template-rename",
+  "class-template-duplicate",
+  "class-template-export",
+  "class-template-import",
   "start-session",
   "new-random-set",
   "clear-history"

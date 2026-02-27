@@ -47,6 +47,10 @@
       @class-template-save="$emit('class-template-save', $event)"
       @class-template-load="$emit('class-template-load', $event)"
       @class-template-delete="$emit('class-template-delete', $event)"
+      @class-template-rename="$emit('class-template-rename', $event)"
+      @class-template-duplicate="$emit('class-template-duplicate', $event)"
+      @class-template-export="$emit('class-template-export')"
+      @class-template-import="$emit('class-template-import', $event)"
       @start-session="$emit('start-session')"
       @new-random-set="$emit('new-random-set')"
     />

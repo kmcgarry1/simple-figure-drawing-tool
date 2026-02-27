@@ -166,7 +166,15 @@ export function createSessionControllers({
     prepareActiveSet
   });
 
-  const { saveClassTemplateByName, loadClassTemplateById, deleteClassTemplateById } =
+  const {
+    saveClassTemplateByName,
+    loadClassTemplateById,
+    deleteClassTemplateById,
+    renameClassTemplateById,
+    duplicateClassTemplateById,
+    exportClassTemplatesJson,
+    importClassTemplatesFromFile
+  } =
     createClassTemplateActions({
       classTemplates,
       classBlocks,
@@ -237,6 +245,10 @@ export function createSessionControllers({
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
+    renameClassTemplateById,
+    duplicateClassTemplateById,
+    exportClassTemplatesJson,
+    importClassTemplatesFromFile,
     startFreshSession,
     applyDurationChange,
     createNewRandomSet,

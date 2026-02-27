@@ -62,6 +62,10 @@
               @class-template-save="$emit('class-template-save', $event)"
               @class-template-load="$emit('class-template-load', $event)"
               @class-template-delete="$emit('class-template-delete', $event)"
+              @class-template-rename="$emit('class-template-rename', $event)"
+              @class-template-duplicate="$emit('class-template-duplicate', $event)"
+              @class-template-export="$emit('class-template-export')"
+              @class-template-import="$emit('class-template-import', $event)"
             />
 
             <div class="grid gap-1 rounded-md border border-amber-200/80 bg-white/60 px-2.5 py-2 text-sm text-stone-600">
@@ -201,6 +205,10 @@ const emit = defineEmits([
   "class-template-save",
   "class-template-load",
   "class-template-delete",
+  "class-template-rename",
+  "class-template-duplicate",
+  "class-template-export",
+  "class-template-import",
   "start-session",
   "new-random-set"
 ]);

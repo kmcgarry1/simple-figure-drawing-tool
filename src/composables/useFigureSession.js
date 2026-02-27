@@ -10,6 +10,7 @@ import { loadClassTemplates } from "./figureSession/classTemplates";
 import { loadSessionHistory } from "./figureSession/sessionHistory";
 import { useFigureSessionLifecycle } from "./figureSession/useFigureSessionLifecycle";
 import { formatDurationShort } from "./figureSession/formatters";
+import { useAudioCues } from "./useAudioCues";
 
 const SESSION_PREVIEW_LIMIT = 5;
 
@@ -41,6 +42,8 @@ export function useFigureSession() {
   const mirrorLiveView = ref(Boolean(persistedPreferences.mirrorLiveView));
   const grayscaleLiveView = ref(Boolean(persistedPreferences.grayscaleLiveView));
   const hideLiveOverlay = ref(Boolean(persistedPreferences.hideLiveOverlay));
+  const audioMuted = ref(Boolean(persistedPreferences.audioMuted));
+  const audioVolumePercent = ref(Number(persistedPreferences.audioVolumePercent));
 
   const remainingMs = ref(0);
   const activeSlideDurationMs = ref(0);
@@ -82,6 +85,10 @@ export function useFigureSession() {
     remainingMs,
     activeSlideDurationMs
   });
+  const { playCountdownCue, playSlideCompleteCue } = useAudioCues({
+    audioMuted,
+    audioVolumePercent
+  });
 
   const {
     clearTimers,
@@ -114,7 +121,9 @@ export function useFigureSession() {
     setSessionMode,
     toggleMirrorLiveView,
     toggleGrayscaleLiveView,
-    toggleHideLiveOverlay
+    toggleHideLiveOverlay,
+    toggleAudioMuted,
+    setAudioVolumePercent
   } = createSessionControllers({
     sourcePhotos,
     sessionSlides,
@@ -133,6 +142,8 @@ export function useFigureSession() {
     mirrorLiveView,
     grayscaleLiveView,
     hideLiveOverlay,
+    audioMuted,
+    audioVolumePercent,
     uploadNotice,
     hasSourcePhotos,
     isRunning,
@@ -147,7 +158,9 @@ export function useFigureSession() {
     runPlannedSlides,
     currentSlideUrl,
     currentSlideAlt,
-    slideCounterText
+    slideCounterText,
+    onCountdownCue: playCountdownCue,
+    onSlideCompleteCue: playSlideCompleteCue
   });
 
   const { preferencesSaveState, preferencesLastSavedAt } = useFigureSessionLifecycle({
@@ -161,6 +174,8 @@ export function useFigureSession() {
     mirrorLiveView,
     grayscaleLiveView,
     hideLiveOverlay,
+    audioMuted,
+    audioVolumePercent,
     phase,
     runPlannedSlides,
     recordSessionHistory,
@@ -256,6 +271,8 @@ export function useFigureSession() {
     mirrorLiveView,
     grayscaleLiveView,
     hideLiveOverlay,
+    audioMuted,
+    audioVolumePercent,
     hasClassPlan,
     classTargetMinutes,
     classPoseCount,
@@ -292,6 +309,8 @@ export function useFigureSession() {
     toggleMirrorLiveView,
     toggleGrayscaleLiveView,
     toggleHideLiveOverlay,
+    toggleAudioMuted,
+    setAudioVolumePercent,
     exportSettingsJson,
     importSettingsFromFile,
     saveClassTemplateByName,

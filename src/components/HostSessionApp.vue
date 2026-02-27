@@ -64,6 +64,8 @@
           :mirror-live-view="mirrorLiveView"
           :grayscale-live-view="grayscaleLiveView"
           :hide-live-overlay="hideLiveOverlay"
+          :audio-muted="audioMuted"
+          :audio-volume-percent="audioVolumePercent"
           :is-running="isRunning"
           :is-paused="isPaused"
           :has-source-photos="hasSourcePhotos"
@@ -79,6 +81,8 @@
           @toggle-mirror-live-view="toggleMirrorLiveView"
           @toggle-grayscale-live-view="toggleGrayscaleLiveView"
           @toggle-hide-live-overlay="toggleHideLiveOverlay"
+          @toggle-audio-muted="toggleAudioMuted"
+          @audio-volume-input="setAudioVolumePercent"
           @toggle-pause="togglePause"
           @next="goToNextSlide"
           @new-set="createNewRandomSet"
@@ -136,6 +140,8 @@ const {
   mirrorLiveView,
   grayscaleLiveView,
   hideLiveOverlay,
+  audioMuted,
+  audioVolumePercent,
   classTemplates,
   hasClassPlan,
   classTargetMinutes,
@@ -174,6 +180,8 @@ const {
   toggleMirrorLiveView,
   toggleGrayscaleLiveView,
   toggleHideLiveOverlay,
+  toggleAudioMuted,
+  setAudioVolumePercent,
   exportSettingsJson,
   importSettingsFromFile,
   saveClassTemplateByName,

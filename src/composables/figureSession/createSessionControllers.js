@@ -25,6 +25,8 @@ export function createSessionControllers({
   mirrorLiveView,
   grayscaleLiveView,
   hideLiveOverlay,
+  audioMuted,
+  audioVolumePercent,
   uploadNotice,
   hasSourcePhotos,
   isRunning,
@@ -39,7 +41,9 @@ export function createSessionControllers({
   runPlannedSlides,
   currentSlideUrl,
   currentSlideAlt,
-  slideCounterText
+  slideCounterText,
+  onCountdownCue,
+  onSlideCompleteCue
 }) {
   const {
     clearTimers,
@@ -65,7 +69,9 @@ export function createSessionControllers({
     isRunning,
     isPaused,
     activeSlide,
-    slideCounterText
+    slideCounterText,
+    onCountdownCue,
+    onSlideCompleteCue
   });
 
   const {
@@ -147,6 +153,8 @@ export function createSessionControllers({
     classPhotoOrder,
     avoidImmediateRepeats,
     photoTagsById,
+    audioMuted,
+    audioVolumePercent,
     hasSourcePhotos,
     isSessionLive,
     phase,
@@ -173,7 +181,9 @@ export function createSessionControllers({
     setSessionMode,
     toggleMirrorLiveView,
     toggleGrayscaleLiveView,
-    toggleHideLiveOverlay
+    toggleHideLiveOverlay,
+    toggleAudioMuted,
+    setAudioVolumePercent
   } = createSessionRuntimeActions({
     sessionMode,
     phase,
@@ -198,7 +208,9 @@ export function createSessionControllers({
     recordSessionHistory,
     mirrorLiveView,
     grayscaleLiveView,
-    hideLiveOverlay
+    hideLiveOverlay,
+    audioMuted,
+    audioVolumePercent
   });
 
   return {
@@ -232,6 +244,8 @@ export function createSessionControllers({
     setSessionMode,
     toggleMirrorLiveView,
     toggleGrayscaleLiveView,
-    toggleHideLiveOverlay
+    toggleHideLiveOverlay,
+    toggleAudioMuted,
+    setAudioVolumePercent
   };
 }

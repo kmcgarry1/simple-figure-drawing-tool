@@ -28,7 +28,9 @@ export function createSessionRuntimeActions({
   recordSessionHistory,
   mirrorLiveView,
   grayscaleLiveView,
-  hideLiveOverlay
+  hideLiveOverlay,
+  audioMuted,
+  audioVolumePercent
 }) {
   function startFreshSession() {
     if (!hasSourcePhotos.value) {
@@ -153,6 +155,20 @@ export function createSessionRuntimeActions({
     hideLiveOverlay.value = !hideLiveOverlay.value;
   }
 
+  function toggleAudioMuted() {
+    audioMuted.value = !audioMuted.value;
+  }
+
+  function setAudioVolumePercent(nextValue) {
+    const parsedValue = Number(nextValue);
+    if (!Number.isFinite(parsedValue)) {
+      return;
+    }
+
+    const normalizedValue = Math.min(100, Math.max(0, Math.round(parsedValue)));
+    audioVolumePercent.value = normalizedValue;
+  }
+
   return {
     startFreshSession,
     applyDurationChange,
@@ -161,6 +177,8 @@ export function createSessionRuntimeActions({
     setSessionMode,
     toggleMirrorLiveView,
     toggleGrayscaleLiveView,
-    toggleHideLiveOverlay
+    toggleHideLiveOverlay,
+    toggleAudioMuted,
+    setAudioVolumePercent
   };
 }

@@ -53,6 +53,28 @@
           </div>
         </section>
 
+        <section class="fd-subtle-card grid gap-1 rounded-md p-2">
+          <p class="text-xs font-semibold text-stone-700">Audio Cues</p>
+          <div class="grid grid-cols-1 gap-1">
+            <BaseButton compact :tone="audioMuted ? 'subtle' : 'primary'" @click="$emit('toggle-audio-muted')">
+              {{ audioMuted ? "Audio Cues: Muted" : "Audio Cues: On" }}
+            </BaseButton>
+            <label class="grid gap-1 text-xs text-stone-600" for="audioVolumePercent">
+              <span>Volume: {{ audioVolumePercent }}%</span>
+              <input
+                id="audioVolumePercent"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                :value="audioVolumePercent"
+                class="fd-input w-full accent-amber-500"
+                @input="$emit('audio-volume-input', $event.target.value)"
+              />
+            </label>
+          </div>
+        </section>
+
         <section class="fd-subtle-card grid gap-1.5 rounded-md p-2">
           <p class="text-xs font-semibold text-stone-700">Phone Remote</p>
           <p class="text-[11px] text-stone-500">{{ remoteStatus }}</p>
@@ -151,6 +173,14 @@ defineProps({
     type: Boolean,
     required: true
   },
+  audioMuted: {
+    type: Boolean,
+    required: true
+  },
+  audioVolumePercent: {
+    type: [Number, String],
+    required: true
+  },
   isRunning: {
     type: Boolean,
     required: true
@@ -199,6 +229,8 @@ const emit = defineEmits([
   "toggle-mirror-live-view",
   "toggle-grayscale-live-view",
   "toggle-hide-live-overlay",
+  "toggle-audio-muted",
+  "audio-volume-input",
   "toggle-pause",
   "next",
   "new-set",

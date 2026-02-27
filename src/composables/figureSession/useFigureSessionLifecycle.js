@@ -12,6 +12,8 @@ export function useFigureSessionLifecycle({
   mirrorLiveView,
   grayscaleLiveView,
   hideLiveOverlay,
+  audioMuted,
+  audioVolumePercent,
   phase,
   runPlannedSlides,
   recordSessionHistory,
@@ -36,7 +38,9 @@ export function useFigureSessionLifecycle({
       photoTagsById: photoTagsById.value,
       mirrorLiveView: mirrorLiveView.value,
       grayscaleLiveView: grayscaleLiveView.value,
-      hideLiveOverlay: hideLiveOverlay.value
+      hideLiveOverlay: hideLiveOverlay.value,
+      audioMuted: audioMuted.value,
+      audioVolumePercent: audioVolumePercent.value
     };
   }
 
@@ -100,7 +104,9 @@ export function useFigureSessionLifecycle({
       photoTagsById,
       mirrorLiveView,
       grayscaleLiveView,
-      hideLiveOverlay
+      hideLiveOverlay,
+      audioMuted,
+      audioVolumePercent
     ],
     schedulePersistPreferences,
     { deep: true }

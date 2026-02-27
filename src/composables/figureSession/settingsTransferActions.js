@@ -11,6 +11,8 @@ export function createSettingsTransferActions({
   classPhotoOrder,
   avoidImmediateRepeats,
   photoTagsById,
+  audioMuted,
+  audioVolumePercent,
   hasSourcePhotos,
   isSessionLive,
   phase,
@@ -29,7 +31,9 @@ export function createSettingsTransferActions({
       classBlocks: classBlocks.value,
       classPhotoOrder: classPhotoOrder.value,
       avoidImmediateRepeats: avoidImmediateRepeats.value,
-      photoTagsById: photoTagsById.value
+      photoTagsById: photoTagsById.value,
+      audioMuted: audioMuted.value,
+      audioVolumePercent: audioVolumePercent.value
     };
   }
 
@@ -85,6 +89,8 @@ export function createSettingsTransferActions({
       classPhotoOrder.value = importedPreferences.classPhotoOrder;
       avoidImmediateRepeats.value = importedPreferences.avoidImmediateRepeats;
       photoTagsById.value = importedPreferences.photoTagsById;
+      audioMuted.value = importedPreferences.audioMuted;
+      audioVolumePercent.value = importedPreferences.audioVolumePercent;
 
       resetPreparedSession();
 

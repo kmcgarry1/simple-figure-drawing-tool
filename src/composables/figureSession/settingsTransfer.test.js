@@ -13,6 +13,8 @@ describe("createSettingsExportPayload", () => {
       classBlocks: [{ label: "Gestures", durationSeconds: 45, poseCount: 4 }],
       classPhotoOrder: "shuffle",
       avoidImmediateRepeats: false,
+      audioMuted: true,
+      audioVolumePercent: 73,
       photoTagsById: {
         "pose-1.jpg|1|111": "hands"
       }
@@ -26,6 +28,8 @@ describe("createSettingsExportPayload", () => {
       sessionMode: "quick",
       durationSeconds: 75,
       classPresetId: "class-2h",
+      audioMuted: true,
+      audioVolumePercent: 73,
       photoTagsById: {
         "pose-1.jpg|1|111": "hands"
       }
@@ -44,7 +48,9 @@ describe("parseSettingsImportText", () => {
           classBlocks: [],
           classPhotoOrder: "weird",
           avoidImmediateRepeats: "yes",
-          photoTagsById: ["bad-value"]
+          photoTagsById: ["bad-value"],
+          audioMuted: "no",
+          audioVolumePercent: -10
         }
       })
     );
@@ -55,7 +61,9 @@ describe("parseSettingsImportText", () => {
       classPresetId: "class-1h",
       classPhotoOrder: "shuffle",
       avoidImmediateRepeats: true,
-      photoTagsById: {}
+      photoTagsById: {},
+      audioMuted: false,
+      audioVolumePercent: 0
     });
   });
 });

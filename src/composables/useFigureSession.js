@@ -1,4 +1,4 @@
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { FILE_INPUT_ACCEPT } from "../config";
 import { CLASS_PRESET_OPTIONS, createBlocksFromPreset } from "../utils/classPlan";
 import { PHOTO_ORDER_SHUFFLE } from "./figureSession/constants";
@@ -112,6 +112,8 @@ export function useFigureSession() {
     clearSessionHistory,
     exportSettingsJson,
     importSettingsFromFile,
+    copySettingsShareLink,
+    applySettingsFromShareUrl,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
@@ -187,6 +189,10 @@ export function useFigureSession() {
     clearTimers,
     revokeSlideUrl,
     clearPreloadedSlide
+  });
+
+  onMounted(() => {
+    applySettingsFromShareUrl();
   });
 
   const saveTimeFormatter = new Intl.DateTimeFormat(undefined, {
@@ -319,6 +325,7 @@ export function useFigureSession() {
     setAudioVolumePercent,
     exportSettingsJson,
     importSettingsFromFile,
+    copySettingsShareLink,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,

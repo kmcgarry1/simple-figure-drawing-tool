@@ -98,6 +98,7 @@
             @photo-tag-update="$emit('photo-tag-update', $event)"
             @photo-reorder="$emit('photo-reorder', $event)"
             @export-settings="$emit('export-settings')"
+            @share-settings-link="$emit('share-settings-link')"
             @import-settings="onImportSettingsSelected"
             @clear-history="$emit('clear-history')"
           />
@@ -150,6 +151,7 @@ const emit = defineEmits([
   "photo-tag-update",
   "photo-reorder",
   "export-settings",
+  "share-settings-link",
   "import-settings",
   "start-session",
   "new-random-set",

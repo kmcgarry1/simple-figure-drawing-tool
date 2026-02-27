@@ -109,6 +109,7 @@ export const setupPanelEmits = [
   "photo-tag-update",
   "photo-reorder",
   "export-settings",
+  "share-settings-link",
   "import-settings",
   "class-preset-change",
   "class-block-update",

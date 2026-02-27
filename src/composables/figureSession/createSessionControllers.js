@@ -174,7 +174,12 @@ export function createSessionControllers({
     }
   });
 
-  const { exportSettingsJson, importSettingsFromFile } = createSettingsTransferActions({
+  const {
+    exportSettingsJson,
+    importSettingsFromFile,
+    copySettingsShareLink,
+    applySettingsFromShareUrl
+  } = createSettingsTransferActions({
     sessionMode,
     durationSeconds,
     classPresetId,
@@ -272,6 +277,8 @@ export function createSessionControllers({
     clearSessionHistory,
     exportSettingsJson,
     importSettingsFromFile,
+    copySettingsShareLink,
+    applySettingsFromShareUrl,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,

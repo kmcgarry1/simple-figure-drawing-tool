@@ -67,6 +67,7 @@
       @photo-tag-update="$emit('photo-tag-update', $event)"
       @photo-reorder="$emit('photo-reorder', $event)"
       @export-settings="$emit('export-settings')"
+      @share-settings-link="$emit('share-settings-link')"
       @import-settings="$emit('import-settings', $event)"
       @start-session="$emit('start-session')"
       @new-random-set="$emit('new-random-set')"

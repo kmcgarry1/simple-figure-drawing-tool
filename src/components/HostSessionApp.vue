@@ -42,6 +42,7 @@
           @photo-tag-update="updatePhotoTag"
           @photo-reorder="reorderSourcePhoto"
           @export-settings="exportSettingsJson"
+          @share-settings-link="copySettingsShareLink"
           @import-settings="importSettingsFromFile"
           @class-preset-change="setClassPreset"
           @class-block-update="updateClassBlock"
@@ -190,6 +191,7 @@ const {
   setAudioVolumePercent,
   exportSettingsJson,
   importSettingsFromFile,
+  copySettingsShareLink,
   saveClassTemplateByName,
   loadClassTemplateById,
   deleteClassTemplateById,

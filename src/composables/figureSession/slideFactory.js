@@ -84,15 +84,24 @@ function buildPhotoSequenceForBlock({
 
 function resolveEligiblePhotosForBlock({ sourcePhotos, photoTagsById, blockTag }) {
   if (blockTag === "all") {
-    return sourcePhotos;
+    return {
+      eligiblePhotos: sourcePhotos,
+      usedTagFallback: false
+    };
   }
 
   const eligible = sourcePhotos.filter((photo) => photoTagsById[createPhotoId(photo)] === blockTag);
   if (eligible.length > 0) {
-    return eligible;
+    return {
+      eligiblePhotos: eligible,
+      usedTagFallback: false
+    };
   }
 
-  return sourcePhotos;
+  return {
+    eligiblePhotos: sourcePhotos,
+    usedTagFallback: true
+  };
 }
 
 export function createQuickSlides(sourcePhotos, durationSeconds) {
@@ -125,16 +134,23 @@ export function createClassSlides({
 }) {
   const safeBlocks = sanitizeClassBlocks(classBlocks);
   const slides = [];
+  const fallbackTagBlocks = [];
 
   let poseIndex = 0;
   let previousPhoto = null;
 
   for (const block of safeBlocks) {
-    const eligiblePhotos = resolveEligiblePhotosForBlock({
+    const { eligiblePhotos, usedTagFallback } = resolveEligiblePhotosForBlock({
       sourcePhotos,
       photoTagsById,
       blockTag: block.photoTag || "all"
     });
+    if (usedTagFallback) {
+      fallbackTagBlocks.push({
+        label: block.label,
+        photoTag: block.photoTag || "all"
+      });
+    }
     const photoSequence = buildPhotoSequenceForBlock({
       eligiblePhotos,
       poseCount: block.poseCount,
@@ -162,6 +178,7 @@ export function createClassSlides({
   return {
     slides,
     safeBlocks,
-    poseCount: poseIndex
+    poseCount: poseIndex,
+    fallbackTagBlocks
   };
 }

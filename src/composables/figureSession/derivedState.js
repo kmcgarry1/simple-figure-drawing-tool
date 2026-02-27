@@ -59,6 +59,10 @@ export function useFigureSessionDerivedState({
     sessionMode.value === SESSION_MODE_CLASS ? "Restart Class" : "New Set"
   );
 
+  const totalClassPoseSlides = computed(
+    () => sessionSlides.value.filter((slide) => slide.kind !== "break").length
+  );
+
   const slideCounterText = computed(() => {
     if (sessionMode.value !== SESSION_MODE_CLASS) {
       const total = sessionSlides.value.length;
@@ -66,7 +70,7 @@ export function useFigureSessionDerivedState({
       return `Slide ${current} / ${total}`;
     }
 
-    const totalClassPoses = sessionSlides.value.filter((slide) => slide.kind !== "break").length;
+    const totalClassPoses = totalClassPoseSlides.value;
     if (currentIndex.value < 0) {
       return `Pose 0 / ${totalClassPoses}`;
     }
@@ -87,21 +91,28 @@ export function useFigureSessionDerivedState({
     return sessionMode.value === SESSION_MODE_CLASS ? "Class Pose" : "Quick Pose";
   });
 
+  const totalSessionDurationMs = computed(() =>
+    sessionSlides.value.reduce((total, slide) => total + slide.durationMs, 0)
+  );
+
+  const upcomingSessionDurationMs = computed(() => {
+    let upcomingMs = 0;
+    for (let index = currentIndex.value + 1; index < sessionSlides.value.length; index += 1) {
+      upcomingMs += sessionSlides.value[index].durationMs;
+    }
+    return upcomingMs;
+  });
+
   const sessionRemainingMs = computed(() => {
     if (sessionSlides.value.length === 0) {
       return 0;
     }
 
     if (currentIndex.value < 0) {
-      return sessionSlides.value.reduce((total, slide) => total + slide.durationMs, 0);
+      return totalSessionDurationMs.value;
     }
 
-    let upcomingMs = 0;
-    for (let index = currentIndex.value + 1; index < sessionSlides.value.length; index += 1) {
-      upcomingMs += sessionSlides.value[index].durationMs;
-    }
-
-    return Math.max(0, remainingMs.value) + upcomingMs;
+    return Math.max(0, remainingMs.value) + upcomingSessionDurationMs.value;
   });
   const sessionTimeLeftText = computed(() => formatClockFromMs(sessionRemainingMs.value));
 

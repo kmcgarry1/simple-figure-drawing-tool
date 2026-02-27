@@ -12,7 +12,10 @@ describe("createSettingsExportPayload", () => {
       classPresetId: "class-2h",
       classBlocks: [{ label: "Gestures", durationSeconds: 45, poseCount: 4 }],
       classPhotoOrder: "shuffle",
-      avoidImmediateRepeats: false
+      avoidImmediateRepeats: false,
+      photoTagsById: {
+        "pose-1.jpg|1|111": "hands"
+      }
     });
 
     expect(payload).toMatchObject({
@@ -22,7 +25,10 @@ describe("createSettingsExportPayload", () => {
     expect(payload.preferences).toMatchObject({
       sessionMode: "quick",
       durationSeconds: 75,
-      classPresetId: "class-2h"
+      classPresetId: "class-2h",
+      photoTagsById: {
+        "pose-1.jpg|1|111": "hands"
+      }
     });
   });
 });
@@ -37,7 +43,8 @@ describe("parseSettingsImportText", () => {
           classPresetId: "bad-id",
           classBlocks: [],
           classPhotoOrder: "weird",
-          avoidImmediateRepeats: "yes"
+          avoidImmediateRepeats: "yes",
+          photoTagsById: ["bad-value"]
         }
       })
     );
@@ -47,7 +54,8 @@ describe("parseSettingsImportText", () => {
       durationSeconds: 5,
       classPresetId: "class-1h",
       classPhotoOrder: "shuffle",
-      avoidImmediateRepeats: true
+      avoidImmediateRepeats: true,
+      photoTagsById: {}
     });
   });
 });

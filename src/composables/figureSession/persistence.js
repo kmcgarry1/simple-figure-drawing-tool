@@ -46,6 +46,30 @@ function normalizeBoolean(rawValue, fallback) {
   return typeof rawValue === "boolean" ? rawValue : fallback;
 }
 
+function normalizePhotoTag(rawTag) {
+  return String(rawTag ?? "").trim();
+}
+
+function normalizePhotoTagsById(rawPhotoTagsById) {
+  if (
+    !rawPhotoTagsById ||
+    typeof rawPhotoTagsById !== "object" ||
+    Array.isArray(rawPhotoTagsById)
+  ) {
+    return {};
+  }
+
+  const nextPhotoTagsById = {};
+  for (const [rawPhotoId, rawTag] of Object.entries(rawPhotoTagsById)) {
+    const normalizedTag = normalizePhotoTag(rawTag);
+    if (normalizedTag) {
+      nextPhotoTagsById[String(rawPhotoId)] = normalizedTag;
+    }
+  }
+
+  return nextPhotoTagsById;
+}
+
 function defaultPreferences() {
   const defaultPresetId = resolvePresetId();
   return {
@@ -55,6 +79,7 @@ function defaultPreferences() {
     classBlocks: createBlocksFromPreset(defaultPresetId),
     classPhotoOrder: PHOTO_ORDER_SHUFFLE,
     avoidImmediateRepeats: true,
+    photoTagsById: {},
     mirrorLiveView: false,
     grayscaleLiveView: false,
     hideLiveOverlay: false
@@ -75,6 +100,7 @@ export function normalizeSessionPreferences(rawPreferences) {
       rawPreferences?.avoidImmediateRepeats,
       defaults.avoidImmediateRepeats
     ),
+    photoTagsById: normalizePhotoTagsById(rawPreferences?.photoTagsById),
     mirrorLiveView: normalizeBoolean(rawPreferences?.mirrorLiveView, defaults.mirrorLiveView),
     grayscaleLiveView: normalizeBoolean(
       rawPreferences?.grayscaleLiveView,

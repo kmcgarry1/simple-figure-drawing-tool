@@ -10,16 +10,55 @@ export function createSessionHistoryActions({
   sessionSlides,
   statusMessage,
   runStartedAtMs,
-  runPlannedSlides
+  runPlannedSlides,
+  getSessionHistoryContext
 }) {
-  function markRunStarted() {
+  let runContext = {
+    templateName: "",
+    appliedTags: []
+  };
+
+  function normalizeSessionHistoryContext(rawContext) {
+    const templateName = String(rawContext?.templateName ?? "").trim();
+    const appliedTags = [];
+    const dedupedTags = new Set();
+
+    for (const rawTag of Array.from(rawContext?.appliedTags || [])) {
+      const normalizedTag = String(rawTag ?? "").trim();
+      if (!normalizedTag || dedupedTags.has(normalizedTag)) {
+        continue;
+      }
+
+      dedupedTags.add(normalizedTag);
+      appliedTags.push(normalizedTag);
+      if (appliedTags.length >= 20) {
+        break;
+      }
+    }
+
+    return {
+      templateName,
+      appliedTags
+    };
+  }
+
+  function markRunStarted(context) {
     runStartedAtMs.value = Date.now();
     runPlannedSlides.value = sessionSlides.value.length;
+    const resolvedContext =
+      context && typeof context === "object"
+        ? context
+        : getSessionHistoryContext?.() || {};
+    runContext = normalizeSessionHistoryContext(resolvedContext);
   }
 
   function resetRunTracking() {
     runStartedAtMs.value = null;
     runPlannedSlides.value = 0;
+    runContext = {
+      templateName: "",
+      appliedTags: []
+    };
   }
 
   function recordSessionHistory(result, completedSlides) {
@@ -42,7 +81,9 @@ export function createSessionHistoryActions({
       endedAt: new Date(now).toISOString(),
       elapsedSeconds: Math.max(0, Math.round((now - runStartedAtMs.value) / 1000)),
       plannedSlides,
-      completedSlides: normalizedCompletedSlides
+      completedSlides: normalizedCompletedSlides,
+      templateName: runContext.templateName,
+      appliedTags: runContext.appliedTags
     });
     persistSessionHistory(sessionHistory.value);
     resetRunTracking();

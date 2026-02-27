@@ -5,6 +5,31 @@ function canUseStorage() {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
+function normalizeTemplateName(rawTemplateName) {
+  const normalizedTemplateName = String(rawTemplateName ?? "").trim();
+  return normalizedTemplateName || "";
+}
+
+function normalizeAppliedTags(rawAppliedTags) {
+  const dedupedTags = new Set();
+  const normalizedTags = [];
+
+  for (const rawTag of Array.from(rawAppliedTags || [])) {
+    const normalizedTag = String(rawTag ?? "").trim();
+    if (!normalizedTag || dedupedTags.has(normalizedTag)) {
+      continue;
+    }
+
+    dedupedTags.add(normalizedTag);
+    normalizedTags.push(normalizedTag);
+    if (normalizedTags.length >= 20) {
+      break;
+    }
+  }
+
+  return normalizedTags;
+}
+
 function normalizeHistoryEntry(rawEntry, index) {
   const idCandidate = String(rawEntry?.id ?? "").trim();
   const id = idCandidate || `session-${index + 1}`;
@@ -27,7 +52,9 @@ function normalizeHistoryEntry(rawEntry, index) {
     endedAt,
     elapsedSeconds,
     plannedSlides,
-    completedSlides
+    completedSlides,
+    templateName: normalizeTemplateName(rawEntry?.templateName),
+    appliedTags: normalizeAppliedTags(rawEntry?.appliedTags)
   };
 }
 

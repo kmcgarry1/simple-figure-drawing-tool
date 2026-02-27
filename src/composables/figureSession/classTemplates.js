@@ -155,6 +155,18 @@ export function getClassTemplateById(templates, templateId) {
   return normalized.find((template) => template.id === templateId) || null;
 }
 
+export function findClassTemplateMatch(templates, classBlocks) {
+  const normalizedTemplates = normalizeClassTemplates(templates);
+  const normalizedBlocks = sanitizeClassBlocks(classBlocks || []);
+  const targetBlocksSignature = JSON.stringify(normalizedBlocks);
+
+  return (
+    normalizedTemplates.find(
+      (template) => JSON.stringify(sanitizeClassBlocks(template.blocks)) === targetBlocksSignature
+    ) || null
+  );
+}
+
 export function renameClassTemplateById(templates, templateId, nextName) {
   const trimmedName = String(nextName ?? "").trim();
   if (!trimmedName) {

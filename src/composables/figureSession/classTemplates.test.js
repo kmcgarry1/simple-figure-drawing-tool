@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createClassTemplatesExportPayload,
   duplicateClassTemplateById,
+  findClassTemplateMatch,
   getClassTemplateById,
   mergeClassTemplatesByName,
   normalizeClassTemplates,
@@ -68,6 +69,19 @@ describe("class template selectors", () => {
 
     const afterDelete = removeClassTemplateById(saveResult.templates, template.id);
     expect(afterDelete).toHaveLength(0);
+  });
+
+  it("finds matching templates by current class blocks", () => {
+    const saveResult = saveClassTemplate([], {
+      name: "Long Pose Set",
+      blocks: [{ label: "Long Pose", durationSeconds: 600, poseCount: 3 }]
+    });
+
+    const match = findClassTemplateMatch(saveResult.templates, [
+      { label: "Long Pose", durationSeconds: 600, poseCount: 3, blockType: "pose" }
+    ]);
+
+    expect(match?.name).toBe("Long Pose Set");
   });
 });
 

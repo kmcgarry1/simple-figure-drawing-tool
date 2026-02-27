@@ -1,5 +1,8 @@
+import { CLASS_BLOCK_TYPE_BREAK, sanitizeClassBlocks } from "../../utils/classPlan";
 import { createClassPlanActions } from "./classPlanActions";
 import { createClassTemplateActions } from "./classTemplateActions";
+import { findClassTemplateMatch } from "./classTemplates";
+import { SESSION_MODE_CLASS } from "./constants";
 import { createPlaybackRuntime } from "./playbackRuntime";
 import { createPhotoTagActions } from "./photoTagActions";
 import { createSessionHistoryActions } from "./sessionHistoryActions";
@@ -144,7 +147,31 @@ export function createSessionControllers({
     sessionSlides,
     statusMessage,
     runStartedAtMs,
-    runPlannedSlides
+    runPlannedSlides,
+    getSessionHistoryContext: () => {
+      if (sessionMode.value !== SESSION_MODE_CLASS) {
+        return {
+          templateName: "",
+          appliedTags: []
+        };
+      }
+
+      const safeClassBlocks = sanitizeClassBlocks(classBlocks.value);
+      const matchingTemplate = findClassTemplateMatch(classTemplates.value, safeClassBlocks);
+      const appliedTags = Array.from(
+        new Set(
+          safeClassBlocks
+            .filter((block) => block.blockType !== CLASS_BLOCK_TYPE_BREAK)
+            .map((block) => String(block.photoTag || "").trim())
+            .filter((tag) => tag && tag !== "all")
+        )
+      );
+
+      return {
+        templateName: matchingTemplate?.name || "Custom Class Plan",
+        appliedTags
+      };
+    }
   });
 
   const { exportSettingsJson, importSettingsFromFile } = createSettingsTransferActions({

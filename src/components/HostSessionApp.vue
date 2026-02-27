@@ -32,6 +32,7 @@
           :session-history="sessionHistory"
           :status-message="statusMessage"
           :upload-notice="uploadNotice"
+          :settings-save-status-text="settingsSaveStatusText"
           @photos-selected="handlePhotoSelection"
           @session-mode-change="setSessionMode"
           @duration-input="updateDurationSeconds"
@@ -68,6 +69,8 @@
           :restart-label="restartActionLabel"
           :remote-status="hostRemoteStatus"
           :remote-offer-token="hostOfferToken"
+          :remote-pairing-url="hostRemotePairingUrl"
+          :remote-pairing-qr-data-url="hostRemotePairingQrDataUrl"
           :is-remote-connected="isHostRemoteConnected"
           @duration-input="updateDurationSeconds"
           @duration-change="applyDurationChange"
@@ -79,6 +82,8 @@
           @new-set="createNewRandomSet"
           @end="stopSession"
           @remote-create-offer="createHostOfferToken"
+          @remote-copy-offer-token="copyHostOfferToken"
+          @remote-copy-pairing-link="copyHostPairingLink"
           @remote-apply-answer="applyHostAnswerToken"
           @remote-disconnect="disconnectHostRemote"
         />
@@ -141,6 +146,7 @@ const {
   sessionHistory,
   statusMessage,
   uploadNotice,
+  settingsSaveStatusText,
   currentSlideUrl,
   currentSlideAlt,
   activePoseLabel,
@@ -188,8 +194,12 @@ function updateDurationSeconds(value) {
 const {
   remoteStatus: hostRemoteStatus,
   offerToken: hostOfferToken,
+  pairingUrl: hostRemotePairingUrl,
+  pairingQrDataUrl: hostRemotePairingQrDataUrl,
   isRemoteConnected: isHostRemoteConnected,
   createOfferToken: createHostOfferToken,
+  copyHostOfferToken,
+  copyHostPairingLink,
   applyAnswerToken: applyHostAnswerToken,
   disconnectHostRemote
 } = usePhoneRemoteHost({

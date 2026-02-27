@@ -127,3 +127,9 @@ test("mode and duration persist after reload", async ({ page }) => {
   await expect(page.getByText("2. Quick Session")).toBeVisible();
   await expect(page.getByLabel("Seconds Per Photo")).toHaveValue("75");
 });
+
+test("remote page pre-fills offer token from pairing link", async ({ page }) => {
+  const offerToken = "test-offer-token-123";
+  await page.goto(`/?remote=1&offer=${encodeURIComponent(offerToken)}`);
+  await expect(page.getByLabel("Desktop Offer Token")).toHaveValue(offerToken);
+});

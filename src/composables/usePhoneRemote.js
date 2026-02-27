@@ -1,7 +1,52 @@
-import { computed, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+
+const REMOTE_QUERY_PARAM = "remote";
+const OFFER_QUERY_PARAM = "offer";
 
 function canUseWebRtc() {
   return typeof window !== "undefined" && typeof window.RTCPeerConnection !== "undefined";
+}
+
+function canUseClipboard() {
+  return typeof navigator !== "undefined" && Boolean(navigator.clipboard?.writeText);
+}
+
+async function writeClipboardText(rawText) {
+  if (!canUseClipboard()) {
+    return false;
+  }
+
+  try {
+    await navigator.clipboard.writeText(String(rawText || ""));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function readOfferTokenFromSearch(search) {
+  try {
+    const params = new URLSearchParams(String(search || ""));
+    return String(params.get(OFFER_QUERY_PARAM) || "").trim();
+  } catch {
+    return "";
+  }
+}
+
+export function buildRemotePairingUrl({ currentUrl, offerToken }) {
+  const normalizedOfferToken = String(offerToken || "").trim();
+  if (!normalizedOfferToken) {
+    return "";
+  }
+
+  try {
+    const url = new URL(String(currentUrl || ""));
+    url.searchParams.set(REMOTE_QUERY_PARAM, "1");
+    url.searchParams.set(OFFER_QUERY_PARAM, normalizedOfferToken);
+    return url.toString();
+  } catch {
+    return "";
+  }
 }
 
 function encodeSignalPayload(payload) {
@@ -41,6 +86,29 @@ function buildPeerConnection() {
   });
 }
 
+async function renderQrCodeDataUrl(rawText) {
+  const text = String(rawText || "").trim();
+  if (!text) {
+    return "";
+  }
+
+  try {
+    const qrCodeModule = await import("qrcode");
+    const toDataUrlFn = qrCodeModule.toDataURL || qrCodeModule.default?.toDataURL;
+    if (typeof toDataUrlFn !== "function") {
+      return "";
+    }
+
+    return await toDataUrlFn(text, {
+      width: 224,
+      margin: 1,
+      errorCorrectionLevel: "M"
+    });
+  } catch {
+    return "";
+  }
+}
+
 export function usePhoneRemoteHost({
   onTogglePause,
   onNextSlide,
@@ -49,9 +117,18 @@ export function usePhoneRemoteHost({
   const remoteStatus = ref("Remote disconnected.");
   const offerToken = ref("");
   const isRemoteConnected = ref(false);
+  const pairingUrl = ref("");
+  const pairingQrDataUrl = ref("");
 
   let peerConnection = null;
   let dataChannel = null;
+  let qrRenderRequestId = 0;
+
+  function clearPairingArtifacts() {
+    qrRenderRequestId += 1;
+    pairingUrl.value = "";
+    pairingQrDataUrl.value = "";
+  }
 
   function closeHostConnection() {
     if (dataChannel) {
@@ -66,6 +143,7 @@ export function usePhoneRemoteHost({
 
     isRemoteConnected.value = false;
     offerToken.value = "";
+    clearPairingArtifacts();
   }
 
   function handleRemoteCommand(rawMessage) {
@@ -102,6 +180,52 @@ export function usePhoneRemoteHost({
     };
   }
 
+  async function refreshPairingArtifacts() {
+    const nextPairingUrl = buildRemotePairingUrl({
+      currentUrl: typeof window !== "undefined" ? window.location.href : "",
+      offerToken: offerToken.value
+    });
+
+    pairingUrl.value = nextPairingUrl;
+    pairingQrDataUrl.value = "";
+
+    if (!nextPairingUrl) {
+      return;
+    }
+
+    const requestId = ++qrRenderRequestId;
+    const nextQrDataUrl = await renderQrCodeDataUrl(nextPairingUrl);
+    if (requestId !== qrRenderRequestId) {
+      return;
+    }
+
+    pairingQrDataUrl.value = nextQrDataUrl;
+  }
+
+  async function copyHostOfferToken() {
+    if (!offerToken.value) {
+      remoteStatus.value = "Generate an offer before copying a token.";
+      return;
+    }
+
+    const copied = await writeClipboardText(offerToken.value);
+    remoteStatus.value = copied
+      ? "Offer token copied."
+      : "Clipboard access is unavailable. Copy the token manually.";
+  }
+
+  async function copyHostPairingLink() {
+    if (!pairingUrl.value) {
+      remoteStatus.value = "Generate an offer before copying a pairing link.";
+      return;
+    }
+
+    const copied = await writeClipboardText(pairingUrl.value);
+    remoteStatus.value = copied
+      ? "Pairing link copied."
+      : "Clipboard access is unavailable. Copy the pairing link manually.";
+  }
+
   async function createOfferToken() {
     if (!canUseWebRtc()) {
       remoteStatus.value = "WebRTC is not supported in this browser.";
@@ -117,7 +241,8 @@ export function usePhoneRemoteHost({
     await waitForIceGatheringComplete(peerConnection);
 
     offerToken.value = encodeSignalPayload(peerConnection.localDescription);
-    remoteStatus.value = "Offer ready. Paste it into the phone remote page.";
+    await refreshPairingArtifacts();
+    remoteStatus.value = "Offer ready. Share pairing link/QR with your phone.";
   }
 
   async function applyAnswerToken(answerToken) {
@@ -147,17 +272,24 @@ export function usePhoneRemoteHost({
   return {
     remoteStatus,
     offerToken,
+    pairingUrl,
+    pairingQrDataUrl,
     isRemoteConnected: computed(() => isRemoteConnected.value),
     createOfferToken,
     applyAnswerToken,
+    copyHostOfferToken,
+    copyHostPairingLink,
     disconnectHostRemote
   };
 }
 
 export function usePhoneRemoteClient() {
-  const remoteStatus = ref("Paste desktop offer to pair.");
+  const remoteStatus = ref("Paste desktop offer to pair, or open a pairing link.");
   const answerToken = ref("");
   const isRemoteConnected = ref(false);
+  const initialOfferToken = ref(
+    typeof window === "undefined" ? "" : readOfferTokenFromSearch(window.location.search)
+  );
 
   let peerConnection = null;
   let dataChannel = null;
@@ -188,12 +320,19 @@ export function usePhoneRemoteClient() {
     };
   }
 
-  async function createAnswerToken(offerToken) {
+  async function createAnswerToken(offerToken, options = {}) {
     if (!canUseWebRtc()) {
       remoteStatus.value = "WebRTC is not supported in this browser.";
       return;
     }
 
+    const normalizedOfferToken = String(offerToken || "").trim();
+    if (!normalizedOfferToken) {
+      remoteStatus.value = "Paste a desktop offer token first.";
+      return;
+    }
+
+    const source = options.source === "pair-link" ? "pair-link" : "manual";
     closeClientConnection();
     peerConnection = buildPeerConnection();
     peerConnection.ondatachannel = (event) => {
@@ -201,16 +340,34 @@ export function usePhoneRemoteClient() {
     };
 
     try {
-      const offerPayload = decodeSignalPayload(offerToken);
+      const offerPayload = decodeSignalPayload(normalizedOfferToken);
       await peerConnection.setRemoteDescription(new RTCSessionDescription(offerPayload));
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       await waitForIceGatheringComplete(peerConnection);
       answerToken.value = encodeSignalPayload(peerConnection.localDescription);
-      remoteStatus.value = "Answer ready. Paste it back on desktop.";
+      remoteStatus.value =
+        source === "pair-link"
+          ? "Answer ready from pairing link. Copy it back to desktop."
+          : "Answer ready. Paste it back on desktop.";
     } catch {
-      remoteStatus.value = "Invalid desktop offer token.";
+      remoteStatus.value =
+        source === "pair-link"
+          ? "Pairing link is invalid or expired. Request a new one from desktop."
+          : "Invalid desktop offer token.";
     }
+  }
+
+  async function copyAnswerToken() {
+    if (!answerToken.value) {
+      remoteStatus.value = "Generate an answer token before copying.";
+      return;
+    }
+
+    const copied = await writeClipboardText(answerToken.value);
+    remoteStatus.value = copied
+      ? "Answer token copied."
+      : "Clipboard access is unavailable. Copy the answer token manually.";
   }
 
   function sendRemoteCommand(command) {
@@ -231,11 +388,22 @@ export function usePhoneRemoteClient() {
     closeClientConnection();
   });
 
+  onMounted(() => {
+    if (!initialOfferToken.value) {
+      return;
+    }
+
+    remoteStatus.value = "Pairing link detected. Generating answer token...";
+    void createAnswerToken(initialOfferToken.value, { source: "pair-link" });
+  });
+
   return {
     remoteStatus,
     answerToken,
+    initialOfferToken: computed(() => initialOfferToken.value),
     isRemoteConnected: computed(() => isRemoteConnected.value),
     createAnswerToken,
+    copyAnswerToken,
     sendRemoteCommand,
     disconnectClientRemote
   };

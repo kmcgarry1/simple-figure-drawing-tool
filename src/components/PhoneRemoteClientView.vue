@@ -5,6 +5,10 @@
       <p class="text-sm text-stone-600">{{ remoteStatus }}</p>
     </header>
 
+    <p v-if="initialOfferToken" class="rounded-md border border-amber-200/80 bg-white/62 px-2.5 py-1.5 text-xs text-stone-600">
+      Pairing link detected. Offer token is pre-filled below.
+    </p>
+
     <label class="grid gap-1 text-sm text-stone-700" for="desktopOfferToken">
       <span>Desktop Offer Token</span>
       <textarea
@@ -28,6 +32,7 @@
         rows="5"
         class="fd-input w-full rounded-md px-2.5 py-2 text-xs"
       />
+      <BaseButton tone="subtle" @click="$emit('copy-answer-token')">Copy Answer Token</BaseButton>
     </label>
 
     <section class="fd-card grid gap-2 rounded-md p-3">
@@ -51,10 +56,10 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
 
-defineProps({
+const props = defineProps({
   remoteStatus: {
     type: String,
     required: true
@@ -63,13 +68,29 @@ defineProps({
     type: String,
     required: true
   },
+  initialOfferToken: {
+    type: String,
+    default: ""
+  },
   isRemoteConnected: {
     type: Boolean,
     required: true
   }
 });
 
-defineEmits(["create-answer-token", "send-command", "disconnect"]);
+defineEmits(["create-answer-token", "copy-answer-token", "send-command", "disconnect"]);
 
-const desktopOfferToken = ref("");
+const desktopOfferToken = ref(props.initialOfferToken || "");
+
+watch(
+  () => props.initialOfferToken,
+  (nextOfferToken) => {
+    const normalizedOfferToken = String(nextOfferToken || "").trim();
+    if (!normalizedOfferToken) {
+      return;
+    }
+
+    desktopOfferToken.value = normalizedOfferToken;
+  }
+);
 </script>

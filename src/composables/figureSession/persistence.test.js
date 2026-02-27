@@ -39,6 +39,7 @@ describe("normalizeSessionPreferences", () => {
     expect(result.classPresetId).toBe("class-1h");
     expect(result.classPhotoOrder).toBe("shuffle");
     expect(result.avoidImmediateRepeats).toBe(true);
+    expect(result.photoTagsById).toEqual({});
     expect(result.mirrorLiveView).toBe(false);
     expect(result.grayscaleLiveView).toBe(false);
     expect(result.hideLiveOverlay).toBe(false);
@@ -65,6 +66,10 @@ describe("session preference storage", () => {
       classBlocks: [{ label: "Gestures", durationSeconds: 45, poseCount: 4 }],
       classPhotoOrder: "sequential",
       avoidImmediateRepeats: false,
+      photoTagsById: {
+        "pose-1.jpg|1|111": "hands",
+        "pose-2.jpg|2|222": " torso "
+      },
       mirrorLiveView: true,
       grayscaleLiveView: true,
       hideLiveOverlay: true
@@ -77,6 +82,10 @@ describe("session preference storage", () => {
       classPresetId: "class-2h",
       classPhotoOrder: "sequential",
       avoidImmediateRepeats: false,
+      photoTagsById: {
+        "pose-1.jpg|1|111": "hands",
+        "pose-2.jpg|2|222": "torso"
+      },
       mirrorLiveView: true,
       grayscaleLiveView: true,
       hideLiveOverlay: true

@@ -45,12 +45,10 @@ export function createSetPreparationController({
 
     const uploadedPhotoCount = sourcePhotos.value.length;
     const duration = getQuickDurationSeconds();
-    const { slides, selectedPhotos, selectedPhotosCount } = createQuickSlides(
+    const { slides, selectedPhotosCount } = createQuickSlides(
       sourcePhotos.value,
       duration
     );
-
-    sourcePhotos.value = selectedPhotos;
 
     sessionSlides.value = slides;
     resetPlaybackState();
@@ -59,7 +57,7 @@ export function createSetPreparationController({
 
     const discardedPhotoCount = Math.max(0, uploadedPhotoCount - selectedPhotosCount);
     if (discardedPhotoCount > 0) {
-      statusMessage.value = `Random set ready: ${selectedPhotosCount} photo(s) selected from ${uploadedPhotoCount}. ${discardedPhotoCount} unselected photo(s) removed.`;
+      statusMessage.value = `Random set ready: ${selectedPhotosCount} of ${uploadedPhotoCount} photo(s) selected. Source pool preserved.`;
       return true;
     }
 
@@ -77,7 +75,7 @@ export function createSetPreparationController({
       return false;
     }
 
-    const { slides, safeBlocks, poseCount } = createClassSlides({
+    const { slides, safeBlocks, poseCount, fallbackTagBlocks } = createClassSlides({
       sourcePhotos: sourcePhotos.value,
       classBlocks: classBlocks.value,
       classPhotoOrder: classPhotoOrder.value,
@@ -95,6 +93,19 @@ export function createSetPreparationController({
     resetPlaybackState();
     phase.value = "ready";
     revokeSlideUrl();
+
+    const fallbackTagCount = fallbackTagBlocks.length;
+    if (fallbackTagCount > 0) {
+      const fallbackTags = Array.from(
+        new Set(
+          fallbackTagBlocks
+            .map((block) => String(block.photoTag || "").trim())
+            .filter(Boolean)
+        )
+      ).join(", ");
+      statusMessage.value = `Class set ready: ${poseCount} poses, ${classTotalMinutesText.value} total (${classDeltaText.value}). ${fallbackTagCount} block(s) had no photo matches for tag(s): ${fallbackTags}. Used all photos for those blocks.`;
+      return true;
+    }
 
     statusMessage.value = `Class set ready: ${poseCount} poses, ${classTotalMinutesText.value} total (${classDeltaText.value}).`;
     return true;

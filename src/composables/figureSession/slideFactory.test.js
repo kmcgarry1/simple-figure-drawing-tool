@@ -87,4 +87,27 @@ describe("createClassSlides", () => {
       "longpose-a.jpg"
     ]);
   });
+
+  it("reports blocks that fall back to all photos when tags have no matches", () => {
+    const sourcePhotos = [
+      { name: "photo-a.jpg", size: 10, lastModified: 1 },
+      { name: "photo-b.jpg", size: 20, lastModified: 2 }
+    ];
+
+    const { slides, fallbackTagBlocks } = createClassSlides({
+      sourcePhotos,
+      classBlocks: [{ label: "Targeted", durationSeconds: 30, poseCount: 2, photoTag: "hands" }],
+      classPhotoOrder: "sequential",
+      avoidImmediateRepeats: true,
+      photoTagsById: {}
+    });
+
+    expect(slides).toHaveLength(2);
+    expect(fallbackTagBlocks).toEqual([
+      {
+        label: "Targeted",
+        photoTag: "hands"
+      }
+    ]);
+  });
 });

@@ -8,6 +8,37 @@ const packageJson = JSON.parse(
 
 export default defineConfig({
   plugins: [vue()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const normalizedId = id.split("\\").join("/");
+
+          if (normalizedId.includes("/node_modules/")) {
+            if (normalizedId.includes("/node_modules/@vercel/")) {
+              return "vendor-vercel";
+            }
+            return "vendor";
+          }
+
+          if (
+            normalizedId.includes("/src/composables/figureSession/") ||
+            normalizedId.includes("/src/composables/useFigureSession.js") ||
+            normalizedId.includes("/src/utils/classPlan.js") ||
+            normalizedId.includes("/src/utils/photoInput.js")
+          ) {
+            return "feature-session";
+          }
+
+          if (normalizedId.includes("/src/composables/usePhoneRemote.js")) {
+            return "feature-remote";
+          }
+
+          return undefined;
+        }
+      }
+    }
+  },
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version)
   }

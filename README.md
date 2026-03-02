@@ -100,6 +100,7 @@ Branch protection details and required settings are documented in `.github/branc
 - `Release Please` runs on pushes to `main` and maintains a release PR.
 - Merging the release PR updates `CHANGELOG.md`, bumps `package.json` version, creates a Git tag, and publishes a GitHub Release.
 - If a release PR is not created automatically, run `.github/workflows/release-please.yml` manually from the Actions tab.
+- Roadmap reference: `docs/03-upgrades-and-feature-roadmap.md`.
 
 ## Observability
 

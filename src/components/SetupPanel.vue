@@ -13,7 +13,7 @@
       :upload-notice="uploadNotice"
       :settings-save-status-text="settingsSaveStatusText"
       @open-wizard="openWizard"
-      @start-session="$emit('start-session')"
+      @start-session="handleStartSession"
       @new-random-set="$emit('new-random-set')"
     />
 
@@ -52,7 +52,7 @@
       @class-template-duplicate="$emit('class-template-duplicate', $event)"
       @class-template-export="$emit('class-template-export')"
       @class-template-import="$emit('class-template-import', $event)"
-      @start-session="$emit('start-session')"
+      @start-session="handleStartSession"
       @new-random-set="$emit('new-random-set')"
     />
 
@@ -69,7 +69,7 @@
       @export-settings="$emit('export-settings')"
       @share-settings-link="$emit('share-settings-link')"
       @import-settings="$emit('import-settings', $event)"
-      @start-session="$emit('start-session')"
+      @start-session="handleStartSession"
       @new-random-set="$emit('new-random-set')"
       @clear-history="$emit('clear-history')"
       @open-class-dialog="openClassDialog"
@@ -147,6 +147,13 @@ const wizardActionLabel = computed(() => {
 
 function openWizard() {
   wizardDialogRef.value?.openWizard();
+}
+
+function handleStartSession() {
+  if (props.sessionMode === "class") {
+    isClassDialogOpen.value = false;
+  }
+  emit("start-session");
 }
 
 function handleSessionModeChange(nextMode) {

@@ -26,6 +26,10 @@ export function createSessionRuntimeActions({
   stopSession,
   markRunStarted,
   recordSessionHistory,
+  isClassLaunchReviewOpen,
+  initializeClassLaunchReviewAssignments,
+  clearClassLaunchReviewAssignments,
+  applyClassLaunchReviewAssignments,
   mirrorLiveView,
   grayscaleLiveView,
   hideLiveOverlay,
@@ -43,6 +47,40 @@ export function createSessionRuntimeActions({
       return;
     }
 
+    if (sessionMode.value === SESSION_MODE_CLASS) {
+      initializeClassLaunchReviewAssignments?.();
+      isClassLaunchReviewOpen.value = true;
+      statusMessage.value = "Class set ready. Drag photos into the pose slots, then start class.";
+      return;
+    }
+
+    markRunStarted();
+    startPreparedSession();
+  }
+
+  function cancelClassLaunchReview() {
+    if (!isClassLaunchReviewOpen.value) {
+      return;
+    }
+
+    isClassLaunchReviewOpen.value = false;
+    clearClassLaunchReviewAssignments?.();
+    statusMessage.value = "Class launch paused. Review setup or regenerate when ready.";
+  }
+
+  function startClassFromReview() {
+    if (sessionMode.value !== SESSION_MODE_CLASS) {
+      return;
+    }
+
+    if (sessionSlides.value.length === 0) {
+      statusMessage.value = "Prepare a class set before starting.";
+      return;
+    }
+
+    applyClassLaunchReviewAssignments?.();
+    isClassLaunchReviewOpen.value = false;
+    clearClassLaunchReviewAssignments?.();
     markRunStarted();
     startPreparedSession();
   }
@@ -92,6 +130,9 @@ export function createSessionRuntimeActions({
   }
 
   function createNewRandomSet() {
+    isClassLaunchReviewOpen.value = false;
+    clearClassLaunchReviewAssignments?.();
+
     const autoStart = isSessionLive.value;
     if (autoStart) {
       recordSessionHistory("ended", currentIndex.value);
@@ -129,6 +170,8 @@ export function createSessionRuntimeActions({
     }
 
     sessionMode.value = nextMode;
+    isClassLaunchReviewOpen.value = false;
+    clearClassLaunchReviewAssignments?.();
     clearTimers();
     revokeSlideUrl();
     resetPlaybackState();
@@ -171,6 +214,8 @@ export function createSessionRuntimeActions({
 
   return {
     startFreshSession,
+    cancelClassLaunchReview,
+    startClassFromReview,
     applyDurationChange,
     createNewRandomSet,
     endSession,

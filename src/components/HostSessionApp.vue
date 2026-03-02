@@ -63,8 +63,17 @@
           @clear-history="clearSessionHistory"
         />
 
+        <ClassLaunchReviewDialog
+          v-if="!isSessionLive"
+          :is-open="isClassLaunchReviewOpen"
+          :slots="classLaunchReviewSlots"
+          @close="cancelClassLaunchReview"
+          @reorder="reorderClassLaunchReview"
+          @start-class="startClassFromReview"
+        />
+
         <LiveControlsPanel
-          v-else
+          v-if="isSessionLive"
           :session-mode="sessionMode"
           :duration-seconds="durationSeconds"
           :mirror-live-view="mirrorLiveView"
@@ -129,6 +138,9 @@ import { usePhoneRemoteHost } from "../composables/usePhoneRemote";
 import { useThemeMode } from "../composables/useThemeMode";
 
 const SetupPanel = defineAsyncComponent(() => import("./SetupPanel.vue"));
+const ClassLaunchReviewDialog = defineAsyncComponent(() =>
+  import("./ClassLaunchReviewDialog.vue")
+);
 const LiveControlsPanel = defineAsyncComponent(() => import("./LiveControlsPanel.vue"));
 const SlideStage = defineAsyncComponent(() => import("./SlideStage.vue"));
 
@@ -200,6 +212,11 @@ const {
   exportClassTemplatesJson,
   importClassTemplatesFromFile,
   startFreshSession,
+  isClassLaunchReviewOpen,
+  classLaunchReviewSlots,
+  reorderClassLaunchReview,
+  cancelClassLaunchReview,
+  startClassFromReview,
   togglePause,
   goToNextSlide,
   createNewRandomSet,

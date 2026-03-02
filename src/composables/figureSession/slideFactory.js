@@ -212,3 +212,37 @@ export function createClassSlides({
     fallbackTagBlocks
   };
 }
+
+export function applyClassPoseFilesToSlides(slides, poseFiles) {
+  if (!Array.isArray(slides) || slides.length === 0) {
+    return [];
+  }
+
+  if (!Array.isArray(poseFiles) || poseFiles.length === 0) {
+    return slides;
+  }
+
+  let poseIndex = 0;
+  let hasChanges = false;
+
+  const nextSlides = slides.map((slide) => {
+    if (slide?.kind === "break") {
+      return slide;
+    }
+
+    const assignedFile = poseFiles[poseIndex] || slide.file;
+    poseIndex += 1;
+
+    if (assignedFile === slide.file) {
+      return slide;
+    }
+
+    hasChanges = true;
+    return {
+      ...slide,
+      file: assignedFile
+    };
+  });
+
+  return hasChanges ? nextSlides : slides;
+}

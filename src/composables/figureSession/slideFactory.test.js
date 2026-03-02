@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { SESSION_PHOTO_LIMIT } from "../../config";
-import { createClassSlides, createQuickSlides } from "./slideFactory";
+import {
+  applyClassPoseFilesToSlides,
+  createClassSlides,
+  createQuickSlides
+} from "./slideFactory";
 
 function makePhotos(count) {
   return Array.from({ length: count }, (_, index) => ({
@@ -142,5 +146,46 @@ describe("createClassSlides", () => {
       durationSeconds: 180
     });
     expect(slides[3]).toMatchObject({ kind: "pose", poseNumber: 3, label: "Long Pose" });
+  });
+});
+
+describe("applyClassPoseFilesToSlides", () => {
+  it("keeps durations bound to pose slots while replacing assigned photos", () => {
+    const photoA = { name: "A.jpg", size: 10, lastModified: 1 };
+    const photoB = { name: "B.jpg", size: 20, lastModified: 2 };
+    const photoC = { name: "C.jpg", size: 30, lastModified: 3 };
+
+    const slides = [
+      { kind: "pose", file: photoA, durationSeconds: 30, durationMs: 30000, poseNumber: 1 },
+      { kind: "pose", file: photoB, durationSeconds: 300, durationMs: 300000, poseNumber: 2 },
+      { kind: "break", durationSeconds: 120, durationMs: 120000, breakNumber: 1 },
+      { kind: "pose", file: photoC, durationSeconds: 60, durationMs: 60000, poseNumber: 3 }
+    ];
+
+    const reordered = applyClassPoseFilesToSlides(slides, [photoB, photoC, photoA]);
+
+    expect(reordered).toHaveLength(4);
+    expect(reordered[0]).toMatchObject({
+      kind: "pose",
+      file: photoB,
+      durationSeconds: 30,
+      durationMs: 30000,
+      poseNumber: 1
+    });
+    expect(reordered[1]).toMatchObject({
+      kind: "pose",
+      file: photoC,
+      durationSeconds: 300,
+      durationMs: 300000,
+      poseNumber: 2
+    });
+    expect(reordered[2]).toBe(slides[2]);
+    expect(reordered[3]).toMatchObject({
+      kind: "pose",
+      file: photoA,
+      durationSeconds: 60,
+      durationMs: 60000,
+      poseNumber: 3
+    });
   });
 });

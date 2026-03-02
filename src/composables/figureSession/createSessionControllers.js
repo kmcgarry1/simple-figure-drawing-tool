@@ -45,6 +45,10 @@ export function createSessionControllers({
   currentSlideUrl,
   currentSlideAlt,
   slideCounterText,
+  isClassLaunchReviewOpen,
+  initializeClassLaunchReviewAssignments,
+  clearClassLaunchReviewAssignments,
+  applyClassLaunchReviewAssignments,
   onCountdownCue,
   onSlideCompleteCue
 }) {
@@ -217,6 +221,8 @@ export function createSessionControllers({
 
   const {
     startFreshSession,
+    cancelClassLaunchReview,
+    startClassFromReview,
     applyDurationChange,
     createNewRandomSet,
     endSession,
@@ -248,6 +254,10 @@ export function createSessionControllers({
     stopSession,
     markRunStarted,
     recordSessionHistory,
+    isClassLaunchReviewOpen,
+    initializeClassLaunchReviewAssignments,
+    clearClassLaunchReviewAssignments,
+    applyClassLaunchReviewAssignments,
     mirrorLiveView,
     grayscaleLiveView,
     hideLiveOverlay,
@@ -287,6 +297,8 @@ export function createSessionControllers({
     exportClassTemplatesJson,
     importClassTemplatesFromFile,
     startFreshSession,
+    cancelClassLaunchReview,
+    startClassFromReview,
     applyDurationChange,
     createNewRandomSet,
     endSession,

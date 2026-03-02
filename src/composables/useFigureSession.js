@@ -11,6 +11,7 @@ import { loadSessionHistory } from "./figureSession/sessionHistory";
 import { useFigureSessionLifecycle } from "./figureSession/useFigureSessionLifecycle";
 import { formatDurationShort } from "./figureSession/formatters";
 import { useAudioCues } from "./useAudioCues";
+import { applyClassPoseFilesToSlides } from "./figureSession/slideFactory";
 
 const SESSION_PREVIEW_LIMIT = 5;
 
@@ -49,9 +50,51 @@ export function useFigureSession() {
   const activeSlideDurationMs = ref(0);
   const runStartedAtMs = ref(null);
   const runPlannedSlides = ref(0);
+  const isClassLaunchReviewOpen = ref(false);
+  const classLaunchPoseFiles = ref([]);
 
   const currentSlideUrl = ref("");
   const currentSlideAlt = ref("");
+
+  function initializeClassLaunchReviewAssignments() {
+    classLaunchPoseFiles.value = sessionSlides.value
+      .filter((slide) => slide.kind !== "break")
+      .map((slide) => slide.file || null);
+  }
+
+  function clearClassLaunchReviewAssignments() {
+    classLaunchPoseFiles.value = [];
+  }
+
+  function reorderClassLaunchReview({ fromIndex, toIndex }) {
+    const from = Number.parseInt(String(fromIndex), 10);
+    const to = Number.parseInt(String(toIndex), 10);
+    const assignments = classLaunchPoseFiles.value;
+
+    if (
+      !Number.isInteger(from) ||
+      !Number.isInteger(to) ||
+      from < 0 ||
+      to < 0 ||
+      from >= assignments.length ||
+      to >= assignments.length ||
+      from === to
+    ) {
+      return;
+    }
+
+    const nextAssignments = assignments.slice();
+    const [movedFile] = nextAssignments.splice(from, 1);
+    nextAssignments.splice(to, 0, movedFile);
+    classLaunchPoseFiles.value = nextAssignments;
+  }
+
+  function applyClassLaunchReviewAssignments() {
+    sessionSlides.value = applyClassPoseFilesToSlides(
+      sessionSlides.value,
+      classLaunchPoseFiles.value
+    );
+  }
 
   const {
     hasSourcePhotos,
@@ -122,6 +165,8 @@ export function useFigureSession() {
     exportClassTemplatesJson,
     importClassTemplatesFromFile,
     startFreshSession,
+    cancelClassLaunchReview,
+    startClassFromReview,
     applyDurationChange,
     createNewRandomSet,
     endSession,
@@ -166,6 +211,10 @@ export function useFigureSession() {
     currentSlideUrl,
     currentSlideAlt,
     slideCounterText,
+    isClassLaunchReviewOpen,
+    initializeClassLaunchReviewAssignments,
+    clearClassLaunchReviewAssignments,
+    applyClassLaunchReviewAssignments,
     onCountdownCue: playCountdownCue,
     onSlideCompleteCue: playSlideCompleteCue
   });
@@ -266,6 +315,26 @@ export function useFigureSession() {
     return `Showing all ${totalSlides} slides (${compositionText}).`;
   });
 
+  const classLaunchReviewSlots = computed(() =>
+    sessionSlides.value
+      .filter((slide) => slide.kind !== "break")
+      .map((slide, index) => {
+        const assignedFile = classLaunchPoseFiles.value[index] || slide.file || null;
+        const durationSeconds =
+          Number.parseInt(String(slide.durationSeconds), 10) ||
+          Math.max(0, Math.round((slide.durationMs || 0) / 1000));
+
+        return {
+          id: `pose-slot-${index + 1}`,
+          poseNumber: slide.poseNumber || index + 1,
+          label: slide.label || "Pose",
+          durationText: formatDurationShort(durationSeconds),
+          file: assignedFile,
+          fileName: assignedFile?.name || "No image selected"
+        };
+      })
+  );
+
   return {
     fileInputAccept: FILE_INPUT_ACCEPT,
     sessionMode,
@@ -334,6 +403,11 @@ export function useFigureSession() {
     exportClassTemplatesJson,
     importClassTemplatesFromFile,
     startFreshSession,
+    isClassLaunchReviewOpen,
+    classLaunchReviewSlots,
+    reorderClassLaunchReview,
+    cancelClassLaunchReview,
+    startClassFromReview,
     togglePause,
     goToNextSlide,
     createNewRandomSet,

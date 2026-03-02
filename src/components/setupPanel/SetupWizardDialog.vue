@@ -35,30 +35,30 @@
             </button>
           </header>
 
-          <div class="mb-3 grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              :class="wizardStepButtonClass(1)"
-              @click="setWizardStep(1)"
-            >
-              1. Photos
-            </button>
-            <button
-              type="button"
-              :class="wizardStepButtonClass(2)"
-              :disabled="!canNavigateToStep(2)"
-              @click="setWizardStep(2)"
-            >
-              2. Session
-            </button>
-            <button
-              type="button"
-              :class="wizardStepButtonClass(3)"
-              :disabled="!canNavigateToStep(3)"
-              @click="setWizardStep(3)"
-            >
-              3. Advanced
-            </button>
+          <div class="mb-3 grid gap-2.5">
+            <p class="text-xs font-semibold uppercase tracking-[0.1em] text-stone-600">
+              Step {{ wizardStep }} of {{ wizardStepCount }}
+            </p>
+            <ol class="grid gap-2 md:grid-cols-3" aria-label="Setup wizard progress">
+              <li v-for="step in wizardSteps" :key="`wizard-step-${step.number}`">
+                <button
+                  type="button"
+                  :class="wizardStepCardClass(step.number)"
+                  :disabled="!canNavigateToStep(step.number)"
+                  :aria-current="wizardStep === step.number ? 'step' : undefined"
+                  :aria-describedby="`wizard-step-hint-${step.number}`"
+                  @click="setWizardStep(step.number)"
+                >
+                  <span class="text-[11px] font-semibold uppercase tracking-[0.08em]">
+                    Step {{ step.number }} · {{ wizardStepStatusLabel(step.number) }}
+                  </span>
+                  <span class="text-sm font-semibold">{{ step.title }}</span>
+                  <span :id="`wizard-step-hint-${step.number}`" class="text-[11px] text-stone-600">
+                    {{ step.hint }}
+                  </span>
+                </button>
+              </li>
+            </ol>
           </div>
 
           <SetupWizardStepPhotos
@@ -103,10 +103,15 @@
             @clear-history="$emit('clear-history')"
           />
 
-          <footer class="mt-3 flex items-center justify-between gap-2 border-t border-amber-200/80 pt-3">
-            <BaseButton compact tone="subtle" :disabled="wizardStep === 1" @click="goToPreviousWizardStep">
-              Back
-            </BaseButton>
+          <footer class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-amber-200/80 pt-3">
+            <div class="flex items-center gap-2">
+              <BaseButton compact tone="subtle" :disabled="wizardStep === 1" @click="goToPreviousWizardStep">
+                Back
+              </BaseButton>
+              <p class="text-xs text-stone-500">
+                {{ wizardStepStatusLabel(wizardStep) }}
+              </p>
+            </div>
             <div class="ml-auto grid grid-flow-col gap-2">
               <BaseButton compact tone="subtle" @click="closeWizard">Done</BaseButton>
               <BaseButton
@@ -167,7 +172,6 @@ const {
   canStartSession,
   canAdvanceWizardStep,
   canNavigateToStep,
-  wizardStepButtonClass,
   setWizardStep,
   goToNextWizardStep,
   goToPreviousWizardStep,
@@ -186,6 +190,77 @@ const { onWizardKeydown } = useSetupWizardFocusManagement({
   isClassDialogOpen: computed(() => props.isClassDialogOpen),
   closeWizard
 });
+
+const wizardSteps = [
+  {
+    number: 1,
+    title: "Photos",
+    hint: "Add source images."
+  },
+  {
+    number: 2,
+    title: "Session",
+    hint: "Set mode, timing, and preview."
+  },
+  {
+    number: 3,
+    title: "Advanced",
+    hint: "Tags, transfer, and history."
+  }
+];
+
+function wizardStepState(stepNumber) {
+  if (stepNumber === wizardStep.value) {
+    return "current";
+  }
+
+  if (stepNumber < wizardStep.value && canNavigateToStep(stepNumber)) {
+    return "done";
+  }
+
+  if (!canNavigateToStep(stepNumber)) {
+    return "locked";
+  }
+
+  return "ready";
+}
+
+function wizardStepStatusLabel(stepNumber) {
+  const stepState = wizardStepState(stepNumber);
+  if (stepState === "done") {
+    return "Done";
+  }
+
+  if (stepState === "current") {
+    return "Current";
+  }
+
+  if (stepState === "locked") {
+    return "Locked";
+  }
+
+  return "Ready";
+}
+
+function wizardStepCardClass(stepNumber) {
+  const baseClass =
+    "grid w-full gap-1 rounded-lg border px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed";
+  const stepState = wizardStepState(stepNumber);
+
+  if (stepState === "current") {
+    return `${baseClass} border-sky-300/80 bg-white/90 text-stone-800 shadow-sm`;
+  }
+
+  if (stepState === "done") {
+    return `${baseClass} border-emerald-300/80 bg-emerald-100/70 text-stone-800`;
+  }
+
+  if (stepState === "locked") {
+    return `${baseClass} border-amber-200/80 bg-white/56 text-stone-500`;
+  }
+
+  return `${baseClass} border-amber-200/90 bg-white/76 text-stone-700 hover:bg-white`;
+}
 
 function onPhotosSelected(event) {
   emit("photos-selected", event.target?.files || []);

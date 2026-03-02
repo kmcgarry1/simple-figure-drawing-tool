@@ -99,6 +99,8 @@ Branch protection details and required settings are documented in `.github/branc
 
 - `Release Please` runs on pushes to `main` and maintains a release PR.
 - Merging the release PR updates `CHANGELOG.md`, bumps `package.json` version, creates a Git tag, and publishes a GitHub Release.
+- Configure a repo secret named `RELEASE_PLEASE_TOKEN` (PAT with `contents` and `pull_requests` write) so release PR updates trigger required PR checks (`checks`, `e2e`, `Analyze (javascript-typescript)`).
+- The workflow falls back to `GITHUB_TOKEN`, but GitHub event recursion protections can prevent release-PR check workflows from running in that mode.
 - If a release PR is not created automatically, run `.github/workflows/release-please.yml` manually from the Actions tab.
 - Roadmap reference: `docs/03-upgrades-and-feature-roadmap.md`.
 

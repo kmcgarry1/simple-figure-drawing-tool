@@ -18,10 +18,10 @@
         >
           <header class="mb-3 flex items-start justify-between gap-3">
             <div class="grid gap-1">
-              <h2 id="setup-wizard-title" class="fd-title-gradient text-base font-semibold">
+              <h2 id="setup-wizard-title" class="fd-title-gradient text-[1.04rem] font-semibold">
                 Setup Wizard
               </h2>
-              <p id="setup-wizard-description" class="text-sm text-stone-700">
+              <p id="setup-wizard-description" class="text-[13px] leading-5 text-stone-600">
                 Configure photos, session behavior, and advanced tools step by step.
               </p>
             </div>
@@ -36,7 +36,7 @@
           </header>
 
           <div class="mb-3 grid gap-2.5">
-            <p class="text-xs font-semibold uppercase tracking-[0.1em] text-stone-600">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-600">
               Step {{ wizardStep }} of {{ wizardStepCount }}
             </p>
             <ol class="grid gap-2 md:grid-cols-3" aria-label="Setup wizard progress">
@@ -49,11 +49,11 @@
                   :aria-describedby="`wizard-step-hint-${step.number}`"
                   @click="setWizardStep(step.number)"
                 >
-                  <span class="text-[11px] font-semibold uppercase tracking-[0.08em]">
+                  <span class="text-[10px] font-semibold uppercase tracking-[0.1em]">
                     Step {{ step.number }} · {{ wizardStepStatusLabel(step.number) }}
                   </span>
-                  <span class="text-sm font-semibold">{{ step.title }}</span>
-                  <span :id="`wizard-step-hint-${step.number}`" class="text-[11px] text-stone-600">
+                  <span class="text-[15px] font-semibold">{{ step.title }}</span>
+                  <span :id="`wizard-step-hint-${step.number}`" class="text-[12px] leading-5 text-stone-600">
                     {{ step.hint }}
                   </span>
                 </button>
@@ -108,7 +108,7 @@
               <BaseButton compact tone="subtle" :disabled="wizardStep === 1" @click="goToPreviousWizardStep">
                 Back
               </BaseButton>
-              <p class="text-xs text-stone-500">
+              <p class="text-[12px] text-stone-600">
                 {{ wizardStepStatusLabel(wizardStep) }}
               </p>
             </div>
@@ -244,7 +244,7 @@ function wizardStepStatusLabel(stepNumber) {
 
 function wizardStepCardClass(stepNumber) {
   const baseClass =
-    "grid w-full gap-1 rounded-lg border px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed";
+    "grid w-full gap-1.5 rounded-lg border px-3.5 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed";
   const stepState = wizardStepState(stepNumber);
 
   if (stepState === "current") {
@@ -256,7 +256,7 @@ function wizardStepCardClass(stepNumber) {
   }
 
   if (stepState === "locked") {
-    return `${baseClass} border-amber-200/80 bg-white/56 text-stone-500`;
+    return `${baseClass} border-amber-200/80 bg-white/56 text-stone-600`;
   }
 
   return `${baseClass} border-amber-200/90 bg-white/76 text-stone-700 hover:bg-white`;

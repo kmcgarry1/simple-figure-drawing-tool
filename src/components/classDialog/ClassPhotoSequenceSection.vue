@@ -1,19 +1,27 @@
 <template>
-  <div class="grid gap-2">
+  <div class="grid gap-2.5">
     <p class="fd-section-label">Photo Sequence</p>
-    <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-      <BaseButton compact :tone="photoOrderTone('shuffle')" @click="$emit('class-photo-order-change', 'shuffle')">
+    <div class="fd-segmented max-w-[380px]" role="group" aria-label="Photo order mode">
+      <button
+        type="button"
+        class="fd-segmented-option"
+        :class="{ 'is-active': classPhotoOrder === 'shuffle' }"
+        :aria-pressed="classPhotoOrder === 'shuffle' ? 'true' : 'false'"
+        @click="$emit('class-photo-order-change', 'shuffle')"
+      >
         Shuffle Photos
-      </BaseButton>
-      <BaseButton
-        compact
-        :tone="photoOrderTone('sequential')"
+      </button>
+      <button
+        type="button"
+        class="fd-segmented-option"
+        :class="{ 'is-active': classPhotoOrder === 'sequential' }"
+        :aria-pressed="classPhotoOrder === 'sequential' ? 'true' : 'false'"
         @click="$emit('class-photo-order-change', 'sequential')"
       >
         Upload Order
-      </BaseButton>
+      </button>
     </div>
-    <label class="inline-flex items-center gap-2 text-sm text-stone-600">
+    <label class="inline-flex items-center gap-2 text-sm text-stone-600" :class="{ 'opacity-70': classPhotoOrder === 'sequential' }">
       <input
         type="checkbox"
         class="h-4 w-4 rounded border-amber-300/90 bg-white text-sky-500 focus-visible:ring-sky-300/80"
@@ -27,9 +35,7 @@
 </template>
 
 <script setup>
-import BaseButton from "../BaseButton.vue";
-
-const props = defineProps({
+defineProps({
   classPhotoOrder: {
     type: String,
     required: true
@@ -41,10 +47,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["class-photo-order-change", "class-repeat-toggle"]);
-
-function photoOrderTone(order) {
-  return props.classPhotoOrder === order ? "primary" : "subtle";
-}
 
 function onRepeatToggle(event) {
   emit("class-repeat-toggle", event.target.checked);

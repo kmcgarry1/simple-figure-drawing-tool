@@ -35,72 +35,76 @@
             </button>
           </header>
 
-          <div class="grid gap-3.5">
-            <ClassPresetSection
-              :class-preset-options="classPresetOptions"
-              :class-preset-id="classPresetId"
-              @class-preset-change="$emit('class-preset-change', $event)"
-            />
+          <div class="grid gap-3.5 xl:grid-cols-[minmax(0,1.6fr)_minmax(300px,0.9fr)] xl:items-start">
+            <div class="grid gap-3.5">
+              <ClassPresetSection
+                :class-preset-options="classPresetOptions"
+                :class-preset-id="classPresetId"
+                @class-preset-change="$emit('class-preset-change', $event)"
+              />
 
-            <ClassBuilderAssistantSection
-              :class-preset-options="classPresetOptions"
-              :class-preset-id="classPresetId"
-              :available-photo-tags="availablePhotoTags"
-              @class-assistant-generate="$emit('class-assistant-generate', $event)"
-            />
+              <ClassBuilderAssistantSection
+                :class-preset-options="classPresetOptions"
+                :class-preset-id="classPresetId"
+                :available-photo-tags="availablePhotoTags"
+                @class-assistant-generate="$emit('class-assistant-generate', $event)"
+              />
 
-            <ClassPoseBlocksSection
-              :class-blocks="classBlocks"
-              :available-photo-tags="availablePhotoTags"
-              @class-block-update="$emit('class-block-update', $event)"
-              @class-block-add="$emit('class-block-add', $event)"
-              @class-block-remove="$emit('class-block-remove', $event)"
-            />
+              <ClassPoseBlocksSection
+                :class-blocks="classBlocks"
+                :available-photo-tags="availablePhotoTags"
+                @class-block-update="$emit('class-block-update', $event)"
+                @class-block-add="$emit('class-block-add', $event)"
+                @class-block-remove="$emit('class-block-remove', $event)"
+              />
 
-            <ClassPhotoSequenceSection
-              :class-photo-order="classPhotoOrder"
-              :avoid-immediate-repeats="avoidImmediateRepeats"
-              @class-photo-order-change="$emit('class-photo-order-change', $event)"
-              @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
-            />
+              <ClassPhotoSequenceSection
+                :class-photo-order="classPhotoOrder"
+                :avoid-immediate-repeats="avoidImmediateRepeats"
+                @class-photo-order-change="$emit('class-photo-order-change', $event)"
+                @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
+              />
 
-            <ClassTemplatesSection
-              :class-templates="classTemplates"
-              @class-template-save="$emit('class-template-save', $event)"
-              @class-template-load="$emit('class-template-load', $event)"
-              @class-template-delete="$emit('class-template-delete', $event)"
-              @class-template-rename="$emit('class-template-rename', $event)"
-              @class-template-duplicate="$emit('class-template-duplicate', $event)"
-              @class-template-export="$emit('class-template-export')"
-              @class-template-import="$emit('class-template-import', $event)"
-            />
-
-            <div class="grid gap-1 rounded-lg border border-amber-200/80 bg-white/86 px-3 py-2.5 text-sm text-stone-600">
-              <p>
-                Plan total:
-                <span class="font-semibold text-stone-800">{{ classTotalMinutesText }}</span>
-                across {{ classPoseCount }} poses.
-              </p>
-              <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>
+              <ClassTemplatesSection
+                :class-templates="classTemplates"
+                @class-template-save="$emit('class-template-save', $event)"
+                @class-template-load="$emit('class-template-load', $event)"
+                @class-template-delete="$emit('class-template-delete', $event)"
+                @class-template-rename="$emit('class-template-rename', $event)"
+                @class-template-duplicate="$emit('class-template-duplicate', $event)"
+                @class-template-export="$emit('class-template-export')"
+                @class-template-import="$emit('class-template-import', $event)"
+              />
             </div>
 
-            <SessionPreviewSection
-              :preview-items="sessionPreviewItems"
-              :preview-summary-text="sessionPreviewSummaryText"
-            />
+            <aside class="grid gap-2.5 xl:sticky xl:top-2">
+              <div class="grid gap-1 rounded-lg border border-amber-200/80 bg-white/86 px-3 py-2.5 text-sm text-stone-600">
+                <p>
+                  Plan total:
+                  <span class="font-semibold text-stone-800">{{ classTotalMinutesText }}</span>
+                  across {{ classPoseCount }} poses.
+                </p>
+                <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>
+              </div>
 
-            <div class="sticky bottom-0 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2 rounded-lg border border-amber-200/70 bg-white/96 p-2.5">
-              <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
-                {{ startActionLabel }}
-              </BaseButton>
-              <BaseButton
-                :disabled="!hasSourcePhotos || !hasClassPlan"
-                tone="subtle"
-                @click="$emit('new-random-set')"
-              >
-                {{ regenerateActionLabel }}
-              </BaseButton>
-            </div>
+              <SessionPreviewSection
+                :preview-items="sessionPreviewItems"
+                :preview-summary-text="sessionPreviewSummaryText"
+              />
+
+              <div class="grid gap-2 rounded-lg border border-amber-200/70 bg-white/96 p-2.5">
+                <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
+                  {{ startActionLabel }}
+                </BaseButton>
+                <BaseButton
+                  :disabled="!hasSourcePhotos || !hasClassPlan"
+                  tone="subtle"
+                  @click="$emit('new-random-set')"
+                >
+                  {{ regenerateActionLabel }}
+                </BaseButton>
+              </div>
+            </aside>
           </div>
         </section>
       </div>

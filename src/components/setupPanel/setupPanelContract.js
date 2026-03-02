@@ -107,6 +107,7 @@ export const setupPanelEmits = [
   "duration-input",
   "duration-change",
   "photo-tag-update",
+  "photo-tag-batch-update",
   "photo-reorder",
   "export-settings",
   "share-settings-link",

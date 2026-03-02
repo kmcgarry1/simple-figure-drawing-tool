@@ -110,6 +110,7 @@ export function createSessionControllers({
     availablePhotoTags,
     handlePhotoSelectionWithTags,
     updatePhotoTag,
+    updatePhotoTagsBatch,
     reorderSourcePhoto
   } = createPhotoTagActions({
     sourcePhotos,
@@ -276,6 +277,7 @@ export function createSessionControllers({
     availablePhotoTags,
     handlePhotoSelectionWithTags,
     updatePhotoTag,
+    updatePhotoTagsBatch,
     reorderSourcePhoto,
     setClassPreset,
     updateClassBlock,

@@ -38,6 +38,10 @@ export function createPhotoTagActions({
     return String(rawTag ?? "").trim();
   }
 
+  function shouldRegenerateClassSet() {
+    return sessionMode.value === SESSION_MODE_CLASS && !isSessionLive.value && hasSourcePhotos.value;
+  }
+
   function syncPhotoTagsForSourcePhotos() {
     const nextTags = {};
     for (const file of sourcePhotos.value) {
@@ -67,7 +71,64 @@ export function createPhotoTagActions({
 
     photoTagsById.value = nextTags;
 
-    if (sessionMode.value === SESSION_MODE_CLASS && !isSessionLive.value && hasSourcePhotos.value) {
+    if (shouldRegenerateClassSet()) {
+      prepareActiveSet();
+    }
+  }
+
+  function updatePhotoTagsBatch({ photoIds, tag, action }) {
+    const selectedPhotoIds = Array.from(new Set(Array.from(photoIds || [])))
+      .map((photoId) => String(photoId || "").trim())
+      .filter(Boolean);
+    if (selectedPhotoIds.length === 0) {
+      return;
+    }
+
+    const availablePhotoIds = new Set(sourcePhotos.value.map((file) => createPhotoId(file)));
+    const normalizedTag = normalizePhotoTag(tag);
+    const normalizedAction = String(action || "").toLowerCase() === "clear" ? "clear" : "set";
+    if (normalizedAction === "set" && !normalizedTag) {
+      return;
+    }
+
+    let changedPhotoCount = 0;
+    const nextTags = { ...photoTagsById.value };
+
+    for (const photoId of selectedPhotoIds) {
+      if (!availablePhotoIds.has(photoId)) {
+        continue;
+      }
+
+      const currentTag = normalizePhotoTag(nextTags[photoId]);
+      if (normalizedAction === "clear") {
+        if (!currentTag) {
+          continue;
+        }
+
+        delete nextTags[photoId];
+        changedPhotoCount += 1;
+        continue;
+      }
+
+      if (currentTag === normalizedTag) {
+        continue;
+      }
+
+      nextTags[photoId] = normalizedTag;
+      changedPhotoCount += 1;
+    }
+
+    if (changedPhotoCount <= 0) {
+      return;
+    }
+
+    photoTagsById.value = nextTags;
+    statusMessage.value =
+      normalizedAction === "clear"
+        ? `Removed tags from ${changedPhotoCount} photo${changedPhotoCount === 1 ? "" : "s"}.`
+        : `Applied tag "${normalizedTag}" to ${changedPhotoCount} photo${changedPhotoCount === 1 ? "" : "s"}.`;
+
+    if (shouldRegenerateClassSet()) {
       prepareActiveSet();
     }
   }
@@ -88,7 +149,7 @@ export function createPhotoTagActions({
       ? `Photo order updated: ${movedPhoto.name} is now #${nextIndex + 1}.`
       : "Photo order updated.";
 
-    if (sessionMode.value === SESSION_MODE_CLASS && !isSessionLive.value && hasSourcePhotos.value) {
+    if (shouldRegenerateClassSet()) {
       prepareActiveSet();
     }
   }
@@ -98,6 +159,7 @@ export function createPhotoTagActions({
     availablePhotoTags,
     handlePhotoSelectionWithTags,
     updatePhotoTag,
+    updatePhotoTagsBatch,
     reorderSourcePhoto
   };
 }

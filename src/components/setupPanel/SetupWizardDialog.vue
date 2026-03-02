@@ -105,6 +105,7 @@
             :available-photo-tags="availablePhotoTags"
             :session-history="sessionHistory"
             @photo-tag-update="$emit('photo-tag-update', $event)"
+            @photo-tag-batch-update="$emit('photo-tag-batch-update', $event)"
             @photo-reorder="$emit('photo-reorder', $event)"
             @export-settings="$emit('export-settings')"
             @share-settings-link="$emit('share-settings-link')"
@@ -164,6 +165,7 @@ const emit = defineEmits([
   "duration-input",
   "duration-change",
   "photo-tag-update",
+  "photo-tag-batch-update",
   "photo-reorder",
   "export-settings",
   "share-settings-link",

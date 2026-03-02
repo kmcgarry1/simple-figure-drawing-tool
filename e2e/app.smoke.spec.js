@@ -162,6 +162,34 @@ test("advanced photo manager keeps keyboard/button reorder fallback", async ({ p
   await expect(photoCards.nth(0)).toContainText("keys-pose-2.png");
 });
 
+test("advanced photo manager supports bulk tag apply and remove", async ({ page }) => {
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
+    createPngFilePayload("bulk-pose-1.png"),
+    createPngFilePayload("bulk-pose-2.png"),
+    createPngFilePayload("bulk-pose-3.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizardStepButton(page, 3, "Advanced").click();
+
+  await wizard.getByRole("checkbox", { name: "Select bulk-pose-1.png for bulk tag actions" }).check();
+  await wizard.getByRole("checkbox", { name: "Select bulk-pose-2.png for bulk tag actions" }).check();
+  await wizard.getByLabel("Tag Name").fill("gesture");
+  await wizard.getByRole("button", { name: "Apply Tag" }).click();
+
+  await expect(wizard.getByLabel("Tag for bulk-pose-1.png")).toHaveValue("gesture");
+  await expect(wizard.getByLabel("Tag for bulk-pose-2.png")).toHaveValue("gesture");
+  await expect(wizard.getByLabel("Tag for bulk-pose-3.png")).toHaveValue("");
+
+  await wizard.getByRole("button", { name: "Remove Tag" }).click();
+  await expect(wizard.getByLabel("Tag for bulk-pose-1.png")).toHaveValue("");
+  await expect(wizard.getByLabel("Tag for bulk-pose-2.png")).toHaveValue("");
+});
+
 test("live quick timer does not reset when duration input is focused and blurred unchanged", async ({
   page
 }) => {

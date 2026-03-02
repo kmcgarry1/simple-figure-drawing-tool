@@ -77,6 +77,7 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
 - Dependency updates are automated via `.github/dependabot.yml`.
 - CodeQL scanning runs via `.github/workflows/codeql.yml`.
 - Dependabot patch/minor updates for `npm` and `github-actions` are auto-merged after required checks pass via `.github/workflows/dependabot-automerge.yml`.
+- Automated release PRs/tags are managed by `.github/workflows/release-please.yml`.
 
 ## Observability
 

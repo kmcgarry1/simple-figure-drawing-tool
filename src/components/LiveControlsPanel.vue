@@ -1,6 +1,6 @@
 <template>
-  <div class="grid gap-2.5 stagger-in">
-    <section class="fd-card grid gap-2 rounded-md p-2">
+  <div class="grid gap-3 stagger-in">
+    <section class="fd-card grid gap-2.5 rounded-md p-2.5">
       <p class="fd-section-label text-sm">Live Controls</p>
       <BaseButton compact :disabled="!isRunning && !isPaused" @click="$emit('toggle-pause')">
         {{ pauseLabel }}
@@ -14,7 +14,7 @@
       <BaseButton compact tone="danger" @click="$emit('end')">End Session</BaseButton>
     </section>
 
-    <section v-if="sessionMode === 'quick'" class="fd-card grid gap-1.5 rounded-md p-2">
+    <section v-if="sessionMode === 'quick'" class="fd-card grid gap-1.5 rounded-md p-2.5">
       <p class="fd-section-label text-sm">Quick Timing</p>
       <DurationInput
         id="durationInputCompact"
@@ -26,7 +26,7 @@
       />
     </section>
 
-    <section class="fd-card grid gap-2 rounded-md p-2">
+    <section class="fd-card grid gap-2 rounded-md p-2.5">
       <div class="flex items-center justify-between gap-2">
         <div class="grid gap-0.5">
           <p class="text-xs font-semibold text-stone-700">Advanced Controls</p>

@@ -1,21 +1,35 @@
 <template>
   <div class="grid gap-3.5 stagger-in">
     <section class="fd-card grid gap-2.5 rounded-xl p-3">
-      <p class="fd-section-label">Live Controls</p>
+      <p class="fd-section-label inline-flex items-center gap-1.5">
+        <Radio class="h-4 w-4 text-sky-700" aria-hidden="true" />
+        Live Controls
+      </p>
       <BaseButton compact :disabled="!isRunning && !isPaused" @click="$emit('toggle-pause')">
+        <component :is="isPaused ? Play : Pause" class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
         {{ pauseLabel }}
       </BaseButton>
       <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-        <BaseButton compact :disabled="!isRunning" tone="subtle" @click="$emit('next')">Next</BaseButton>
+        <BaseButton compact :disabled="!isRunning" tone="subtle" @click="$emit('next')">
+          <SkipForward class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+          Next
+        </BaseButton>
         <BaseButton compact :disabled="!hasSourcePhotos" tone="subtle" @click="$emit('new-set')">
+          <RefreshCw class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
           {{ restartLabel }}
         </BaseButton>
       </div>
-      <BaseButton compact tone="danger" @click="$emit('end')">End Session</BaseButton>
+      <BaseButton compact tone="danger" @click="$emit('end')">
+        <Square class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+        End Session
+      </BaseButton>
     </section>
 
     <section v-if="sessionMode === 'quick'" class="fd-card grid gap-1.5 rounded-xl p-3">
-      <p class="fd-section-label">Quick Timing</p>
+      <p class="fd-section-label inline-flex items-center gap-1.5">
+        <Timer class="h-4 w-4 text-sky-700" aria-hidden="true" />
+        Quick Timing
+      </p>
       <DurationInput
         id="durationInputCompact"
         label="Sec / Photo"
@@ -29,17 +43,24 @@
     <section class="fd-card grid gap-2.5 rounded-xl p-3">
       <div class="flex items-center justify-between gap-2">
         <div class="grid gap-0.5">
-          <p class="text-xs font-semibold uppercase tracking-[0.1em] text-stone-700">Advanced Controls</p>
-          <p class="text-[11px] text-stone-500">Stage view and phone remote pairing.</p>
+          <p class="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-700 inline-flex items-center gap-1.5">
+            <SlidersHorizontal class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
+            Advanced Controls
+          </p>
+          <p class="text-[12px] text-stone-600">Stage view and phone remote pairing.</p>
         </div>
         <BaseButton compact tone="subtle" @click="toggleAdvancedControls">
+          <SlidersHorizontal class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
           {{ isAdvancedControlsOpen ? "Hide" : "Show" }}
         </BaseButton>
       </div>
 
       <div v-if="isAdvancedControlsOpen" class="grid gap-2">
         <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
-          <p class="text-xs font-semibold text-stone-700">Stage View</p>
+          <p class="text-[12px] font-semibold text-stone-700 inline-flex items-center gap-1.5">
+            <Monitor class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
+            Stage View
+          </p>
           <div class="grid grid-cols-1 gap-1">
             <BaseButton compact :tone="mirrorLiveView ? 'primary' : 'subtle'" @click="$emit('toggle-mirror-live-view')">
               {{ mirrorLiveView ? "Mirror: On" : "Mirror: Off" }}
@@ -54,12 +75,16 @@
         </section>
 
         <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
-          <p class="text-xs font-semibold text-stone-700">Audio Cues</p>
+          <p class="text-[12px] font-semibold text-stone-700 inline-flex items-center gap-1.5">
+            <Volume2 class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
+            Audio Cues
+          </p>
           <div class="grid grid-cols-1 gap-1">
             <BaseButton compact :tone="audioMuted ? 'subtle' : 'primary'" @click="$emit('toggle-audio-muted')">
+              <component :is="audioMuted ? VolumeX : Volume2" class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
               {{ audioMuted ? "Audio Cues: Muted" : "Audio Cues: On" }}
             </BaseButton>
-            <label class="grid gap-1 text-xs text-stone-600" for="audioVolumePercent">
+            <label class="grid gap-1 text-[12px] text-stone-700" for="audioVolumePercent">
               <span>Volume: {{ audioVolumePercent }}%</span>
               <input
                 id="audioVolumePercent"
@@ -76,19 +101,24 @@
         </section>
 
         <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
-          <p class="text-xs font-semibold text-stone-700">Phone Remote</p>
-          <p class="text-[11px] text-stone-500">{{ remoteStatus }}</p>
+          <p class="text-[12px] font-semibold text-stone-700 inline-flex items-center gap-1.5">
+            <Smartphone class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
+            Phone Remote
+          </p>
+          <p class="text-[12px] text-stone-600">{{ remoteStatus }}</p>
 
           <div class="grid grid-cols-2 gap-2">
             <BaseButton compact tone="subtle" @click="$emit('remote-create-offer')">
+              <PlugZap class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
               Generate Offer
             </BaseButton>
             <BaseButton compact tone="subtle" :disabled="!remoteOfferToken" @click="$emit('remote-copy-offer-token')">
+              <ClipboardCopy class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
               Copy Offer
             </BaseButton>
           </div>
 
-          <label v-if="remotePairingUrl" class="grid gap-1 text-xs text-stone-600" for="remotePairingUrl">
+          <label v-if="remotePairingUrl" class="grid gap-1 text-[12px] text-stone-700" for="remotePairingUrl">
             <span>Pairing Link (open on phone)</span>
             <textarea
               id="remotePairingUrl"
@@ -100,11 +130,15 @@
           </label>
 
           <BaseButton compact tone="subtle" :disabled="!remotePairingUrl" @click="$emit('remote-copy-pairing-link')">
+            <Link2 class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             Copy Pairing Link
           </BaseButton>
 
           <div v-if="remotePairingQrDataUrl" class="grid gap-1 rounded-md border border-amber-200/80 bg-white/60 p-2">
-            <p class="text-[11px] text-stone-600">Scan QR on phone to open pairing page</p>
+            <p class="text-[12px] text-stone-600 inline-flex items-center gap-1.5">
+              <QrCode class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
+              Scan QR on phone to open pairing page
+            </p>
             <img
               :src="remotePairingQrDataUrl"
               alt="QR code for phone remote pairing link"
@@ -112,7 +146,7 @@
             />
           </div>
 
-          <label v-if="remoteOfferToken" class="grid gap-1 text-xs text-stone-600" for="remoteOfferToken">
+          <label v-if="remoteOfferToken" class="grid gap-1 text-[12px] text-stone-700" for="remoteOfferToken">
             <span>Offer Token (send to phone)</span>
             <textarea
               id="remoteOfferToken"
@@ -123,7 +157,7 @@
             />
           </label>
 
-          <label class="grid gap-1 text-xs text-stone-600" for="remoteAnswerToken">
+          <label class="grid gap-1 text-[12px] text-stone-700" for="remoteAnswerToken">
             <span>Answer Token (from phone)</span>
             <textarea
               id="remoteAnswerToken"
@@ -135,9 +169,11 @@
 
           <div class="grid grid-cols-2 gap-2">
             <BaseButton compact :disabled="remoteAnswerToken.length === 0" @click="applyAnswerToken">
+              <Send class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
               Apply Answer
             </BaseButton>
             <BaseButton compact tone="subtle" :disabled="!isRemoteConnected" @click="$emit('remote-disconnect')">
+              <Unplug class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
               Disconnect
             </BaseButton>
           </div>
@@ -149,6 +185,26 @@
 
 <script setup>
 import { ref } from "vue";
+import {
+  ClipboardCopy,
+  Link2,
+  Monitor,
+  Pause,
+  Play,
+  PlugZap,
+  QrCode,
+  Radio,
+  RefreshCw,
+  Send,
+  SkipForward,
+  SlidersHorizontal,
+  Smartphone,
+  Square,
+  Timer,
+  Unplug,
+  Volume2,
+  VolumeX
+} from "lucide-vue-next";
 import BaseButton from "./BaseButton.vue";
 import DurationInput from "./DurationInput.vue";
 

@@ -3,6 +3,7 @@ import {
   clampDurationSeconds,
   createPhotoId,
   movePhotoById,
+  movePhotoByIdToIndex,
   normalizeUploadedPhotos
 } from "./photoInput";
 import {
@@ -139,5 +140,32 @@ describe("movePhotoById", () => {
   it("does not move when direction is invalid or target photo is missing", () => {
     expect(movePhotoById(photos, "missing|0|0", "up").moved).toBe(false);
     expect(movePhotoById(photos, "pose-2.jpg|2|22", "weird").moved).toBe(false);
+  });
+});
+
+describe("movePhotoByIdToIndex", () => {
+  const photos = [
+    { name: "pose-1.jpg", size: 1, lastModified: 11 },
+    { name: "pose-2.jpg", size: 2, lastModified: 22 },
+    { name: "pose-3.jpg", size: 3, lastModified: 33 }
+  ];
+
+  it("moves a photo directly to the requested target index", () => {
+    const result = movePhotoByIdToIndex(photos, "pose-1.jpg|1|11", 2);
+    expect(result.moved).toBe(true);
+    expect(result.fromIndex).toBe(0);
+    expect(result.toIndex).toBe(2);
+    expect(result.photos.map((photo) => photo.name)).toEqual([
+      "pose-2.jpg",
+      "pose-3.jpg",
+      "pose-1.jpg"
+    ]);
+  });
+
+  it("does not move when target index is invalid, unchanged, or photo is missing", () => {
+    expect(movePhotoByIdToIndex(photos, "pose-2.jpg|2|22", 1).moved).toBe(false);
+    expect(movePhotoByIdToIndex(photos, "pose-2.jpg|2|22", -1).moved).toBe(false);
+    expect(movePhotoByIdToIndex(photos, "pose-2.jpg|2|22", 99).moved).toBe(false);
+    expect(movePhotoByIdToIndex(photos, "missing|0|0", 1).moved).toBe(false);
   });
 });

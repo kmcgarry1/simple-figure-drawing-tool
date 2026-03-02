@@ -89,19 +89,43 @@ export function movePhotoById(files, photoId, direction) {
     targetIndex = Math.max(0, currentPhotos.length - 1);
   }
 
-  if (targetIndex === sourceIndex) {
+  return movePhotoByIdToIndex(currentPhotos, photoId, targetIndex);
+}
+
+export function movePhotoByIdToIndex(files, photoId, targetIndex) {
+  const currentPhotos = Array.from(files || []);
+  const sourceIndex = currentPhotos.findIndex((file) => createPhotoId(file) === photoId);
+  if (sourceIndex < 0) {
+    return { photos: currentPhotos, moved: false };
+  }
+
+  const normalizedTargetIndex = Number(targetIndex);
+  if (
+    !Number.isInteger(normalizedTargetIndex) ||
+    normalizedTargetIndex < 0 ||
+    normalizedTargetIndex >= currentPhotos.length
+  ) {
+    return { photos: currentPhotos, moved: false };
+  }
+
+  const boundedTargetIndex = Math.min(
+    currentPhotos.length - 1,
+    Math.max(0, normalizedTargetIndex)
+  );
+
+  if (boundedTargetIndex === sourceIndex) {
     return { photos: currentPhotos, moved: false };
   }
 
   const nextPhotos = [...currentPhotos];
   const [movedPhoto] = nextPhotos.splice(sourceIndex, 1);
-  nextPhotos.splice(targetIndex, 0, movedPhoto);
+  nextPhotos.splice(boundedTargetIndex, 0, movedPhoto);
 
   return {
     photos: nextPhotos,
     moved: true,
     fromIndex: sourceIndex,
-    toIndex: targetIndex
+    toIndex: boundedTargetIndex
   };
 }
 

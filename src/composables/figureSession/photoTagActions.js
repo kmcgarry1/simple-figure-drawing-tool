@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { createPhotoId, movePhotoById } from "../../utils/photoInput";
+import { createPhotoId, movePhotoById, movePhotoByIdToIndex } from "../../utils/photoInput";
 import { SESSION_MODE_CLASS } from "./constants";
 
 export function createPhotoTagActions({
@@ -72,16 +72,20 @@ export function createPhotoTagActions({
     }
   }
 
-  function reorderSourcePhoto({ photoId, direction }) {
-    const { photos, moved, toIndex } = movePhotoById(sourcePhotos.value, photoId, direction);
+  function reorderSourcePhoto({ photoId, direction, toIndex }) {
+    const parsedTargetIndex = Number(toIndex);
+    const shouldMoveByIndex = Number.isInteger(parsedTargetIndex);
+    const { photos, moved, toIndex: nextIndex } = shouldMoveByIndex
+      ? movePhotoByIdToIndex(sourcePhotos.value, photoId, parsedTargetIndex)
+      : movePhotoById(sourcePhotos.value, photoId, direction);
     if (!moved) {
       return;
     }
 
     sourcePhotos.value = photos;
-    const movedPhoto = photos[toIndex] || null;
+    const movedPhoto = photos[nextIndex] || null;
     statusMessage.value = movedPhoto?.name
-      ? `Photo order updated: ${movedPhoto.name} is now #${toIndex + 1}.`
+      ? `Photo order updated: ${movedPhoto.name} is now #${nextIndex + 1}.`
       : "Photo order updated.";
 
     if (sessionMode.value === SESSION_MODE_CLASS && !isSessionLive.value && hasSourcePhotos.value) {

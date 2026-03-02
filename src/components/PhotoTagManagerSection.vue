@@ -10,11 +10,24 @@
     </p>
     <p v-else class="text-xs text-stone-500">No tags assigned yet.</p>
 
-    <div class="grid max-h-[24rem] gap-2 overflow-y-auto pr-1">
+    <div class="grid max-h-[24rem] gap-2 overflow-y-auto pr-1" role="list" aria-label="Source photo order">
       <article
         v-for="(photo, index) in taggedPhotos"
         :key="photo.id"
-        class="fd-subtle-card grid gap-2 rounded-lg p-2"
+        role="listitem"
+        :data-photo-id="photo.id"
+        :aria-grabbed="draggedPhotoId === photo.id ? 'true' : 'false'"
+        class="fd-subtle-card grid gap-2 rounded-lg p-2 transition"
+        :class="{
+          'opacity-60 ring-2 ring-sky-300/80': draggedPhotoId === photo.id,
+          'ring-2 ring-amber-300/80': dropTargetPhotoId === photo.id && draggedPhotoId !== photo.id
+        }"
+        draggable="true"
+        @dragstart="onDragStart($event, photo.id)"
+        @dragenter.prevent="onDragEnter(photo.id)"
+        @dragover="onDragOver"
+        @drop="onDrop($event, photo.id)"
+        @dragend="onDragEnd"
       >
         <div class="flex items-start gap-2">
           <div class="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-amber-200/90 bg-white/84">
@@ -91,6 +104,8 @@ const props = defineProps({
 const emit = defineEmits(["photo-tag-update", "photo-reorder"]);
 
 const previewUrlsById = ref({});
+const draggedPhotoId = ref("");
+const dropTargetPhotoId = ref("");
 
 function createObjectUrl(file) {
   if (!(file instanceof Blob)) {
@@ -157,5 +172,59 @@ function onTagChange(photoId, event) {
 
 function requestPhotoReorder(photoId, direction) {
   emit("photo-reorder", { photoId, direction });
+}
+
+function onDragStart(event, photoId) {
+  draggedPhotoId.value = photoId;
+  dropTargetPhotoId.value = "";
+
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", photoId);
+  }
+}
+
+function onDragEnter(photoId) {
+  if (!draggedPhotoId.value || draggedPhotoId.value === photoId) {
+    dropTargetPhotoId.value = "";
+    return;
+  }
+
+  dropTargetPhotoId.value = photoId;
+}
+
+function onDragOver(event) {
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "move";
+  }
+}
+
+function onDrop(event, targetPhotoId) {
+  event.preventDefault();
+
+  const transferPhotoId = event.dataTransfer?.getData("text/plain") || "";
+  const sourcePhotoId = transferPhotoId || draggedPhotoId.value;
+  if (!sourcePhotoId || sourcePhotoId === targetPhotoId) {
+    onDragEnd();
+    return;
+  }
+
+  const targetIndex = props.taggedPhotos.findIndex((photo) => photo.id === targetPhotoId);
+  if (targetIndex < 0) {
+    onDragEnd();
+    return;
+  }
+
+  emit("photo-reorder", {
+    photoId: sourcePhotoId,
+    toIndex: targetIndex
+  });
+  onDragEnd();
+}
+
+function onDragEnd() {
+  draggedPhotoId.value = "";
+  dropTargetPhotoId.value = "";
 }
 </script>

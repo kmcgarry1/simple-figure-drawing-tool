@@ -80,6 +80,27 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
 - Automated release PRs/tags are managed by `.github/workflows/release-please.yml`.
 - PR file-based labels are applied by `.github/workflows/labeler.yml` using `.github/labeler.yml`, and ownership defaults are defined in `.github/CODEOWNERS`.
 
+## Contribution Workflow
+
+1. Create a feature branch from `main`.
+2. Use Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`), because release automation depends on commit semantics.
+3. Run local gates before pushing:
+   `npm run check`
+4. Open a PR and self-review in `Files changed`.
+5. Wait for required checks to pass:
+   - `checks`
+   - `e2e`
+   - `Analyze (javascript-typescript)`
+6. Squash-merge to `main`.
+
+Branch protection details and required settings are documented in `.github/branch-protection.md`.
+
+## Releases
+
+- `Release Please` runs on pushes to `main` and maintains a release PR.
+- Merging the release PR updates `CHANGELOG.md`, bumps `package.json` version, creates a Git tag, and publishes a GitHub Release.
+- If a release PR is not created automatically, run `.github/workflows/release-please.yml` manually from the Actions tab.
+
 ## Observability
 
 - Vercel Analytics and Speed Insights are enabled in production builds.

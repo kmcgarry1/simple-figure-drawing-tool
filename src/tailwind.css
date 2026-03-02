@@ -250,67 +250,83 @@ h3 {
 }
 
 .fd-button-primary {
-  border-color: rgb(58 64 110 / 0.92);
-  background: rgb(73 80 133);
-  color: rgb(248 249 255);
+  border-color: rgb(110 162 20 / 0.95);
+  background: rgb(163 236 58);
+  color: rgb(27 44 10);
   box-shadow:
-    0 6px 14px rgb(44 48 82 / 0.22),
-    inset 0 1px 0 rgb(220 226 255 / 0.22);
+    0 6px 14px rgb(94 145 17 / 0.28),
+    inset 0 1px 0 rgb(244 255 214 / 0.38);
 }
 
 .fd-button-primary:hover {
-  background: rgb(81 89 145);
+  background: rgb(177 244 78);
 }
 
 .fd-button-subtle {
-  border-color: rgb(var(--fd-border-strong) / 0.72);
-  background: rgb(var(--fd-surface-elev) / 0.95);
-  color: rgb(var(--fd-ink) / 0.9);
-  box-shadow: 0 3px 8px rgb(var(--fd-shadow) / 0.06);
+  border-color: rgb(47 86 220 / 0.9);
+  background: rgb(74 118 255);
+  color: rgb(245 249 255);
+  box-shadow:
+    0 5px 12px rgb(42 75 188 / 0.25),
+    inset 0 1px 0 rgb(206 220 255 / 0.2);
 }
 
 .fd-button-subtle:hover {
-  border-color: rgb(var(--fd-focus) / 0.72);
-  background: rgb(var(--fd-surface-elev));
+  border-color: rgb(56 98 236 / 0.95);
+  background: rgb(88 130 255);
 }
 
 .fd-button-danger {
-  border-color: rgb(132 34 28 / 0.95);
-  background: rgb(176 57 50);
+  border-color: rgb(159 34 30 / 0.95);
+  background: rgb(214 56 47);
   color: rgb(248 250 252);
   box-shadow:
-    0 6px 12px rgb(127 29 29 / 0.24),
-    inset 0 1px 0 rgb(254 202 202 / 0.2);
+    0 6px 12px rgb(127 29 29 / 0.28),
+    inset 0 1px 0 rgb(255 204 201 / 0.24);
 }
 
 .fd-button-danger:hover {
-  background: rgb(188 64 57);
+  background: rgb(226 69 60);
 }
 
 :root[data-theme="dark"] .fd-button-primary {
-  border-color: rgb(171 186 255 / 0.9);
-  background: rgb(95 110 195);
-  color: rgb(245 247 255);
+  border-color: rgb(179 233 88 / 0.92);
+  background: rgb(155 225 55);
+  color: rgb(20 35 8);
   box-shadow:
-    0 6px 16px rgb(8 11 22 / 0.46),
-    inset 0 1px 0 rgb(222 231 255 / 0.2);
+    0 7px 16px rgb(16 28 8 / 0.44),
+    inset 0 1px 0 rgb(241 255 204 / 0.3);
 }
 
 :root[data-theme="dark"] .fd-button-primary:hover {
-  background: rgb(107 124 209);
+  background: rgb(170 236 71);
+}
+
+:root[data-theme="dark"] .fd-button-subtle {
+  border-color: rgb(118 159 255 / 0.9);
+  background: rgb(86 126 255);
+  color: rgb(242 246 255);
+  box-shadow:
+    0 7px 16px rgb(15 26 55 / 0.46),
+    inset 0 1px 0 rgb(216 227 255 / 0.24);
+}
+
+:root[data-theme="dark"] .fd-button-subtle:hover {
+  border-color: rgb(132 171 255 / 0.95);
+  background: rgb(102 140 255);
 }
 
 :root[data-theme="dark"] .fd-button-danger {
-  border-color: rgb(245 174 158 / 0.9);
-  background: linear-gradient(140deg, rgb(184 60 50 / 0.98), rgb(132 37 31 / 0.98));
+  border-color: rgb(255 158 151 / 0.9);
+  background: rgb(208 66 58);
   color: rgb(255 245 241);
   box-shadow:
-    0 12px 24px rgb(69 10 10 / 0.48),
-    inset 0 1px 0 rgb(254 202 202 / 0.26);
+    0 8px 16px rgb(69 10 10 / 0.42),
+    inset 0 1px 0 rgb(255 210 207 / 0.24);
 }
 
 :root[data-theme="dark"] .fd-button-danger:hover {
-  background: linear-gradient(140deg, rgb(195 74 63 / 0.98), rgb(142 44 36 / 0.98));
+  background: rgb(223 82 73);
 }
 
 [class*="border-amber-200/"],

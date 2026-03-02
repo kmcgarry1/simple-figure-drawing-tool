@@ -40,6 +40,7 @@
           @duration-input="updateDurationSeconds"
           @duration-change="applyDurationChange"
           @photo-tag-update="updatePhotoTag"
+          @photo-tag-batch-update="updatePhotoTagsBatch"
           @photo-reorder="reorderSourcePhoto"
           @export-settings="exportSettingsJson"
           @share-settings-link="copySettingsShareLink"
@@ -224,6 +225,7 @@ const {
   stopSession,
   applyDurationChange,
   updatePhotoTag,
+  updatePhotoTagsBatch,
   reorderSourcePhoto,
   handlePhotoSelection
 } = useFigureSession();

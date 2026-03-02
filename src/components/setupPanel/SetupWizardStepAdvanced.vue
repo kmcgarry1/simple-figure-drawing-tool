@@ -30,6 +30,7 @@
           :tagged-photos="props.taggedPhotos"
           :available-photo-tags="props.availablePhotoTags"
           @photo-tag-update="$emit('photo-tag-update', $event)"
+          @photo-tag-batch-update="$emit('photo-tag-batch-update', $event)"
           @photo-reorder="$emit('photo-reorder', $event)"
         />
         <p v-else class="fd-text-muted text-[12px] leading-5">Add photos in Step 1 to edit order and tags.</p>
@@ -115,6 +116,7 @@ const props = defineProps({
 
 defineEmits([
   "photo-tag-update",
+  "photo-tag-batch-update",
   "photo-reorder",
   "export-settings",
   "share-settings-link",

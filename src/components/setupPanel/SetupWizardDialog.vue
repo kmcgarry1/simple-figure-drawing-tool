@@ -49,10 +49,19 @@
                   :aria-describedby="`wizard-step-hint-${step.number}`"
                   @click="setWizardStep(step.number)"
                 >
-                  <span class="text-[10px] font-semibold uppercase tracking-[0.1em]">
-                    Step {{ step.number }} · {{ wizardStepStatusLabel(step.number) }}
+                  <span class="text-[10px] font-semibold uppercase tracking-[0.1em] text-stone-600">
+                    Step {{ step.number }}
                   </span>
-                  <span class="text-[15px] font-semibold">{{ step.title }}</span>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="inline-flex items-center gap-1.5 text-[15px] font-semibold">
+                      <component :is="step.icon" class="h-4 w-4" aria-hidden="true" />
+                      {{ step.title }}
+                    </span>
+                    <span :class="wizardStepStatusBadgeClass(step.number)">
+                      <component :is="wizardStepStatusIcon(step.number)" class="h-3 w-3" aria-hidden="true" />
+                      {{ wizardStepStatusLabel(step.number) }}
+                    </span>
+                  </div>
                   <span :id="`wizard-step-hint-${step.number}`" class="text-[12px] leading-5 text-stone-600">
                     {{ step.hint }}
                   </span>
@@ -132,6 +141,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
+import { Circle, CircleCheckBig, CircleDot, Images, Lock, SlidersHorizontal, Timer } from "lucide-vue-next";
 import BaseButton from "../BaseButton.vue";
 import { setupPanelProps } from "./setupPanelContract";
 import SetupWizardStepAdvanced from "./SetupWizardStepAdvanced.vue";
@@ -195,17 +205,20 @@ const wizardSteps = [
   {
     number: 1,
     title: "Photos",
-    hint: "Add source images."
+    hint: "Add source images.",
+    icon: Images
   },
   {
     number: 2,
     title: "Session",
-    hint: "Set mode, timing, and preview."
+    hint: "Set mode, timing, and preview.",
+    icon: Timer
   },
   {
     number: 3,
     title: "Advanced",
-    hint: "Tags, transfer, and history."
+    hint: "Tags, transfer, and history.",
+    icon: SlidersHorizontal
   }
 ];
 
@@ -240,6 +253,43 @@ function wizardStepStatusLabel(stepNumber) {
   }
 
   return "Ready";
+}
+
+function wizardStepStatusIcon(stepNumber) {
+  const stepState = wizardStepState(stepNumber);
+  if (stepState === "done") {
+    return CircleCheckBig;
+  }
+
+  if (stepState === "current") {
+    return CircleDot;
+  }
+
+  if (stepState === "locked") {
+    return Lock;
+  }
+
+  return Circle;
+}
+
+function wizardStepStatusBadgeClass(stepNumber) {
+  const baseClass =
+    "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]";
+  const stepState = wizardStepState(stepNumber);
+
+  if (stepState === "done") {
+    return `${baseClass} border-emerald-300/80 bg-emerald-100/75 text-emerald-900`;
+  }
+
+  if (stepState === "current") {
+    return `${baseClass} border-lime-300/80 bg-lime-100/80 text-lime-900`;
+  }
+
+  if (stepState === "locked") {
+    return `${baseClass} border-amber-200/80 bg-white/66 text-stone-600`;
+  }
+
+  return `${baseClass} border-sky-300/70 bg-sky-100/70 text-sky-900`;
 }
 
 function wizardStepCardClass(stepNumber) {

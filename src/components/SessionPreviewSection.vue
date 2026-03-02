@@ -1,7 +1,10 @@
 <template>
   <section class="fd-card grid gap-2.5 rounded-xl p-3">
     <div class="grid gap-1">
-      <p class="text-[15px] font-semibold text-stone-800">Session Preview</p>
+      <p class="inline-flex items-center gap-1.5 text-[15px] font-semibold text-stone-800">
+        <Eye class="h-4 w-4 text-sky-700" aria-hidden="true" />
+        Session Preview
+      </p>
       <p class="text-[12px] leading-5 text-stone-600">{{ previewSummaryText }}</p>
     </div>
 
@@ -26,6 +29,8 @@
 </template>
 
 <script setup>
+import { Eye } from "lucide-vue-next";
+
 defineProps({
   previewSummaryText: {
     type: String,

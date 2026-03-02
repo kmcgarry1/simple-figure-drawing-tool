@@ -1,7 +1,10 @@
 <template>
   <section class="grid gap-3.5 rounded-xl border border-amber-200/80 bg-white/58 p-4">
     <div class="grid gap-1">
-      <p class="text-[15px] font-semibold text-stone-800">Step 1: Add source photos</p>
+      <p class="inline-flex items-center gap-2 text-[15px] font-semibold text-stone-800">
+        <ImagePlus class="h-4 w-4 text-lime-700" aria-hidden="true" />
+        Step 1: Add source photos
+      </p>
       <p class="text-[13px] leading-5 text-stone-600">
         Start with direct file upload, or load a folder for larger sets. The app validates supported images
         automatically.
@@ -11,7 +14,10 @@
     <div class="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)] xl:items-start">
       <article class="grid gap-2.5 rounded-xl border border-lime-300/70 bg-white/84 p-3.5">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <p class="text-[15px] font-semibold text-stone-800">Upload Photos</p>
+          <p class="inline-flex items-center gap-1.5 text-[15px] font-semibold text-stone-800">
+            <Images class="h-4 w-4 text-lime-700" aria-hidden="true" />
+            Upload Photos
+          </p>
           <span class="rounded-full border border-lime-300/80 bg-lime-100/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-lime-900">
             Primary Path
           </span>
@@ -35,7 +41,10 @@
 
       <article class="grid gap-2.5 rounded-xl border border-amber-200/80 bg-white/76 p-3">
         <div class="grid gap-1">
-          <p class="text-[15px] font-semibold text-stone-800">Load Photo Folder</p>
+          <p class="inline-flex items-center gap-1.5 text-[15px] font-semibold text-stone-800">
+            <FolderOpen class="h-4 w-4 text-sky-700" aria-hidden="true" />
+            Load Photo Folder
+          </p>
           <p class="text-[13px] leading-5 text-stone-600">Useful when your references are already organized in a single folder.</p>
         </div>
         <label class="grid gap-1.5 text-[13px] text-stone-700" for="photoFolderInput">
@@ -55,7 +64,8 @@
     </div>
 
     <div class="grid gap-1 rounded-lg border border-amber-200/80 bg-white/84 px-3 py-2.5 text-[13px] text-stone-700">
-      <p>
+      <p class="inline-flex items-center gap-1.5">
+        <component :is="sourcePoolStatusIcon" class="h-4 w-4" :class="sourcePoolStatusIconClass" aria-hidden="true" />
         Current source pool:
         <span class="font-semibold text-stone-800">{{ sourcePoolCountLabel }}</span>
       </p>
@@ -66,6 +76,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { CircleCheckBig, FolderOpen, ImagePlus, Images, Info } from "lucide-vue-next";
 
 const props = defineProps({
   fileInputAccept: {
@@ -105,5 +116,15 @@ const sourcePoolStatusHint = computed(() => {
   }
 
   return "Great coverage. Continue to Step 2 to configure timing and launch options.";
+});
+
+const sourcePoolStatusIcon = computed(() => {
+  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
+  return count === 0 ? Info : CircleCheckBig;
+});
+
+const sourcePoolStatusIconClass = computed(() => {
+  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
+  return count === 0 ? "text-amber-700" : "text-lime-700";
 });
 </script>

@@ -1,7 +1,10 @@
 <template>
   <section class="grid gap-3.5 rounded-xl border border-amber-200/80 bg-white/58 p-4">
     <div class="grid gap-1">
-      <p class="text-[15px] font-semibold text-stone-800">Step 2: Configure session</p>
+      <p class="inline-flex items-center gap-2 text-[15px] font-semibold text-stone-800">
+        <Timer class="h-4 w-4 text-lime-700" aria-hidden="true" />
+        Step 2: Configure session
+      </p>
       <p class="text-[13px] leading-5 text-stone-600">
         Choose quick practice or class mode, then set timing and plan options.
       </p>
@@ -103,6 +106,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { Timer } from "lucide-vue-next";
 import BaseButton from "../BaseButton.vue";
 import DurationInput from "../DurationInput.vue";
 import SessionPreviewSection from "../SessionPreviewSection.vue";

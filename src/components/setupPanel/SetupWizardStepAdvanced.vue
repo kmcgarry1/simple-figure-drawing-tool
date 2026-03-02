@@ -1,7 +1,10 @@
 <template>
   <section class="grid gap-3.5 rounded-xl border border-amber-200/80 bg-white/58 p-4">
     <div class="grid gap-1">
-      <p class="text-[15px] font-semibold text-stone-800">Step 3: Advanced tools</p>
+      <p class="inline-flex items-center gap-2 text-[15px] font-semibold text-stone-800">
+        <SlidersHorizontal class="h-4 w-4 text-lime-700" aria-hidden="true" />
+        Step 3: Advanced tools
+      </p>
       <p class="text-[13px] leading-5 text-stone-600">
         Fine-tune tags, transfer settings, and manage session history.
       </p>
@@ -14,7 +17,10 @@
         :aria-expanded="isOpen('tagging') ? 'true' : 'false'"
         @click="toggleSection('tagging')"
       >
-        <span>Photo Tags And Order</span>
+        <span class="inline-flex items-center gap-1.5">
+          <Tags class="h-4 w-4 text-sky-700" aria-hidden="true" />
+          Photo Tags And Order
+        </span>
         <span class="text-[10px] font-semibold uppercase tracking-[0.1em] text-stone-600">{{ isOpen("tagging") ? "Hide" : "Show" }}</span>
       </button>
       <div v-if="isOpen('tagging')" class="grid gap-2">
@@ -36,7 +42,10 @@
         :aria-expanded="isOpen('settings') ? 'true' : 'false'"
         @click="toggleSection('settings')"
       >
-        <span>Settings Transfer</span>
+        <span class="inline-flex items-center gap-1.5">
+          <FolderSync class="h-4 w-4 text-sky-700" aria-hidden="true" />
+          Settings Transfer
+        </span>
         <span class="text-[10px] font-semibold uppercase tracking-[0.1em] text-stone-600">{{ isOpen("settings") ? "Hide" : "Show" }}</span>
       </button>
       <div v-if="isOpen('settings')" class="grid gap-2 rounded-md border border-amber-200/80 bg-white/56 p-2.5">
@@ -63,7 +72,10 @@
         :aria-expanded="isOpen('history') ? 'true' : 'false'"
         @click="toggleSection('history')"
       >
-        <span>Session History</span>
+        <span class="inline-flex items-center gap-1.5">
+          <History class="h-4 w-4 text-sky-700" aria-hidden="true" />
+          Session History
+        </span>
         <span class="text-[10px] font-semibold uppercase tracking-[0.1em] text-stone-600">{{ isOpen("history") ? "Hide" : "Show" }}</span>
       </button>
       <SessionHistorySection
@@ -77,6 +89,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { FolderSync, History, SlidersHorizontal, Tags } from "lucide-vue-next";
 import BaseButton from "../BaseButton.vue";
 import PhotoTagManagerSection from "../PhotoTagManagerSection.vue";
 import SessionHistorySection from "../SessionHistorySection.vue";

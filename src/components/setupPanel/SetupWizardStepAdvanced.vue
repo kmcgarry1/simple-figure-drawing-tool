@@ -1,11 +1,11 @@
 <template>
-  <section class="grid gap-3.5 rounded-xl border border-amber-200/80 bg-white/58 p-4">
+  <section class="fd-callout grid gap-3.5 rounded-xl p-4">
     <div class="grid gap-1">
-      <p class="inline-flex items-center gap-2 text-[15px] font-semibold text-stone-800">
+      <p class="fd-text-strong inline-flex items-center gap-2 text-[15px] font-semibold">
         <SlidersHorizontal class="h-4 w-4 text-lime-700" aria-hidden="true" />
         Step 3: Advanced tools
       </p>
-      <p class="text-[13px] leading-5 text-stone-600">
+      <p class="fd-text-muted text-[13px] leading-5">
         Fine-tune tags, transfer settings, and manage session history.
       </p>
     </div>
@@ -13,7 +13,7 @@
     <section class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
       <button
         type="button"
-        class="flex items-center justify-between gap-2 rounded-md border border-amber-200/75 bg-white/70 px-3 py-2 text-left text-[14px] font-semibold text-stone-800 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80"
+        class="fd-accordion-toggle flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[14px] font-semibold"
         :aria-expanded="isOpen('tagging') ? 'true' : 'false'"
         @click="toggleSection('tagging')"
       >
@@ -21,7 +21,7 @@
           <Tags class="h-4 w-4 text-sky-700" aria-hidden="true" />
           Photo Tags And Order
         </span>
-        <span class="text-[10px] font-semibold uppercase tracking-[0.1em] text-stone-600">{{ isOpen("tagging") ? "Hide" : "Show" }}</span>
+        <span class="fd-kicker text-[10px]">{{ isOpen("tagging") ? "Hide" : "Show" }}</span>
       </button>
       <div v-if="isOpen('tagging')" class="grid gap-2">
         <PhotoTagManagerSection
@@ -31,14 +31,14 @@
           @photo-tag-update="$emit('photo-tag-update', $event)"
           @photo-reorder="$emit('photo-reorder', $event)"
         />
-        <p v-else class="text-[12px] leading-5 text-stone-600">Add photos in Step 1 to edit order and tags.</p>
+        <p v-else class="fd-text-muted text-[12px] leading-5">Add photos in Step 1 to edit order and tags.</p>
       </div>
     </section>
 
     <section class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
       <button
         type="button"
-        class="flex items-center justify-between gap-2 rounded-md border border-amber-200/75 bg-white/70 px-3 py-2 text-left text-[14px] font-semibold text-stone-800 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80"
+        class="fd-accordion-toggle flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[14px] font-semibold"
         :aria-expanded="isOpen('settings') ? 'true' : 'false'"
         @click="toggleSection('settings')"
       >
@@ -46,18 +46,18 @@
           <FolderSync class="h-4 w-4 text-sky-700" aria-hidden="true" />
           Settings Transfer
         </span>
-        <span class="text-[10px] font-semibold uppercase tracking-[0.1em] text-stone-600">{{ isOpen("settings") ? "Hide" : "Show" }}</span>
+        <span class="fd-kicker text-[10px]">{{ isOpen("settings") ? "Hide" : "Show" }}</span>
       </button>
-      <div v-if="isOpen('settings')" class="grid gap-2 rounded-md border border-amber-200/80 bg-white/56 p-2.5">
+      <div v-if="isOpen('settings')" class="fd-callout-muted grid gap-2 rounded-md p-2.5">
         <div class="grid grid-cols-3 gap-2 max-[680px]:grid-cols-1">
           <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
           <BaseButton tone="subtle" @click="$emit('share-settings-link')">Copy Share Link</BaseButton>
-          <label class="grid gap-1 text-[12px] text-stone-700">
+          <label class="fd-text-body grid gap-1 text-[12px]">
             <span>Import JSON</span>
             <input
               type="file"
               accept="application/json,.json"
-              class="w-full rounded-md border border-amber-200/90 bg-white/84 px-2 py-1.5 text-xs text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              class="fd-file-input w-full rounded-md px-2 py-1.5 text-xs"
               @change="$emit('import-settings', $event)"
             />
           </label>
@@ -68,7 +68,7 @@
     <section class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
       <button
         type="button"
-        class="flex items-center justify-between gap-2 rounded-md border border-amber-200/75 bg-white/70 px-3 py-2 text-left text-[14px] font-semibold text-stone-800 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80"
+        class="fd-accordion-toggle flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[14px] font-semibold"
         :aria-expanded="isOpen('history') ? 'true' : 'false'"
         @click="toggleSection('history')"
       >
@@ -76,7 +76,7 @@
           <History class="h-4 w-4 text-sky-700" aria-hidden="true" />
           Session History
         </span>
-        <span class="text-[10px] font-semibold uppercase tracking-[0.1em] text-stone-600">{{ isOpen("history") ? "Hide" : "Show" }}</span>
+        <span class="fd-kicker text-[10px]">{{ isOpen("history") ? "Hide" : "Show" }}</span>
       </button>
       <SessionHistorySection
         v-if="isOpen('history')"

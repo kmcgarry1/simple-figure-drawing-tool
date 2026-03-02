@@ -21,14 +21,14 @@
               <h2 id="setup-wizard-title" class="fd-title-gradient text-[1.04rem] font-semibold">
                 Setup Wizard
               </h2>
-              <p id="setup-wizard-description" class="text-[13px] leading-5 text-stone-600">
+              <p id="setup-wizard-description" class="fd-text-muted text-[13px] leading-5">
                 Configure photos, session behavior, and advanced tools step by step.
               </p>
             </div>
             <button
               type="button"
               aria-label="Close setup wizard dialog"
-              class="rounded-md border border-amber-300/75 bg-white/78 px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              class="fd-accordion-toggle rounded-md px-2.5 py-1.5 text-xs font-semibold focus-visible:ring-offset-transparent"
               @click="closeWizard"
             >
               Close
@@ -36,7 +36,7 @@
           </header>
 
           <div class="mb-3 grid gap-2.5">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-600">
+            <p class="fd-kicker">
               Step {{ wizardStep }} of {{ wizardStepCount }}
             </p>
             <ol class="grid gap-2 md:grid-cols-3" aria-label="Setup wizard progress">
@@ -49,7 +49,7 @@
                   :aria-describedby="`wizard-step-hint-${step.number}`"
                   @click="setWizardStep(step.number)"
                 >
-                  <span class="text-[10px] font-semibold uppercase tracking-[0.1em] text-stone-600">
+                  <span class="fd-kicker text-[10px]">
                     Step {{ step.number }}
                   </span>
                   <div class="flex items-center justify-between gap-2">
@@ -62,7 +62,7 @@
                       {{ wizardStepStatusLabel(step.number) }}
                     </span>
                   </div>
-                  <span :id="`wizard-step-hint-${step.number}`" class="text-[12px] leading-5 text-stone-600">
+                  <span :id="`wizard-step-hint-${step.number}`" class="fd-text-muted text-[12px] leading-5">
                     {{ step.hint }}
                   </span>
                 </button>
@@ -112,12 +112,12 @@
             @clear-history="$emit('clear-history')"
           />
 
-          <footer class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-amber-200/80 pt-3">
+          <footer class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--fd-border)/0.82)] pt-3">
             <div class="flex items-center gap-2">
               <BaseButton compact tone="subtle" :disabled="wizardStep === 1" @click="goToPreviousWizardStep">
                 Back
               </BaseButton>
-              <p class="text-[12px] text-stone-600">
+              <p class="fd-text-muted text-[12px]">
                 {{ wizardStepStatusLabel(wizardStep) }}
               </p>
             </div>
@@ -278,18 +278,18 @@ function wizardStepStatusBadgeClass(stepNumber) {
   const stepState = wizardStepState(stepNumber);
 
   if (stepState === "done") {
-    return `${baseClass} border-emerald-300/80 bg-emerald-100/75 text-emerald-900`;
+    return `${baseClass} fd-badge-success`;
   }
 
   if (stepState === "current") {
-    return `${baseClass} border-lime-300/80 bg-lime-100/80 text-lime-900`;
+    return `${baseClass} fd-badge-active`;
   }
 
   if (stepState === "locked") {
-    return `${baseClass} border-amber-200/80 bg-white/66 text-stone-600`;
+    return `${baseClass} fd-badge-locked`;
   }
 
-  return `${baseClass} border-sky-300/70 bg-sky-100/70 text-sky-900`;
+  return `${baseClass} fd-badge-ready`;
 }
 
 function wizardStepCardClass(stepNumber) {
@@ -298,18 +298,18 @@ function wizardStepCardClass(stepNumber) {
   const stepState = wizardStepState(stepNumber);
 
   if (stepState === "current") {
-    return `${baseClass} border-sky-300/80 bg-white/90 text-stone-800 shadow-sm`;
+    return `${baseClass} fd-nested-surface fd-text-strong shadow-sm`;
   }
 
   if (stepState === "done") {
-    return `${baseClass} border-emerald-300/80 bg-emerald-100/70 text-stone-800`;
+    return `${baseClass} fd-callout fd-text-body`;
   }
 
   if (stepState === "locked") {
-    return `${baseClass} border-amber-200/80 bg-white/56 text-stone-600`;
+    return `${baseClass} fd-callout-muted fd-text-muted opacity-90`;
   }
 
-  return `${baseClass} border-amber-200/90 bg-white/76 text-stone-700 hover:bg-white`;
+  return `${baseClass} fd-callout fd-text-body hover:bg-white`;
 }
 
 function onPhotosSelected(event) {

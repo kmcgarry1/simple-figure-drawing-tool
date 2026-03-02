@@ -43,11 +43,11 @@
     <section class="fd-card grid gap-2.5 rounded-xl p-3">
       <div class="flex items-center justify-between gap-2">
         <div class="grid gap-0.5">
-          <p class="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-700 inline-flex items-center gap-1.5">
+          <p class="fd-kicker inline-flex items-center gap-1.5">
             <SlidersHorizontal class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
             Advanced Controls
           </p>
-          <p class="text-[12px] text-stone-600">Stage view and phone remote pairing.</p>
+          <p class="fd-text-muted text-[12px]">Stage view and phone remote pairing.</p>
         </div>
         <BaseButton compact tone="subtle" @click="toggleAdvancedControls">
           <SlidersHorizontal class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
@@ -57,7 +57,7 @@
 
       <div v-if="isAdvancedControlsOpen" class="grid gap-2">
         <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
-          <p class="text-[12px] font-semibold text-stone-700 inline-flex items-center gap-1.5">
+          <p class="fd-text-body inline-flex items-center gap-1.5 text-[12px] font-semibold">
             <Monitor class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
             Stage View
           </p>
@@ -75,7 +75,7 @@
         </section>
 
         <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
-          <p class="text-[12px] font-semibold text-stone-700 inline-flex items-center gap-1.5">
+          <p class="fd-text-body inline-flex items-center gap-1.5 text-[12px] font-semibold">
             <Volume2 class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
             Audio Cues
           </p>
@@ -84,7 +84,7 @@
               <component :is="audioMuted ? VolumeX : Volume2" class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
               {{ audioMuted ? "Audio Cues: Muted" : "Audio Cues: On" }}
             </BaseButton>
-            <label class="grid gap-1 text-[12px] text-stone-700" for="audioVolumePercent">
+            <label class="fd-text-body grid gap-1 text-[12px]" for="audioVolumePercent">
               <span>Volume: {{ audioVolumePercent }}%</span>
               <input
                 id="audioVolumePercent"
@@ -93,7 +93,7 @@
                 max="100"
                 step="1"
                 :value="audioVolumePercent"
-                class="fd-input w-full accent-amber-500"
+                class="fd-input w-full accent-lime-500"
                 @input="$emit('audio-volume-input', $event.target.value)"
               />
             </label>
@@ -101,11 +101,11 @@
         </section>
 
         <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
-          <p class="text-[12px] font-semibold text-stone-700 inline-flex items-center gap-1.5">
+          <p class="fd-text-body inline-flex items-center gap-1.5 text-[12px] font-semibold">
             <Smartphone class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
             Phone Remote
           </p>
-          <p class="text-[12px] text-stone-600">{{ remoteStatus }}</p>
+          <p class="fd-text-muted text-[12px]">{{ remoteStatus }}</p>
 
           <div class="grid grid-cols-2 gap-2">
             <BaseButton compact tone="subtle" @click="$emit('remote-create-offer')">
@@ -118,7 +118,7 @@
             </BaseButton>
           </div>
 
-          <label v-if="remotePairingUrl" class="grid gap-1 text-[12px] text-stone-700" for="remotePairingUrl">
+          <label v-if="remotePairingUrl" class="fd-text-body grid gap-1 text-[12px]" for="remotePairingUrl">
             <span>Pairing Link (open on phone)</span>
             <textarea
               id="remotePairingUrl"
@@ -134,19 +134,19 @@
             Copy Pairing Link
           </BaseButton>
 
-          <div v-if="remotePairingQrDataUrl" class="grid gap-1 rounded-md border border-amber-200/80 bg-white/60 p-2">
-            <p class="text-[12px] text-stone-600 inline-flex items-center gap-1.5">
+          <div v-if="remotePairingQrDataUrl" class="fd-callout-muted grid gap-1 rounded-md p-2">
+            <p class="fd-text-muted inline-flex items-center gap-1.5 text-[12px]">
               <QrCode class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
               Scan QR on phone to open pairing page
             </p>
             <img
               :src="remotePairingQrDataUrl"
               alt="QR code for phone remote pairing link"
-              class="mx-auto h-36 w-36 rounded-md border border-amber-200/80 bg-white p-1"
+              class="fd-callout mx-auto h-36 w-36 rounded-md p-1"
             />
           </div>
 
-          <label v-if="remoteOfferToken" class="grid gap-1 text-[12px] text-stone-700" for="remoteOfferToken">
+          <label v-if="remoteOfferToken" class="fd-text-body grid gap-1 text-[12px]" for="remoteOfferToken">
             <span>Offer Token (send to phone)</span>
             <textarea
               id="remoteOfferToken"
@@ -157,7 +157,7 @@
             />
           </label>
 
-          <label class="grid gap-1 text-[12px] text-stone-700" for="remoteAnswerToken">
+          <label class="fd-text-body grid gap-1 text-[12px]" for="remoteAnswerToken">
             <span>Answer Token (from phone)</span>
             <textarea
               id="remoteAnswerToken"

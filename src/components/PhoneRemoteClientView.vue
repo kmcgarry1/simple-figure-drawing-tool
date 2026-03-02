@@ -1,22 +1,22 @@
 <template>
-  <main class="surface-panel mx-auto my-3 grid w-[min(640px,calc(100%-1rem))] gap-3 rounded-xl p-4 text-stone-800">
+  <main class="surface-panel fd-text-body mx-auto my-3 grid w-[min(640px,calc(100%-1rem))] gap-3 rounded-xl p-4">
     <header class="grid gap-1">
       <h1 class="inline-flex items-center gap-2 text-lg font-semibold">
         <Smartphone class="h-5 w-5 text-sky-700" aria-hidden="true" />
         Phone Remote Control
       </h1>
-      <p class="inline-flex items-center gap-1.5 text-[13px] text-stone-600">
+      <p class="fd-text-muted inline-flex items-center gap-1.5 text-[13px]">
         <Radio class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
         {{ remoteStatus }}
       </p>
     </header>
 
-    <p v-if="initialOfferToken" class="inline-flex items-center gap-1.5 rounded-md border border-amber-200/80 bg-white/62 px-2.5 py-1.5 text-[12px] text-stone-600">
+    <p v-if="initialOfferToken" class="fd-callout-muted fd-text-muted inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12px]">
       <Info class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
       Pairing link detected. Offer token is pre-filled below.
     </p>
 
-    <label class="grid gap-1 text-[13px] text-stone-700" for="desktopOfferToken">
+    <label class="fd-text-body grid gap-1 text-[13px]" for="desktopOfferToken">
       <span class="inline-flex items-center gap-1.5">
         <KeyRound class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
         Desktop Offer Token
@@ -34,7 +34,7 @@
       Generate Answer Token
     </BaseButton>
 
-    <label v-if="answerToken" class="grid gap-1 text-[13px] text-stone-700" for="phoneAnswerToken">
+    <label v-if="answerToken" class="fd-text-body grid gap-1 text-[13px]" for="phoneAnswerToken">
       <span class="inline-flex items-center gap-1.5">
         <ShieldCheck class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
         Answer Token (paste this on desktop)
@@ -53,7 +53,7 @@
     </label>
 
     <section class="fd-card grid gap-2 rounded-lg p-3">
-      <p class="inline-flex items-center gap-1.5 text-sm font-medium text-stone-800">
+      <p class="fd-text-strong inline-flex items-center gap-1.5 text-sm font-medium">
         <Radio class="h-4 w-4 text-sky-700" aria-hidden="true" />
         Remote Controls
       </p>

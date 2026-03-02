@@ -49,13 +49,19 @@
           </p>
           <p class="fd-text-muted text-[12px]">Stage view and phone remote pairing.</p>
         </div>
-        <BaseButton compact tone="subtle" @click="toggleAdvancedControls">
+        <BaseButton
+          compact
+          tone="subtle"
+          :aria-expanded="isAdvancedControlsOpen ? 'true' : 'false'"
+          aria-controls="advanced-controls-panel"
+          @click="toggleAdvancedControls"
+        >
           <SlidersHorizontal class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
           {{ isAdvancedControlsOpen ? "Hide" : "Show" }}
         </BaseButton>
       </div>
 
-      <div v-if="isAdvancedControlsOpen" class="grid gap-2">
+      <div v-if="isAdvancedControlsOpen" id="advanced-controls-panel" class="grid gap-2">
         <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
           <p class="fd-text-body inline-flex items-center gap-1.5 text-[12px] font-semibold">
             <Monitor class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />

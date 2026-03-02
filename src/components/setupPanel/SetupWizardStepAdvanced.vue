@@ -15,6 +15,7 @@
         type="button"
         class="fd-accordion-toggle flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[14px] font-semibold"
         :aria-expanded="isOpen('tagging') ? 'true' : 'false'"
+        aria-controls="advanced-tagging-panel"
         @click="toggleSection('tagging')"
       >
         <span class="inline-flex items-center gap-1.5">
@@ -23,7 +24,7 @@
         </span>
         <span class="fd-kicker text-[10px]">{{ isOpen("tagging") ? "Hide" : "Show" }}</span>
       </button>
-      <div v-if="isOpen('tagging')" class="grid gap-2">
+      <div v-if="isOpen('tagging')" id="advanced-tagging-panel" class="grid gap-2">
         <PhotoTagManagerSection
           v-if="props.taggedPhotos.length > 0"
           :tagged-photos="props.taggedPhotos"
@@ -40,6 +41,7 @@
         type="button"
         class="fd-accordion-toggle flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[14px] font-semibold"
         :aria-expanded="isOpen('settings') ? 'true' : 'false'"
+        aria-controls="advanced-settings-panel"
         @click="toggleSection('settings')"
       >
         <span class="inline-flex items-center gap-1.5">
@@ -48,7 +50,7 @@
         </span>
         <span class="fd-kicker text-[10px]">{{ isOpen("settings") ? "Hide" : "Show" }}</span>
       </button>
-      <div v-if="isOpen('settings')" class="fd-callout-muted grid gap-2 rounded-md p-2.5">
+      <div v-if="isOpen('settings')" id="advanced-settings-panel" class="fd-callout-muted grid gap-2 rounded-md p-2.5">
         <div class="grid grid-cols-3 gap-2 max-[680px]:grid-cols-1">
           <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
           <BaseButton tone="subtle" @click="$emit('share-settings-link')">Copy Share Link</BaseButton>
@@ -70,6 +72,7 @@
         type="button"
         class="fd-accordion-toggle flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[14px] font-semibold"
         :aria-expanded="isOpen('history') ? 'true' : 'false'"
+        aria-controls="advanced-history-panel"
         @click="toggleSection('history')"
       >
         <span class="inline-flex items-center gap-1.5">
@@ -78,11 +81,12 @@
         </span>
         <span class="fd-kicker text-[10px]">{{ isOpen("history") ? "Hide" : "Show" }}</span>
       </button>
-      <SessionHistorySection
-        v-if="isOpen('history')"
-        :session-history="props.sessionHistory"
-        @clear-history="$emit('clear-history')"
-      />
+      <div v-if="isOpen('history')" id="advanced-history-panel">
+        <SessionHistorySection
+          :session-history="props.sessionHistory"
+          @clear-history="$emit('clear-history')"
+        />
+      </div>
     </section>
   </section>
 </template>

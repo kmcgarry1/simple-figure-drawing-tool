@@ -100,13 +100,15 @@ const acceptedFormatsLabel = computed(() => {
   return normalized;
 });
 
+const taggedPhotoCount = computed(() => (Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0));
+
 const sourcePoolCountLabel = computed(() => {
-  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
+  const count = taggedPhotoCount.value;
   return `${count} photo${count === 1 ? "" : "s"}`;
 });
 
 const sourcePoolStatusHint = computed(() => {
-  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
+  const count = taggedPhotoCount.value;
   if (count === 0) {
     return "Add at least one photo to continue to session setup.";
   }
@@ -119,12 +121,10 @@ const sourcePoolStatusHint = computed(() => {
 });
 
 const sourcePoolStatusIcon = computed(() => {
-  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
-  return count === 0 ? Info : CircleCheckBig;
+  return taggedPhotoCount.value === 0 ? Info : CircleCheckBig;
 });
 
 const sourcePoolStatusIconClass = computed(() => {
-  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
-  return count === 0 ? "text-amber-700" : "text-lime-700";
+  return taggedPhotoCount.value === 0 ? "text-amber-700" : "text-lime-700";
 });
 </script>

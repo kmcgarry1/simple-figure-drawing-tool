@@ -27,6 +27,7 @@
             type="button"
             class="rounded-md border border-amber-300/75 bg-white/84 px-2 py-1 text-[11px] font-semibold text-stone-700 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80"
             :aria-expanded="isBlockExpanded(index) ? 'true' : 'false'"
+            :aria-controls="`pose-block-details-${index}`"
             @click="toggleBlockDetails(index)"
           >
             <PencilLine class="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
@@ -44,7 +45,7 @@
         </div>
       </div>
 
-      <div v-if="isBlockExpanded(index)" class="grid gap-2 rounded-lg border border-amber-200/70 bg-white/80 p-2.5">
+      <div v-if="isBlockExpanded(index)" :id="`pose-block-details-${index}`" class="grid gap-2 rounded-lg border border-amber-200/70 bg-white/80 p-2.5">
         <label class="grid gap-1 text-xs text-stone-600">
           <span>Block Type</span>
           <select

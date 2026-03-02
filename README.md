@@ -75,6 +75,8 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
 - GitHub Actions workflow: `.github/workflows/ci.yml`
 - Runs `npm ci`, then lint/test/build checks, plus Playwright smoke tests.
 - Dependency updates are automated via `.github/dependabot.yml`.
+- CodeQL scanning runs via `.github/workflows/codeql.yml`.
+- Dependabot patch/minor updates for `npm` and `github-actions` are auto-merged after required checks pass via `.github/workflows/dependabot-automerge.yml`.
 
 ## Observability
 

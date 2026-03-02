@@ -25,3 +25,7 @@ Use this baseline for `main` so pull requests cannot merge without quality and s
 2. `Branches`
 3. Add or edit protection rule for `main`
 4. Enable the settings above and select required checks
+
+## Dependabot auto-merge prerequisite
+
+Enable `Settings` -> `General` -> `Pull Requests` -> `Allow auto-merge` so `.github/workflows/dependabot-automerge.yml` can queue safe dependency PRs for merge after checks pass.

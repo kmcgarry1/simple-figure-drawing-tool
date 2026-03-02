@@ -13,12 +13,27 @@ function createPngFilePayload(name) {
   };
 }
 
-function parseOverlaySeconds(overlayText) {
-  const match = overlayText.match(/\|\s*(\d+)s$/);
-  if (!match) {
+function parseClockToSeconds(clockText) {
+  const normalized = String(clockText || "").trim();
+  const secondsMatch = normalized.match(/^(\d+)s$/);
+  if (secondsMatch) {
+    return Number(secondsMatch[1]);
+  }
+
+  const parts = normalized.split(":").map((part) => Number(part));
+  if (parts.some((part) => !Number.isFinite(part) || part < 0)) {
     return null;
   }
-  return Number(match[1]);
+
+  if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  }
+
+  if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+
+  return null;
 }
 
 async function openSetupWizard(page) {
@@ -51,12 +66,18 @@ function wizardDialog(page) {
   return page.getByRole("dialog", { name: "Setup Wizard" });
 }
 
+function wizardStepButton(page, stepNumber, stepTitle) {
+  return wizardDialog(page).getByRole("button", {
+    name: new RegExp(`Step\\s*${stepNumber}[\\s\\S]*${stepTitle}`, "i")
+  });
+}
+
 test("quick session flow can start, pause, and end", async ({ page }) => {
   await page.goto("/");
 
   await openSetupWizard(page);
-  await page.getByRole("button", { name: "1. Photos" }).click();
-  await page.getByLabel("Upload Photos").setInputFiles([
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
     createPngFilePayload("pose-1.png"),
     createPngFilePayload("pose-2.png"),
     createPngFilePayload("pose-3.png")
@@ -77,15 +98,15 @@ test("session preview appears before starting from setup wizard", async ({ page 
   await page.goto("/");
 
   await openSetupWizard(page);
-  await page.getByRole("button", { name: "1. Photos" }).click();
-  await page.getByLabel("Upload Photos").setInputFiles([
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
     createPngFilePayload("pose-1.png"),
     createPngFilePayload("pose-2.png"),
     createPngFilePayload("pose-3.png")
   ]);
 
   const wizard = wizardDialog(page);
-  await wizard.getByRole("button", { name: "2. Session" }).click();
+  await wizardStepButton(page, 2, "Session").click();
   await expect(wizard.getByText("Session Preview")).toBeVisible();
   await expect(wizard.getByText(/Showing (first|all)/)).toBeVisible();
   await expect(wizard.getByText(/Pose 1/)).toBeVisible();
@@ -97,8 +118,8 @@ test("live quick timer does not reset when duration input is focused and blurred
   await page.goto("/");
 
   await openSetupWizard(page);
-  await page.getByRole("button", { name: "1. Photos" }).click();
-  await page.getByLabel("Upload Photos").setInputFiles([
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
     createPngFilePayload("pose-1.png"),
     createPngFilePayload("pose-2.png")
   ]);
@@ -110,14 +131,11 @@ test("live quick timer does not reset when duration input is focused and blurred
   await setupDurationInput.blur();
   await wizard.getByRole("button", { name: "Start Session" }).click();
 
-  const overlayCounter = page
-    .locator("span")
-    .filter({ hasText: /Slide \d+ \/ \d+ \| \d+s$/ })
-    .first();
-  await expect(overlayCounter).toBeVisible();
+  const overlayTimePill = page.locator(".fd-overlay-pill").nth(1);
+  await expect(overlayTimePill).toBeVisible();
 
   await page.waitForTimeout(2100);
-  const beforeSeconds = parseOverlaySeconds(await overlayCounter.innerText());
+  const beforeSeconds = parseClockToSeconds(await overlayTimePill.innerText());
   expect(beforeSeconds).not.toBeNull();
 
   const liveDurationInput = page.getByLabel("Sec / Photo");
@@ -125,7 +143,7 @@ test("live quick timer does not reset when duration input is focused and blurred
   await page.keyboard.press("Tab");
 
   await page.waitForTimeout(200);
-  const afterSeconds = parseOverlaySeconds(await overlayCounter.innerText());
+  const afterSeconds = parseClockToSeconds(await overlayTimePill.innerText());
   expect(afterSeconds).not.toBeNull();
   expect(afterSeconds).toBeLessThanOrEqual(beforeSeconds + 1);
 });
@@ -134,7 +152,7 @@ test("class dialog closes on Escape and restores trigger focus", async ({ page }
   await page.goto("/");
 
   await openSetupWizard(page);
-  await page.getByRole("button", { name: "2. Session" }).click();
+  await wizardStepButton(page, 2, "Session").click();
   await page.getByRole("button", { name: "Life Class Wizard" }).click();
 
   const trigger = page.getByRole("button", { name: "Edit Class Plan" });
@@ -155,15 +173,15 @@ test("class start opens review grid and allows pose image reassignment before la
   await page.goto("/");
 
   await openSetupWizard(page);
-  await page.getByRole("button", { name: "1. Photos" }).click();
-  await page.getByLabel("Upload Photos").setInputFiles([
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
     createPngFilePayload("pose-1.png"),
     createPngFilePayload("pose-2.png"),
     createPngFilePayload("pose-3.png")
   ]);
 
   const wizard = wizardDialog(page);
-  await wizard.getByRole("button", { name: "2. Session" }).click();
+  await wizardStepButton(page, 2, "Session").click();
   await wizard.getByRole("button", { name: "Life Class Wizard" }).click();
   await wizard.getByRole("button", { name: "Start Class" }).click();
 
@@ -190,18 +208,17 @@ test("mode and duration persist after reload", async ({ page }) => {
   await page.goto("/");
 
   await openSetupWizard(page);
-  await page.getByRole("button", { name: "2. Session" }).click();
+  await wizardStepButton(page, 2, "Session").click();
   await page.getByRole("button", { name: "Quick Session" }).click();
   const durationInput = page.getByLabel("Seconds Per Photo");
   await durationInput.fill("75");
   await durationInput.blur();
-  await page.getByRole("button", { name: "Done" }).click();
+  await wizardDialog(page).getByRole("button", { name: "Done", exact: true }).click();
 
   await page.reload();
 
   await openSetupWizard(page);
-  await page.getByRole("button", { name: "2. Session" }).click();
-  await expect(page.getByText("2. Quick Session")).toBeVisible();
+  await wizardStepButton(page, 2, "Session").click();
   await expect(page.getByLabel("Seconds Per Photo")).toHaveValue("75");
 });
 

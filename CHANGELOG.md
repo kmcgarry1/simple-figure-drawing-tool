@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.1.0...figure-drawing-v1.2.0) (2026-03-02)
+
+
+### Features
+
+* implement class launch review dialog and related functionality … ([033551d](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/033551d93eff0d5907f3b7b18655f77376e9465b))
+* implement class launch review dialog and related functionality for pose assignment ([22ed51d](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/22ed51db7b5a639eb1a15c6677e8e6a43d54178c))
+* **ui:** add lucide icon pack and icon-driven wizard stepper ([b977234](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/b977234e3b7ee5e896456645d89c067ba8d00091))
+* **ui:** add wizard status stepper and collapsible advanced sections ([2f7895e](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/2f7895e6fc5fca43bf7800341ee214ec8509c9e4))
+* **ui:** improve option legibility with split layouts and segmented controls ([86e734d](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/86e734da39ff1cc0424c9b86374d60f3a7f1abb3))
+* **ui:** simplify step-one photo intake with primary upload path ([8e427e6](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/8e427e634819c4461882e6659e908da4156310fe))
+
+
+### Bug Fixes
+
+* add aria-controls/id linkage to accordions and refactor taggedPhotoCount computed ([f551483](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/f55148389a732801b918a12b3c212531ae69bb84))
+* aria-controls/id disclosure linkage + taggedPhotoCount deduplication ([2590127](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/25901270e72fa234a6555675d759a1a24e179d90))
+
 ## [1.1.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.0.0...figure-drawing-v1.1.0) (2026-03-02)
 
 

@@ -1,7 +1,10 @@
 <template>
-  <div class="grid gap-2">
+  <div class="grid gap-2.5">
     <div class="flex items-center justify-between gap-2">
-      <p class="fd-section-label">Saved Templates</p>
+      <p class="fd-section-label inline-flex items-center gap-1.5">
+        <Save class="h-4 w-4 text-sky-700" aria-hidden="true" />
+        Saved Templates
+      </p>
       <label class="grid gap-1 text-[11px] text-stone-500" for="templateSortMode">
         <span>Sort</span>
         <select
@@ -14,9 +17,12 @@
         </select>
       </label>
     </div>
+    <p class="text-[12px] leading-5 text-stone-600">
+      Save, reuse, and share class structures to speed up recurring sessions.
+    </p>
 
-    <div class="fd-subtle-card grid gap-2 rounded-md p-2.5">
-      <label class="grid gap-1 text-xs text-stone-600" for="templateNameInput">
+    <div class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
+      <label class="grid gap-1 text-[12px] text-stone-700" for="templateNameInput">
         <span>Template Name</span>
         <input
           id="templateNameInput"
@@ -27,11 +33,15 @@
           @keydown.enter.prevent="saveTemplate"
         />
       </label>
-      <BaseButton compact tone="subtle" @click="saveTemplate">Save Current Plan</BaseButton>
+      <BaseButton compact tone="subtle" @click="saveTemplate">
+        <Save class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+        Save Current Plan
+      </BaseButton>
     </div>
 
-    <div class="fd-subtle-card grid grid-cols-2 gap-2 rounded-md p-2.5 max-[560px]:grid-cols-1">
+    <div class="fd-subtle-card grid grid-cols-2 gap-2 rounded-lg p-2.5 max-[560px]:grid-cols-1">
       <BaseButton compact tone="subtle" @click="$emit('class-template-export')">
+        <Download class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
         Export Templates
       </BaseButton>
       <input
@@ -42,11 +52,12 @@
         @change="onTemplateImportSelected"
       />
       <BaseButton compact tone="subtle" @click="openTemplateImportDialog">
+        <Upload class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
         Import Templates
       </BaseButton>
     </div>
 
-    <div v-if="classTemplates.length === 0" class="text-xs text-stone-500">
+    <div v-if="classTemplates.length === 0" class="text-[12px] text-stone-600">
       No custom templates saved yet.
     </div>
 
@@ -55,16 +66,16 @@
       :key="group.id"
       class="grid gap-2"
     >
-      <p class="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
+      <p class="text-[11px] font-semibold uppercase tracking-wide text-stone-600">
         {{ group.label }}
       </p>
 
       <article
         v-for="template in group.templates"
         :key="template.id"
-        class="fd-subtle-card grid gap-2 rounded-md p-2.5"
+        class="fd-subtle-card grid gap-2 rounded-lg p-2.5"
       >
-        <label class="grid gap-1 text-xs text-stone-600" :for="`template-edit-${template.id}`">
+        <label class="grid gap-1 text-[12px] text-stone-700" :for="`template-edit-${template.id}`">
           <span>Template Name</span>
           <input
             :id="`template-edit-${template.id}`"
@@ -75,17 +86,25 @@
           />
         </label>
 
-        <p class="text-xs text-stone-500">
+        <p class="text-[12px] text-stone-600">
           {{ summarizeTemplate(template.blocks) }}
         </p>
 
         <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-          <BaseButton compact @click="$emit('class-template-load', template.id)">Load</BaseButton>
-          <BaseButton compact tone="subtle" @click="renameTemplate(template.id)">Rename</BaseButton>
+          <BaseButton compact @click="$emit('class-template-load', template.id)">
+            <FolderOpenDot class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+            Load
+          </BaseButton>
+          <BaseButton compact tone="subtle" @click="renameTemplate(template.id)">
+            <Pencil class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+            Rename
+          </BaseButton>
           <BaseButton compact tone="subtle" @click="$emit('class-template-duplicate', template.id)">
+            <CopyPlus class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             Duplicate
           </BaseButton>
           <BaseButton compact tone="danger" @click="$emit('class-template-delete', template.id)">
+            <Trash2 class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             Delete
           </BaseButton>
         </div>
@@ -96,6 +115,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
+import { CopyPlus, Download, FolderOpenDot, Pencil, Save, Trash2, Upload } from "lucide-vue-next";
 import { calculateClassPlanSummary } from "../../utils/classPlan";
 import BaseButton from "../BaseButton.vue";
 

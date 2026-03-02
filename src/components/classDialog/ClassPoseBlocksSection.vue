@@ -1,6 +1,12 @@
 <template>
   <div class="grid gap-2.5">
-    <p class="fd-section-label">Class Blocks</p>
+    <p class="fd-section-label inline-flex items-center gap-1.5">
+      <ListOrdered class="h-4 w-4 text-sky-700" aria-hidden="true" />
+      Class Blocks
+    </p>
+    <p class="text-[12px] leading-5 text-stone-600">
+      Structure the session with timed pose and break blocks. Expand a block to edit details.
+    </p>
     <article
       v-for="(block, index) in props.classBlocks"
       :key="`pose-block-${index}`"
@@ -23,6 +29,7 @@
             :aria-expanded="isBlockExpanded(index) ? 'true' : 'false'"
             @click="toggleBlockDetails(index)"
           >
+            <PencilLine class="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
             {{ isBlockExpanded(index) ? "Hide Details" : "Edit Details" }}
           </button>
           <button
@@ -31,6 +38,7 @@
             :disabled="props.classBlocks.length <= 1"
             @click="$emit('class-block-remove', index)"
           >
+            <Trash2 class="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
             Remove
           </button>
         </div>
@@ -101,9 +109,11 @@
 
     <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
       <BaseButton compact tone="subtle" @click="$emit('class-block-add', 'pose')">
+        <UserRound class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
         Add Pose Block
       </BaseButton>
       <BaseButton compact tone="subtle" @click="$emit('class-block-add', 'break')">
+        <Coffee class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
         Add Break Block
       </BaseButton>
     </div>
@@ -112,6 +122,7 @@
 
 <script setup>
 import { ref, watch } from "vue";
+import { Coffee, ListOrdered, PencilLine, Trash2, UserRound } from "lucide-vue-next";
 import { formatDurationShort } from "../../composables/figureSession/formatters";
 import BaseButton from "../BaseButton.vue";
 

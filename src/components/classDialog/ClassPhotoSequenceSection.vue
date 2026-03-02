@@ -1,6 +1,12 @@
 <template>
   <div class="grid gap-2.5">
-    <p class="fd-section-label">Photo Sequence</p>
+    <p class="fd-section-label inline-flex items-center gap-1.5">
+      <Shuffle class="h-4 w-4 text-sky-700" aria-hidden="true" />
+      Photo Sequence
+    </p>
+    <p class="text-[12px] leading-5 text-stone-600">
+      Decide whether the class runs in randomized order or follows upload sequence.
+    </p>
     <div class="fd-segmented max-w-[380px]" role="group" aria-label="Photo order mode">
       <button
         type="button"
@@ -21,7 +27,7 @@
         Upload Order
       </button>
     </div>
-    <label class="inline-flex items-center gap-2 text-sm text-stone-600" :class="{ 'opacity-70': classPhotoOrder === 'sequential' }">
+    <label class="inline-flex items-center gap-2 text-[12px] text-stone-700" :class="{ 'opacity-70': classPhotoOrder === 'sequential' }">
       <input
         type="checkbox"
         class="h-4 w-4 rounded border-amber-300/90 bg-white text-sky-500 focus-visible:ring-sky-300/80"
@@ -35,6 +41,8 @@
 </template>
 
 <script setup>
+import { Shuffle } from "lucide-vue-next";
+
 defineProps({
   classPhotoOrder: {
     type: String,

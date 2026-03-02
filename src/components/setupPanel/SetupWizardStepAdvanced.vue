@@ -1,47 +1,100 @@
 <template>
-  <section class="grid gap-3 rounded-lg border border-amber-200/80 bg-white/58 p-3">
+  <section class="fd-callout grid gap-3.5 rounded-xl p-4">
     <div class="grid gap-1">
-      <p class="text-sm font-semibold text-stone-800">Step 3: Advanced tools</p>
-      <p class="text-xs text-stone-500">
+      <p class="fd-text-strong inline-flex items-center gap-2 text-[15px] font-semibold">
+        <SlidersHorizontal class="h-4 w-4 text-lime-700" aria-hidden="true" />
+        Step 3: Advanced tools
+      </p>
+      <p class="fd-text-muted text-[13px] leading-5">
         Fine-tune tags, transfer settings, and manage session history.
       </p>
     </div>
 
-    <PhotoTagManagerSection
-      v-if="taggedPhotos.length > 0"
-      :tagged-photos="taggedPhotos"
-      :available-photo-tags="availablePhotoTags"
-      @photo-tag-update="$emit('photo-tag-update', $event)"
-      @photo-reorder="$emit('photo-reorder', $event)"
-    />
-
-    <section class="grid gap-2 rounded-md border border-amber-200/80 bg-white/56 p-2.5">
-      <p class="text-sm font-semibold text-stone-800">Settings Transfer</p>
-      <div class="grid grid-cols-3 gap-2 max-[680px]:grid-cols-1">
-        <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
-        <BaseButton tone="subtle" @click="$emit('share-settings-link')">Copy Share Link</BaseButton>
-        <label class="grid gap-1 text-xs text-stone-600">
-          <span>Import JSON</span>
-          <input
-            type="file"
-            accept="application/json,.json"
-            class="w-full rounded-md border border-amber-200/90 bg-white/84 px-2 py-1.5 text-xs text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-            @change="$emit('import-settings', $event)"
-          />
-        </label>
+    <section class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
+      <button
+        type="button"
+        class="fd-accordion-toggle flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[14px] font-semibold"
+        :aria-expanded="isOpen('tagging') ? 'true' : 'false'"
+        @click="toggleSection('tagging')"
+      >
+        <span class="inline-flex items-center gap-1.5">
+          <Tags class="h-4 w-4 text-sky-700" aria-hidden="true" />
+          Photo Tags And Order
+        </span>
+        <span class="fd-kicker text-[10px]">{{ isOpen("tagging") ? "Hide" : "Show" }}</span>
+      </button>
+      <div v-if="isOpen('tagging')" class="grid gap-2">
+        <PhotoTagManagerSection
+          v-if="props.taggedPhotos.length > 0"
+          :tagged-photos="props.taggedPhotos"
+          :available-photo-tags="props.availablePhotoTags"
+          @photo-tag-update="$emit('photo-tag-update', $event)"
+          @photo-reorder="$emit('photo-reorder', $event)"
+        />
+        <p v-else class="fd-text-muted text-[12px] leading-5">Add photos in Step 1 to edit order and tags.</p>
       </div>
     </section>
 
-    <SessionHistorySection :session-history="sessionHistory" @clear-history="$emit('clear-history')" />
+    <section class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
+      <button
+        type="button"
+        class="fd-accordion-toggle flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[14px] font-semibold"
+        :aria-expanded="isOpen('settings') ? 'true' : 'false'"
+        @click="toggleSection('settings')"
+      >
+        <span class="inline-flex items-center gap-1.5">
+          <FolderSync class="h-4 w-4 text-sky-700" aria-hidden="true" />
+          Settings Transfer
+        </span>
+        <span class="fd-kicker text-[10px]">{{ isOpen("settings") ? "Hide" : "Show" }}</span>
+      </button>
+      <div v-if="isOpen('settings')" class="fd-callout-muted grid gap-2 rounded-md p-2.5">
+        <div class="grid grid-cols-3 gap-2 max-[680px]:grid-cols-1">
+          <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
+          <BaseButton tone="subtle" @click="$emit('share-settings-link')">Copy Share Link</BaseButton>
+          <label class="fd-text-body grid gap-1 text-[12px]">
+            <span>Import JSON</span>
+            <input
+              type="file"
+              accept="application/json,.json"
+              class="fd-file-input w-full rounded-md px-2 py-1.5 text-xs"
+              @change="$emit('import-settings', $event)"
+            />
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
+      <button
+        type="button"
+        class="fd-accordion-toggle flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-[14px] font-semibold"
+        :aria-expanded="isOpen('history') ? 'true' : 'false'"
+        @click="toggleSection('history')"
+      >
+        <span class="inline-flex items-center gap-1.5">
+          <History class="h-4 w-4 text-sky-700" aria-hidden="true" />
+          Session History
+        </span>
+        <span class="fd-kicker text-[10px]">{{ isOpen("history") ? "Hide" : "Show" }}</span>
+      </button>
+      <SessionHistorySection
+        v-if="isOpen('history')"
+        :session-history="props.sessionHistory"
+        @clear-history="$emit('clear-history')"
+      />
+    </section>
   </section>
 </template>
 
 <script setup>
+import { ref } from "vue";
+import { FolderSync, History, SlidersHorizontal, Tags } from "lucide-vue-next";
 import BaseButton from "../BaseButton.vue";
 import PhotoTagManagerSection from "../PhotoTagManagerSection.vue";
 import SessionHistorySection from "../SessionHistorySection.vue";
 
-defineProps({
+const props = defineProps({
   taggedPhotos: {
     type: Array,
     required: true
@@ -64,4 +117,21 @@ defineEmits([
   "import-settings",
   "clear-history"
 ]);
+
+const openSections = ref(new Set(["tagging", "settings"]));
+
+function isOpen(sectionName) {
+  return openSections.value.has(sectionName);
+}
+
+function toggleSection(sectionName) {
+  const nextOpen = new Set(openSections.value);
+  if (nextOpen.has(sectionName)) {
+    nextOpen.delete(sectionName);
+  } else {
+    nextOpen.add(sectionName);
+  }
+
+  openSections.value = nextOpen;
+}
 </script>

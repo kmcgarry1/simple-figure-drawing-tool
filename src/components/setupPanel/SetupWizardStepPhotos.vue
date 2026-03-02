@@ -1,46 +1,84 @@
 <template>
-  <section class="grid gap-3 rounded-lg border border-amber-200/80 bg-white/58 p-3">
+  <section class="fd-callout grid gap-3.5 rounded-xl p-4">
     <div class="grid gap-1">
-      <p class="text-sm font-semibold text-stone-800">Step 1: Add source photos</p>
-      <p class="text-xs text-stone-500">
-        Add files manually or load a folder. The app will validate and randomize from the accepted set.
+      <p class="fd-text-strong inline-flex items-center gap-2 text-[15px] font-semibold">
+        <ImagePlus class="h-4 w-4 text-lime-700" aria-hidden="true" />
+        Step 1: Add source photos
+      </p>
+      <p class="fd-text-muted text-[13px] leading-5">
+        Start with direct file upload, or load a folder for larger sets. The app validates supported images
+        automatically.
       </p>
     </div>
 
-    <label class="grid gap-1.5 text-sm text-stone-700" for="photoInput">
-      <span class="font-medium">Upload Photos</span>
-      <input
-        id="photoInput"
-        type="file"
-        :accept="fileInputAccept"
-        multiple
-        class="w-full rounded-md border border-amber-200/90 bg-white/84 px-2.5 py-2 text-sm text-stone-800 file:mr-2 file:cursor-pointer file:rounded file:border file:border-amber-200/90 file:bg-amber-50 file:px-2 file:py-1 file:text-sm file:text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-        @change="$emit('photos-selected', $event)"
-      />
-    </label>
+    <div class="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)] xl:items-start">
+      <article class="fd-nested-surface grid gap-2.5 rounded-xl p-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="fd-text-strong inline-flex items-center gap-1.5 text-[15px] font-semibold">
+            <Images class="h-4 w-4 text-lime-700" aria-hidden="true" />
+            Upload Photos
+          </p>
+          <span class="fd-badge-active rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]">
+            Primary Path
+          </span>
+        </div>
+        <p class="fd-text-muted text-[13px] leading-5">
+          Choose one or many files from anywhere on your device. Best for most sessions.
+        </p>
+        <label class="fd-text-body grid gap-1.5 text-[13px]" for="photoInput">
+          <span class="font-semibold">Select image files</span>
+          <input
+            id="photoInput"
+            type="file"
+            :accept="fileInputAccept"
+            multiple
+            class="fd-file-input w-full rounded-md px-2.5 py-2 text-sm"
+            @change="$emit('photos-selected', $event)"
+          />
+        </label>
+        <p class="fd-text-caption text-[12px]">Accepted formats: {{ acceptedFormatsLabel }}</p>
+      </article>
 
-    <label class="grid gap-1.5 text-sm text-stone-700" for="photoFolderInput">
-      <span class="font-medium">Load Photo Folder</span>
-      <input
-        id="photoFolderInput"
-        type="file"
-        :accept="fileInputAccept"
-        multiple
-        webkitdirectory
-        directory
-        class="w-full rounded-md border border-amber-200/90 bg-white/84 px-2.5 py-2 text-sm text-stone-800 file:mr-2 file:cursor-pointer file:rounded file:border file:border-amber-200/90 file:bg-amber-50 file:px-2 file:py-1 file:text-sm file:text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-        @change="$emit('photos-selected', $event)"
-      />
-    </label>
+      <article class="fd-nested-surface grid gap-2.5 rounded-xl p-3">
+        <div class="grid gap-1">
+          <p class="fd-text-strong inline-flex items-center gap-1.5 text-[15px] font-semibold">
+            <FolderOpen class="h-4 w-4 text-sky-700" aria-hidden="true" />
+            Load Photo Folder
+          </p>
+          <p class="fd-text-muted text-[13px] leading-5">Useful when your references are already organized in a single folder.</p>
+        </div>
+        <label class="fd-text-body grid gap-1.5 text-[13px]" for="photoFolderInput">
+          <span class="font-semibold">Choose a folder</span>
+          <input
+            id="photoFolderInput"
+            type="file"
+            :accept="fileInputAccept"
+            multiple
+            webkitdirectory
+            directory
+            class="fd-file-input w-full rounded-md px-2.5 py-2 text-sm"
+            @change="$emit('photos-selected', $event)"
+          />
+        </label>
+      </article>
+    </div>
 
-    <p class="text-xs text-stone-500">
-      Current source pool: {{ taggedPhotos.length }} photo(s).
-    </p>
+    <div class="fd-callout-muted fd-text-body grid gap-1 rounded-lg px-3 py-2.5 text-[13px]">
+      <p class="inline-flex items-center gap-1.5">
+        <component :is="sourcePoolStatusIcon" class="h-4 w-4" :class="sourcePoolStatusIconClass" aria-hidden="true" />
+        Current source pool:
+        <span class="fd-text-strong font-semibold">{{ sourcePoolCountLabel }}</span>
+      </p>
+      <p class="fd-text-muted text-[12px] leading-5">{{ sourcePoolStatusHint }}</p>
+    </div>
   </section>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from "vue";
+import { CircleCheckBig, FolderOpen, ImagePlus, Images, Info } from "lucide-vue-next";
+
+const props = defineProps({
   fileInputAccept: {
     type: String,
     required: true
@@ -52,4 +90,41 @@ defineProps({
 });
 
 defineEmits(["photos-selected"]);
+
+const acceptedFormatsLabel = computed(() => {
+  const normalized = String(props.fileInputAccept || "").trim();
+  if (!normalized) {
+    return "Image files";
+  }
+
+  return normalized;
+});
+
+const sourcePoolCountLabel = computed(() => {
+  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
+  return `${count} photo${count === 1 ? "" : "s"}`;
+});
+
+const sourcePoolStatusHint = computed(() => {
+  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
+  if (count === 0) {
+    return "Add at least one photo to continue to session setup.";
+  }
+
+  if (count < 8) {
+    return "You can continue now, but adding more photos gives better random variety.";
+  }
+
+  return "Great coverage. Continue to Step 2 to configure timing and launch options.";
+});
+
+const sourcePoolStatusIcon = computed(() => {
+  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
+  return count === 0 ? Info : CircleCheckBig;
+});
+
+const sourcePoolStatusIconClass = computed(() => {
+  const count = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
+  return count === 0 ? "text-amber-700" : "text-lime-700";
+});
 </script>

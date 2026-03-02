@@ -18,47 +18,56 @@
         >
           <header class="mb-3 flex items-start justify-between gap-3">
             <div class="grid gap-1">
-              <h2 id="setup-wizard-title" class="fd-title-gradient text-base font-semibold">
+              <h2 id="setup-wizard-title" class="fd-title-gradient text-[1.04rem] font-semibold">
                 Setup Wizard
               </h2>
-              <p id="setup-wizard-description" class="text-sm text-stone-700">
+              <p id="setup-wizard-description" class="fd-text-muted text-[13px] leading-5">
                 Configure photos, session behavior, and advanced tools step by step.
               </p>
             </div>
             <button
               type="button"
               aria-label="Close setup wizard dialog"
-              class="rounded-md border border-amber-300/75 bg-white/78 px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              class="fd-accordion-toggle rounded-md px-2.5 py-1.5 text-xs font-semibold focus-visible:ring-offset-transparent"
               @click="closeWizard"
             >
               Close
             </button>
           </header>
 
-          <div class="mb-3 grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              :class="wizardStepButtonClass(1)"
-              @click="setWizardStep(1)"
-            >
-              1. Photos
-            </button>
-            <button
-              type="button"
-              :class="wizardStepButtonClass(2)"
-              :disabled="!canNavigateToStep(2)"
-              @click="setWizardStep(2)"
-            >
-              2. Session
-            </button>
-            <button
-              type="button"
-              :class="wizardStepButtonClass(3)"
-              :disabled="!canNavigateToStep(3)"
-              @click="setWizardStep(3)"
-            >
-              3. Advanced
-            </button>
+          <div class="mb-3 grid gap-2.5">
+            <p class="fd-kicker">
+              Step {{ wizardStep }} of {{ wizardStepCount }}
+            </p>
+            <ol class="grid gap-2 md:grid-cols-3" aria-label="Setup wizard progress">
+              <li v-for="step in wizardSteps" :key="`wizard-step-${step.number}`">
+                <button
+                  type="button"
+                  :class="wizardStepCardClass(step.number)"
+                  :disabled="!canNavigateToStep(step.number)"
+                  :aria-current="wizardStep === step.number ? 'step' : undefined"
+                  :aria-describedby="`wizard-step-hint-${step.number}`"
+                  @click="setWizardStep(step.number)"
+                >
+                  <span class="fd-kicker text-[10px]">
+                    Step {{ step.number }}
+                  </span>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="inline-flex items-center gap-1.5 text-[15px] font-semibold">
+                      <component :is="step.icon" class="h-4 w-4" aria-hidden="true" />
+                      {{ step.title }}
+                    </span>
+                    <span :class="wizardStepStatusBadgeClass(step.number)">
+                      <component :is="wizardStepStatusIcon(step.number)" class="h-3 w-3" aria-hidden="true" />
+                      {{ wizardStepStatusLabel(step.number) }}
+                    </span>
+                  </div>
+                  <span :id="`wizard-step-hint-${step.number}`" class="fd-text-muted text-[12px] leading-5">
+                    {{ step.hint }}
+                  </span>
+                </button>
+              </li>
+            </ol>
           </div>
 
           <SetupWizardStepPhotos
@@ -103,10 +112,15 @@
             @clear-history="$emit('clear-history')"
           />
 
-          <footer class="mt-3 flex items-center justify-between gap-2 border-t border-amber-200/80 pt-3">
-            <BaseButton compact tone="subtle" :disabled="wizardStep === 1" @click="goToPreviousWizardStep">
-              Back
-            </BaseButton>
+          <footer class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--fd-border)/0.82)] pt-3">
+            <div class="flex items-center gap-2">
+              <BaseButton compact tone="subtle" :disabled="wizardStep === 1" @click="goToPreviousWizardStep">
+                Back
+              </BaseButton>
+              <p class="fd-text-muted text-[12px]">
+                {{ wizardStepStatusLabel(wizardStep) }}
+              </p>
+            </div>
             <div class="ml-auto grid grid-flow-col gap-2">
               <BaseButton compact tone="subtle" @click="closeWizard">Done</BaseButton>
               <BaseButton
@@ -127,6 +141,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
+import { Circle, CircleCheckBig, CircleDot, Images, Lock, SlidersHorizontal, Timer } from "lucide-vue-next";
 import BaseButton from "../BaseButton.vue";
 import { setupPanelProps } from "./setupPanelContract";
 import SetupWizardStepAdvanced from "./SetupWizardStepAdvanced.vue";
@@ -167,7 +182,6 @@ const {
   canStartSession,
   canAdvanceWizardStep,
   canNavigateToStep,
-  wizardStepButtonClass,
   setWizardStep,
   goToNextWizardStep,
   goToPreviousWizardStep,
@@ -186,6 +200,117 @@ const { onWizardKeydown } = useSetupWizardFocusManagement({
   isClassDialogOpen: computed(() => props.isClassDialogOpen),
   closeWizard
 });
+
+const wizardSteps = [
+  {
+    number: 1,
+    title: "Photos",
+    hint: "Add source images.",
+    icon: Images
+  },
+  {
+    number: 2,
+    title: "Session",
+    hint: "Set mode, timing, and preview.",
+    icon: Timer
+  },
+  {
+    number: 3,
+    title: "Advanced",
+    hint: "Tags, transfer, and history.",
+    icon: SlidersHorizontal
+  }
+];
+
+function wizardStepState(stepNumber) {
+  if (stepNumber === wizardStep.value) {
+    return "current";
+  }
+
+  if (stepNumber < wizardStep.value && canNavigateToStep(stepNumber)) {
+    return "done";
+  }
+
+  if (!canNavigateToStep(stepNumber)) {
+    return "locked";
+  }
+
+  return "ready";
+}
+
+function wizardStepStatusLabel(stepNumber) {
+  const stepState = wizardStepState(stepNumber);
+  if (stepState === "done") {
+    return "Done";
+  }
+
+  if (stepState === "current") {
+    return "Current";
+  }
+
+  if (stepState === "locked") {
+    return "Locked";
+  }
+
+  return "Ready";
+}
+
+function wizardStepStatusIcon(stepNumber) {
+  const stepState = wizardStepState(stepNumber);
+  if (stepState === "done") {
+    return CircleCheckBig;
+  }
+
+  if (stepState === "current") {
+    return CircleDot;
+  }
+
+  if (stepState === "locked") {
+    return Lock;
+  }
+
+  return Circle;
+}
+
+function wizardStepStatusBadgeClass(stepNumber) {
+  const baseClass =
+    "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]";
+  const stepState = wizardStepState(stepNumber);
+
+  if (stepState === "done") {
+    return `${baseClass} fd-badge-success`;
+  }
+
+  if (stepState === "current") {
+    return `${baseClass} fd-badge-active`;
+  }
+
+  if (stepState === "locked") {
+    return `${baseClass} fd-badge-locked`;
+  }
+
+  return `${baseClass} fd-badge-ready`;
+}
+
+function wizardStepCardClass(stepNumber) {
+  const baseClass =
+    "grid w-full gap-1.5 rounded-lg border px-3.5 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed";
+  const stepState = wizardStepState(stepNumber);
+
+  if (stepState === "current") {
+    return `${baseClass} fd-nested-surface fd-text-strong shadow-sm`;
+  }
+
+  if (stepState === "done") {
+    return `${baseClass} fd-callout fd-text-body`;
+  }
+
+  if (stepState === "locked") {
+    return `${baseClass} fd-callout-muted fd-text-muted opacity-90`;
+  }
+
+  return `${baseClass} fd-callout fd-text-body hover:bg-white`;
+}
 
 function onPhotosSelected(event) {
   emit("photos-selected", event.target?.files || []);

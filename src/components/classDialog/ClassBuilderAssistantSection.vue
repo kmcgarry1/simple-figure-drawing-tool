@@ -1,8 +1,11 @@
 <template>
-  <div class="grid gap-2">
-    <p class="fd-section-label">Class Builder Assistant</p>
-    <section class="fd-subtle-card grid gap-2 rounded-md p-2.5">
-      <p class="text-xs text-stone-600">
+  <div class="grid gap-2.5">
+    <p class="fd-section-label inline-flex items-center gap-1.5">
+      <WandSparkles class="h-4 w-4 text-sky-700" aria-hidden="true" />
+      Class Builder Assistant
+    </p>
+    <section class="fd-subtle-card grid gap-2.5 rounded-lg p-3">
+      <p class="text-[12px] leading-5 text-stone-600">
         Generate a class plan from a target duration preset, gesture/long-pose mix, and preferred
         photo tags.
       </p>
@@ -19,7 +22,7 @@
         </BaseButton>
       </div>
 
-      <label class="grid gap-1 text-xs text-stone-600" for="assistantGestureShare">
+      <label class="grid gap-1 text-[12px] text-stone-700" for="assistantGestureShare">
         <span>Gesture Mix: {{ gestureSharePercent }}% (Long Pose {{ 100 - gestureSharePercent }}%)</span>
         <input
           id="assistantGestureShare"
@@ -34,7 +37,7 @@
       </label>
 
       <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-        <label class="grid gap-1 text-xs text-stone-600" for="assistantGestureTag">
+        <label class="grid gap-1 text-[12px] text-stone-700" for="assistantGestureTag">
           <span>Gesture Tag</span>
           <select
             id="assistantGestureTag"
@@ -47,7 +50,7 @@
           </select>
         </label>
 
-        <label class="grid gap-1 text-xs text-stone-600" for="assistantLongPoseTag">
+        <label class="grid gap-1 text-[12px] text-stone-700" for="assistantLongPoseTag">
           <span>Long Pose Tag</span>
           <select
             id="assistantLongPoseTag"
@@ -61,7 +64,7 @@
         </label>
       </div>
 
-      <label class="inline-flex items-center gap-2 text-xs text-stone-600">
+      <label class="inline-flex items-center gap-2 text-[12px] text-stone-700">
         <input
           v-model="includeBreaks"
           type="checkbox"
@@ -70,7 +73,8 @@
         <span>Include scheduled breaks for longer classes.</span>
       </label>
 
-      <BaseButton compact tone="subtle" @click="generateGuidedPlan">
+      <BaseButton compact @click="generateGuidedPlan">
+        <WandSparkles class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
         Generate Guided Plan
       </BaseButton>
     </section>
@@ -79,6 +83,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
+import { WandSparkles } from "lucide-vue-next";
 import BaseButton from "../BaseButton.vue";
 
 const props = defineProps({

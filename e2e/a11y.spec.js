@@ -18,6 +18,12 @@ function setupWizardDialog(page) {
   return page.getByRole("dialog", { name: "Setup Wizard" });
 }
 
+function wizardStepButton(page, stepNumber, stepTitle) {
+  return setupWizardDialog(page).getByRole("button", {
+    name: new RegExp(`Step\\s*${stepNumber}[\\s\\S]*${stepTitle}`, "i")
+  });
+}
+
 async function openSetupWizard(page) {
   const wizard = setupWizardDialog(page);
   if (await wizard.isVisible()) {
@@ -56,13 +62,12 @@ test("setup wizard has no critical/serious accessibility violations", async ({ p
   await page.goto("/");
 
   await openSetupWizard(page);
-  await page.getByRole("button", { name: "1. Photos" }).click();
-  await page.getByLabel("Upload Photos").setInputFiles([
+  await wizardStepButton(page, 1, "Photos").click();
+  await setupWizardDialog(page).locator("#photoInput").setInputFiles([
     createPngFilePayload("a11y-pose-1.png"),
     createPngFilePayload("a11y-pose-2.png")
   ]);
 
-  const wizard = setupWizardDialog(page);
-  await wizard.getByRole("button", { name: "3. Advanced" }).click();
+  await wizardStepButton(page, 3, "Advanced").click();
   await expectNoCriticalOrSeriousViolations(page, { include: '[role="dialog"][aria-modal="true"]' });
 });

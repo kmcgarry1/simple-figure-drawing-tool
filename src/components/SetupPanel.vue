@@ -1,5 +1,5 @@
 <template>
-  <div class="landing-stack grid gap-3 stagger-in">
+  <div class="landing-stack grid gap-4 stagger-in">
     <SetupOverviewCard
       :landing-summary="landingSummary"
       :progress-label="progressLabel"

@@ -254,17 +254,17 @@ const { themeMode, toggleThemeMode } = useThemeMode();
 const shellClass = computed(() =>
   isSessionLive.value
     ? "relative min-h-dvh text-[rgb(var(--fd-ink))]"
-    : "relative mx-auto my-5 grid w-[min(980px,calc(100%-2rem))] gap-5 text-[rgb(var(--fd-ink))] max-[720px]:my-3 max-[720px]:w-[calc(100%-1rem)]"
+    : "relative mx-auto my-6 grid w-[min(1120px,calc(100%-2rem))] gap-5 text-[rgb(var(--fd-ink))] max-[720px]:my-3 max-[720px]:w-[calc(100%-1rem)]"
 );
 
 const workspaceClass = computed(() =>
-  isSessionLive.value ? "contents" : "grid gap-4"
+  isSessionLive.value ? "contents" : "grid gap-5"
 );
 
 const controlPanelClass = computed(() =>
   isSessionLive.value
     ? "surface-panel fixed bottom-2 left-2 z-30 w-[min(360px,calc(100vw-1rem))] rounded-2xl p-2"
-    : "surface-panel relative grid gap-3 overflow-hidden rounded-2xl p-4 max-[720px]:rounded-xl"
+    : "surface-panel relative grid gap-3 overflow-hidden rounded-3xl p-5 max-[720px]:rounded-xl max-[720px]:p-4"
 );
 
 useLiveKeyboardShortcuts({

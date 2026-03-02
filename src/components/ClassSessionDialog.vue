@@ -13,12 +13,12 @@
           aria-labelledby="class-dialog-title"
           aria-describedby="class-dialog-description"
           tabindex="-1"
-          class="fd-modal-surface max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-xl p-4"
+          class="fd-modal-surface max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-2xl p-5 max-[720px]:p-4"
           @keydown="onDialogKeydown"
         >
-          <header class="mb-3 flex items-start justify-between gap-3">
+          <header class="mb-4 flex items-start justify-between gap-3">
             <div class="grid gap-1">
-              <h2 id="class-dialog-title" class="fd-title-gradient text-base font-semibold">
+              <h2 id="class-dialog-title" class="fd-title-gradient text-[1.08rem] font-semibold">
                 Life Drawing Class Wizard
               </h2>
               <p id="class-dialog-description" class="text-sm text-stone-600">
@@ -28,79 +28,83 @@
             <button
               type="button"
               aria-label="Close class wizard dialog"
-              class="rounded-md border border-amber-300/75 bg-white/78 px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              class="rounded-lg border border-amber-300/75 bg-white/82 px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
               @click="closeDialog"
             >
               Close
             </button>
           </header>
 
-          <div class="grid gap-3">
-            <ClassPresetSection
-              :class-preset-options="classPresetOptions"
-              :class-preset-id="classPresetId"
-              @class-preset-change="$emit('class-preset-change', $event)"
-            />
+          <div class="grid gap-3.5 xl:grid-cols-[minmax(0,1.6fr)_minmax(300px,0.9fr)] xl:items-start">
+            <div class="grid gap-3.5">
+              <ClassPresetSection
+                :class-preset-options="classPresetOptions"
+                :class-preset-id="classPresetId"
+                @class-preset-change="$emit('class-preset-change', $event)"
+              />
 
-            <ClassBuilderAssistantSection
-              :class-preset-options="classPresetOptions"
-              :class-preset-id="classPresetId"
-              :available-photo-tags="availablePhotoTags"
-              @class-assistant-generate="$emit('class-assistant-generate', $event)"
-            />
+              <ClassBuilderAssistantSection
+                :class-preset-options="classPresetOptions"
+                :class-preset-id="classPresetId"
+                :available-photo-tags="availablePhotoTags"
+                @class-assistant-generate="$emit('class-assistant-generate', $event)"
+              />
 
-            <ClassPoseBlocksSection
-              :class-blocks="classBlocks"
-              :available-photo-tags="availablePhotoTags"
-              @class-block-update="$emit('class-block-update', $event)"
-              @class-block-add="$emit('class-block-add', $event)"
-              @class-block-remove="$emit('class-block-remove', $event)"
-            />
+              <ClassPoseBlocksSection
+                :class-blocks="classBlocks"
+                :available-photo-tags="availablePhotoTags"
+                @class-block-update="$emit('class-block-update', $event)"
+                @class-block-add="$emit('class-block-add', $event)"
+                @class-block-remove="$emit('class-block-remove', $event)"
+              />
 
-            <ClassPhotoSequenceSection
-              :class-photo-order="classPhotoOrder"
-              :avoid-immediate-repeats="avoidImmediateRepeats"
-              @class-photo-order-change="$emit('class-photo-order-change', $event)"
-              @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
-            />
+              <ClassPhotoSequenceSection
+                :class-photo-order="classPhotoOrder"
+                :avoid-immediate-repeats="avoidImmediateRepeats"
+                @class-photo-order-change="$emit('class-photo-order-change', $event)"
+                @class-repeat-toggle="$emit('class-repeat-toggle', $event)"
+              />
 
-            <ClassTemplatesSection
-              :class-templates="classTemplates"
-              @class-template-save="$emit('class-template-save', $event)"
-              @class-template-load="$emit('class-template-load', $event)"
-              @class-template-delete="$emit('class-template-delete', $event)"
-              @class-template-rename="$emit('class-template-rename', $event)"
-              @class-template-duplicate="$emit('class-template-duplicate', $event)"
-              @class-template-export="$emit('class-template-export')"
-              @class-template-import="$emit('class-template-import', $event)"
-            />
-
-            <div class="grid gap-1 rounded-md border border-amber-200/80 bg-white/60 px-2.5 py-2 text-sm text-stone-600">
-              <p>
-                Plan total:
-                <span class="font-semibold text-stone-800">{{ classTotalMinutesText }}</span>
-                across {{ classPoseCount }} poses.
-              </p>
-              <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>
+              <ClassTemplatesSection
+                :class-templates="classTemplates"
+                @class-template-save="$emit('class-template-save', $event)"
+                @class-template-load="$emit('class-template-load', $event)"
+                @class-template-delete="$emit('class-template-delete', $event)"
+                @class-template-rename="$emit('class-template-rename', $event)"
+                @class-template-duplicate="$emit('class-template-duplicate', $event)"
+                @class-template-export="$emit('class-template-export')"
+                @class-template-import="$emit('class-template-import', $event)"
+              />
             </div>
 
-            <SessionPreviewSection
-              :preview-items="sessionPreviewItems"
-              :preview-summary-text="sessionPreviewSummaryText"
-            />
+            <aside class="grid gap-2.5 xl:sticky xl:top-2">
+              <div class="grid gap-1 rounded-lg border border-amber-200/80 bg-white/86 px-3 py-2.5 text-sm text-stone-600">
+                <p>
+                  Plan total:
+                  <span class="font-semibold text-stone-800">{{ classTotalMinutesText }}</span>
+                  across {{ classPoseCount }} poses.
+                </p>
+                <p>Preset target: {{ classTargetMinutes }} minutes ({{ classDeltaText }}).</p>
+              </div>
 
-            <div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2">
-              <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
-                {{ startActionLabel }}
-              </BaseButton>
-              <BaseButton
-                :disabled="!hasSourcePhotos || !hasClassPlan"
-                tone="subtle"
-                @click="$emit('new-random-set')"
-              >
-                {{ regenerateActionLabel }}
-              </BaseButton>
-            </div>
+              <SessionPreviewSection
+                :preview-items="sessionPreviewItems"
+                :preview-summary-text="sessionPreviewSummaryText"
+              />
+
+              <div class="grid gap-2 rounded-lg border border-amber-200/70 bg-white/96 p-2.5">
+                <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
+                  {{ startActionLabel }}
+                </BaseButton>
+                <BaseButton
+                  :disabled="!hasSourcePhotos || !hasClassPlan"
+                  tone="subtle"
+                  @click="$emit('new-random-set')"
+                >
+                  {{ regenerateActionLabel }}
+                </BaseButton>
+              </div>
+            </aside>
           </div>
         </section>
       </div>

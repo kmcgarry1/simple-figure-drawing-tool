@@ -1,42 +1,34 @@
 <template>
-  <div class="grid gap-1.5">
-    <section class="fd-hero-surface relative grid gap-3 overflow-hidden rounded-xl p-4">
-      <div
-        aria-hidden="true"
-        class="pointer-events-none absolute -right-10 top-0 h-28 w-28 rounded-full bg-sky-300/24 blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        class="pointer-events-none absolute -left-8 bottom-0 h-24 w-24 rounded-full bg-emerald-300/24 blur-3xl"
-      />
+  <div class="grid gap-2.5">
+    <section class="fd-hero-surface relative grid gap-3.5 overflow-hidden rounded-2xl p-5 max-[720px]:p-4">
       <div class="flex items-center justify-between gap-2">
-        <div class="grid gap-0.5">
-          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">Setup Overview</p>
-          <p class="text-[15px] font-semibold text-stone-800">{{ landingSummary }}</p>
+        <div class="grid gap-1">
+          <p class="fd-kicker">Studio Setup</p>
+          <p class="fd-text-strong text-[15px] leading-6 font-semibold">{{ landingSummary }}</p>
         </div>
         <p
-          class="rounded-full border border-amber-300/70 bg-orange-100/60 px-2.5 py-0.5 text-xs font-medium text-stone-700"
+          class="fd-callout-muted fd-text-body rounded-full px-2.5 py-1 text-xs font-semibold"
         >
           {{ progressLabel }}
         </p>
       </div>
-      <div class="h-1.5 overflow-hidden rounded-full bg-amber-100/80">
+      <div class="h-1.5 overflow-hidden rounded-full bg-[rgb(var(--fd-surface-muted)/0.84)]">
         <div
-          class="h-full rounded-full bg-gradient-to-r from-sky-300 via-emerald-300 to-orange-300 transition-[width] duration-200"
+          class="h-full rounded-full bg-gradient-to-r from-sky-300 to-orange-300 transition-[width] duration-200"
           :style="{ width: `${progressPercent}%` }"
         />
       </div>
-      <div class="flex flex-wrap items-center gap-2 text-[11px] text-stone-700">
-        <span class="rounded-full border border-amber-300/70 bg-sky-100/72 px-2 py-0.5">Step-based setup</span>
-        <span class="rounded-full border border-emerald-300/35 bg-emerald-100/70 px-2 py-0.5">Fast randomizer</span>
-        <span class="rounded-full border border-amber-300/35 bg-orange-100/70 px-2 py-0.5">Live fullscreen</span>
+      <div class="fd-text-muted flex flex-wrap items-center gap-2 text-[11px]">
+        <span class="fd-chip rounded-full px-2.5 py-1">Structured setup</span>
+        <span class="fd-chip rounded-full px-2.5 py-1">Curated warmups</span>
+        <span class="fd-chip rounded-full px-2.5 py-1">Focused finals</span>
       </div>
-      <div class="grid gap-2">
-        <BaseButton @click="$emit('open-wizard')">
+      <div class="grid gap-2.5">
+        <BaseButton tone="subtle" @click="$emit('open-wizard')">
           {{ wizardActionLabel }}
         </BaseButton>
         <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-          <BaseButton :disabled="!canStartSession" tone="subtle" @click="$emit('start-session')">
+          <BaseButton :disabled="!canStartSession" @click="$emit('start-session')">
             {{ startActionLabel }}
           </BaseButton>
           <BaseButton :disabled="!hasSourcePhotos" tone="subtle" @click="$emit('new-random-set')">
@@ -46,11 +38,11 @@
       </div>
     </section>
 
-    <div class="grid gap-1.5 rounded-lg border border-amber-200/85 bg-white/68 px-3 py-2.5">
-      <p class="text-sm text-stone-700" role="status" aria-live="polite">{{ statusMessage }}</p>
-      <p v-if="uploadNotice" class="text-sm text-stone-700">{{ uploadNotice }}</p>
-      <p class="text-xs text-stone-500" aria-live="polite">{{ settingsSaveStatusText }}</p>
-      <p class="text-xs text-stone-500">Shortcuts: Space pause/resume, Right Arrow next, Esc end.</p>
+    <div class="fd-callout grid gap-1.5 rounded-xl px-3.5 py-3">
+      <p class="fd-text-body text-sm" role="status" aria-live="polite">{{ statusMessage }}</p>
+      <p v-if="uploadNotice" class="fd-text-body text-sm">{{ uploadNotice }}</p>
+      <p class="fd-text-caption text-xs" aria-live="polite">{{ settingsSaveStatusText }}</p>
+      <p class="fd-text-caption text-xs">Shortcuts: Space pause/resume, Right Arrow next, Esc end.</p>
     </div>
   </div>
 </template>

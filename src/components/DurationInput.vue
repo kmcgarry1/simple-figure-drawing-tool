@@ -2,7 +2,7 @@
   <label
     :class="[
       'grid',
-      compact ? 'gap-1 text-[11px] text-stone-600' : 'gap-1.5 text-sm text-stone-700'
+      compact ? 'fd-text-muted gap-1 text-[11px]' : 'fd-text-body gap-1.5 text-sm'
     ]"
     :for="id"
   >

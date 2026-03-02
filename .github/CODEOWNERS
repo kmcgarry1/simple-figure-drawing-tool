@@ -1,0 +1,5 @@
+# Default ownership for this repository.
+* @kmcgarry1
+
+# Keep CI/release ownership explicit.
+.github/** @kmcgarry1

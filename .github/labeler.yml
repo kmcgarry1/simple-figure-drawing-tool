@@ -1,0 +1,35 @@
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - README.md
+          - CHANGELOG.md
+          - docs/**
+          - public/privacy.html
+          - public/changelog.html
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - package.json
+          - package-lock.json
+
+github_actions:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**
+          - .github/dependabot.yml
+          - .github/branch-protection.md
+          - .github/labeler.yml
+          - .github/CODEOWNERS
+
+javascript:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/**/*.js
+          - src/**/*.vue
+          - e2e/**/*.js
+          - vite.config.js
+          - playwright.config.js
+          - eslint.config.js
+          - tailwind.config.cjs
+          - postcss.config.cjs

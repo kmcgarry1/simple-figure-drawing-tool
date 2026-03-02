@@ -1,11 +1,11 @@
 <template>
-  <div class="grid gap-3 stagger-in">
-    <section class="fd-card grid gap-2.5 rounded-md p-2.5">
-      <p class="fd-section-label text-sm">Live Controls</p>
+  <div class="grid gap-3.5 stagger-in">
+    <section class="fd-card grid gap-2.5 rounded-xl p-3">
+      <p class="fd-section-label">Live Controls</p>
       <BaseButton compact :disabled="!isRunning && !isPaused" @click="$emit('toggle-pause')">
         {{ pauseLabel }}
       </BaseButton>
-      <div class="grid grid-cols-2 gap-1.5 max-[560px]:grid-cols-1">
+      <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
         <BaseButton compact :disabled="!isRunning" tone="subtle" @click="$emit('next')">Next</BaseButton>
         <BaseButton compact :disabled="!hasSourcePhotos" tone="subtle" @click="$emit('new-set')">
           {{ restartLabel }}
@@ -14,8 +14,8 @@
       <BaseButton compact tone="danger" @click="$emit('end')">End Session</BaseButton>
     </section>
 
-    <section v-if="sessionMode === 'quick'" class="fd-card grid gap-1.5 rounded-md p-2.5">
-      <p class="fd-section-label text-sm">Quick Timing</p>
+    <section v-if="sessionMode === 'quick'" class="fd-card grid gap-1.5 rounded-xl p-3">
+      <p class="fd-section-label">Quick Timing</p>
       <DurationInput
         id="durationInputCompact"
         label="Sec / Photo"
@@ -26,10 +26,10 @@
       />
     </section>
 
-    <section class="fd-card grid gap-2 rounded-md p-2.5">
+    <section class="fd-card grid gap-2.5 rounded-xl p-3">
       <div class="flex items-center justify-between gap-2">
         <div class="grid gap-0.5">
-          <p class="text-xs font-semibold text-stone-700">Advanced Controls</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.1em] text-stone-700">Advanced Controls</p>
           <p class="text-[11px] text-stone-500">Stage view and phone remote pairing.</p>
         </div>
         <BaseButton compact tone="subtle" @click="toggleAdvancedControls">
@@ -38,7 +38,7 @@
       </div>
 
       <div v-if="isAdvancedControlsOpen" class="grid gap-2">
-        <section class="fd-subtle-card grid gap-1 rounded-md p-2">
+        <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
           <p class="text-xs font-semibold text-stone-700">Stage View</p>
           <div class="grid grid-cols-1 gap-1">
             <BaseButton compact :tone="mirrorLiveView ? 'primary' : 'subtle'" @click="$emit('toggle-mirror-live-view')">
@@ -53,7 +53,7 @@
           </div>
         </section>
 
-        <section class="fd-subtle-card grid gap-1 rounded-md p-2">
+        <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
           <p class="text-xs font-semibold text-stone-700">Audio Cues</p>
           <div class="grid grid-cols-1 gap-1">
             <BaseButton compact :tone="audioMuted ? 'subtle' : 'primary'" @click="$emit('toggle-audio-muted')">
@@ -75,7 +75,7 @@
           </div>
         </section>
 
-        <section class="fd-subtle-card grid gap-1.5 rounded-md p-2">
+        <section class="fd-subtle-card grid gap-1.5 rounded-lg p-2.5">
           <p class="text-xs font-semibold text-stone-700">Phone Remote</p>
           <p class="text-[11px] text-stone-500">{{ remoteStatus }}</p>
 

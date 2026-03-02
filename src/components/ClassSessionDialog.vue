@@ -13,10 +13,10 @@
           aria-labelledby="class-dialog-title"
           aria-describedby="class-dialog-description"
           tabindex="-1"
-          class="fd-modal-surface max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-2xl p-4"
+          class="fd-modal-surface max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-2xl p-5 max-[720px]:p-4"
           @keydown="onDialogKeydown"
         >
-          <header class="mb-3 flex items-start justify-between gap-3">
+          <header class="mb-4 flex items-start justify-between gap-3">
             <div class="grid gap-1">
               <h2 id="class-dialog-title" class="fd-title-gradient text-[1.08rem] font-semibold">
                 Life Drawing Class Wizard
@@ -35,7 +35,7 @@
             </button>
           </header>
 
-          <div class="grid gap-3">
+          <div class="grid gap-3.5">
             <ClassPresetSection
               :class-preset-options="classPresetOptions"
               :class-preset-id="classPresetId"
@@ -75,7 +75,7 @@
               @class-template-import="$emit('class-template-import', $event)"
             />
 
-            <div class="grid gap-1 rounded-lg border border-amber-200/80 bg-white/82 px-2.5 py-2 text-sm text-stone-600">
+            <div class="grid gap-1 rounded-lg border border-amber-200/80 bg-white/86 px-3 py-2.5 text-sm text-stone-600">
               <p>
                 Plan total:
                 <span class="font-semibold text-stone-800">{{ classTotalMinutesText }}</span>
@@ -89,7 +89,7 @@
               :preview-summary-text="sessionPreviewSummaryText"
             />
 
-            <div class="sticky bottom-0 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2 rounded-lg border border-amber-200/70 bg-white/92 p-2">
+            <div class="sticky bottom-0 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2 rounded-lg border border-amber-200/70 bg-white/96 p-2.5">
               <BaseButton :disabled="!hasSourcePhotos || !hasClassPlan" @click="$emit('start-session')">
                 {{ startActionLabel }}
               </BaseButton>

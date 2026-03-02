@@ -107,8 +107,7 @@ body::after {
   pointer-events: none;
   border-radius: 9999px;
   background: radial-gradient(circle, rgb(var(--fd-accent-peach) / 0.19) 0%, transparent 72%);
-  filter: blur(22px);
-  animation: drift-wash 20s ease-in-out infinite alternate;
+  filter: blur(20px);
 }
 
 #app {
@@ -120,21 +119,21 @@ body::after {
   border: 1px solid rgb(var(--fd-border) / 0.86);
   background: linear-gradient(170deg, rgb(var(--fd-surface-elev) / 0.96), rgb(var(--fd-surface-soft) / 0.9));
   box-shadow:
-    inset 0 1px 0 rgb(var(--fd-highlight) / 0.74),
-    0 14px 34px rgb(var(--fd-shadow) / 0.11);
+    inset 0 1px 0 rgb(var(--fd-highlight) / 0.76),
+    0 8px 22px rgb(var(--fd-shadow) / 0.08);
   backdrop-filter: blur(10px);
 }
 
 .hero-panel::after {
   content: "";
   position: absolute;
-  inset: -16% -12% auto auto;
-  width: 280px;
-  height: 200px;
+  inset: -14% -10% auto auto;
+  width: 220px;
+  height: 160px;
   pointer-events: none;
   border-radius: 9999px;
   background: radial-gradient(circle, rgb(var(--fd-highlight) / 0.76), transparent 74%);
-  filter: blur(14px);
+  filter: blur(12px);
 }
 
 h1,
@@ -160,13 +159,13 @@ h3 {
 .fd-hero-surface {
   border: 1px solid rgb(var(--fd-border) / 0.84);
   background: linear-gradient(154deg, rgb(var(--fd-surface-elev) / 0.97), rgb(var(--fd-surface-soft) / 0.92));
-  box-shadow: 0 12px 30px rgb(var(--fd-shadow) / 0.1);
+  box-shadow: 0 8px 22px rgb(var(--fd-shadow) / 0.08);
 }
 
 .fd-modal-surface {
   border: 1px solid rgb(var(--fd-border-strong) / 0.75);
   background: linear-gradient(160deg, rgb(var(--fd-surface-elev) / 0.98), rgb(var(--fd-surface-soft) / 0.94));
-  box-shadow: 0 26px 56px rgb(var(--fd-shadow) / 0.24);
+  box-shadow: 0 20px 42px rgb(var(--fd-shadow) / 0.2);
 }
 
 .fd-stage-placeholder {
@@ -177,8 +176,8 @@ h3 {
   border: 1px solid rgb(var(--fd-border) / 0.8);
   background: linear-gradient(164deg, rgb(var(--fd-surface-elev) / 0.95), rgb(var(--fd-surface-soft) / 0.87));
   box-shadow:
-    inset 0 1px 0 rgb(var(--fd-highlight) / 0.74),
-    0 10px 24px rgb(var(--fd-shadow) / 0.1);
+    inset 0 1px 0 rgb(var(--fd-highlight) / 0.78),
+    0 6px 18px rgb(var(--fd-shadow) / 0.07);
 }
 
 .fd-subtle-card {
@@ -212,16 +211,16 @@ h3 {
 
 .fd-section-label {
   font-family: "Manrope", "Segoe UI", sans-serif;
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgb(var(--fd-ink-soft));
 }
 
 .fd-chip {
   border: 1px solid rgb(var(--fd-chip-border) / 0.86);
-  background: rgb(var(--fd-chip-bg) / 0.72);
+  background: rgb(var(--fd-chip-bg) / 0.64);
   color: rgb(var(--fd-chip-text));
 }
 
@@ -234,71 +233,71 @@ h3 {
 
 .fd-mode-toggle {
   border: 1px solid rgb(var(--fd-border-strong) / 0.72);
-  background: linear-gradient(150deg, rgb(var(--fd-surface-elev) / 0.96), rgb(var(--fd-surface-soft) / 0.9));
+  background: rgb(var(--fd-surface-elev) / 0.94);
   color: rgb(var(--fd-ink));
-  box-shadow: 0 8px 18px rgb(var(--fd-shadow) / 0.14);
+  box-shadow: 0 4px 10px rgb(var(--fd-shadow) / 0.08);
 }
 
 .fd-mode-toggle:hover {
-  background: linear-gradient(150deg, rgb(var(--fd-surface-elev) / 1), rgb(var(--fd-surface-soft) / 0.94));
+  background: rgb(var(--fd-surface-elev) / 1);
 }
 
 .fd-mode-toggle:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px rgb(var(--fd-focus) / 0.5),
-    0 8px 18px rgb(var(--fd-shadow) / 0.14);
+    0 4px 10px rgb(var(--fd-shadow) / 0.08);
 }
 
 .fd-button-primary {
-  border-color: rgb(56 60 99 / 0.92);
-  background: linear-gradient(142deg, rgb(79 85 139 / 0.98), rgb(56 61 104 / 0.98));
+  border-color: rgb(58 64 110 / 0.92);
+  background: rgb(73 80 133);
   color: rgb(248 249 255);
   box-shadow:
-    0 12px 24px rgb(44 48 82 / 0.3),
-    inset 0 1px 0 rgb(220 226 255 / 0.28);
+    0 6px 14px rgb(44 48 82 / 0.22),
+    inset 0 1px 0 rgb(220 226 255 / 0.22);
 }
 
 .fd-button-primary:hover {
-  background: linear-gradient(142deg, rgb(91 98 155 / 0.99), rgb(67 73 121 / 0.99));
+  background: rgb(81 89 145);
 }
 
 .fd-button-subtle {
   border-color: rgb(var(--fd-border-strong) / 0.72);
-  background: linear-gradient(150deg, rgb(var(--fd-surface-elev) / 0.96), rgb(var(--fd-surface-soft) / 0.84));
+  background: rgb(var(--fd-surface-elev) / 0.95);
   color: rgb(var(--fd-ink) / 0.9);
-  box-shadow: 0 8px 18px rgb(var(--fd-shadow) / 0.08);
+  box-shadow: 0 3px 8px rgb(var(--fd-shadow) / 0.06);
 }
 
 .fd-button-subtle:hover {
   border-color: rgb(var(--fd-focus) / 0.72);
-  background: linear-gradient(150deg, rgb(var(--fd-surface-elev) / 0.99), rgb(var(--fd-surface-soft) / 0.88));
+  background: rgb(var(--fd-surface-elev));
 }
 
 .fd-button-danger {
   border-color: rgb(132 34 28 / 0.95);
-  background: linear-gradient(140deg, rgb(191 63 57 / 0.98), rgb(145 42 37 / 0.98));
+  background: rgb(176 57 50);
   color: rgb(248 250 252);
   box-shadow:
-    0 10px 20px rgb(127 29 29 / 0.3),
-    inset 0 1px 0 rgb(254 202 202 / 0.22);
+    0 6px 12px rgb(127 29 29 / 0.24),
+    inset 0 1px 0 rgb(254 202 202 / 0.2);
 }
 
 .fd-button-danger:hover {
-  background: linear-gradient(140deg, rgb(202 73 66 / 0.98), rgb(154 46 40 / 0.98));
+  background: rgb(188 64 57);
 }
 
 :root[data-theme="dark"] .fd-button-primary {
   border-color: rgb(171 186 255 / 0.9);
-  background: linear-gradient(142deg, rgb(105 122 214 / 0.98), rgb(75 89 168 / 0.98));
+  background: rgb(95 110 195);
   color: rgb(245 247 255);
   box-shadow:
-    0 12px 24px rgb(8 11 22 / 0.56),
-    inset 0 1px 0 rgb(222 231 255 / 0.22);
+    0 6px 16px rgb(8 11 22 / 0.46),
+    inset 0 1px 0 rgb(222 231 255 / 0.2);
 }
 
 :root[data-theme="dark"] .fd-button-primary:hover {
-  background: linear-gradient(142deg, rgb(118 135 224 / 0.98), rgb(84 98 182 / 0.98));
+  background: rgb(107 124 209);
 }
 
 :root[data-theme="dark"] .fd-button-danger {
@@ -450,7 +449,7 @@ h3 {
 @keyframes fade-rise {
   from {
     opacity: 0;
-    transform: translateY(7px);
+    transform: translateY(5px);
   }
   to {
     opacity: 1;
@@ -458,19 +457,8 @@ h3 {
   }
 }
 
-@keyframes drift-wash {
-  from {
-    transform: translateY(-4px) translateX(-6px) scale(1);
-    opacity: 0.62;
-  }
-  to {
-    transform: translateY(7px) translateX(8px) scale(1.02);
-    opacity: 0.86;
-  }
-}
-
 .stagger-in > * {
-  animation: fade-rise 260ms ease-out both;
+  animation: fade-rise 220ms ease-out both;
 }
 
 .stagger-in > *:nth-child(2) {

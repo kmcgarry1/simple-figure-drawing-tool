@@ -144,6 +144,7 @@ export function useFigureSession() {
     availablePhotoTags,
     handlePhotoSelectionWithTags,
     updatePhotoTag,
+    updatePhotoTagsBatch,
     reorderSourcePhoto,
     setClassPreset,
     updateClassBlock,
@@ -415,6 +416,7 @@ export function useFigureSession() {
     clearSessionHistory,
     applyDurationChange,
     updatePhotoTag,
+    updatePhotoTagsBatch,
     reorderSourcePhoto,
     handlePhotoSelection: handlePhotoSelectionWithTags
   };

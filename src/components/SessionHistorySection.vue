@@ -2,10 +2,82 @@
   <section class="fd-card grid gap-2 rounded-lg p-3">
     <div class="flex items-center justify-between gap-2">
       <p class="text-sm font-semibold text-stone-800">Session History</p>
-      <BaseButton compact tone="subtle" :disabled="sessionHistory.length === 0" @click="$emit('clear-history')">
-        Clear
-      </BaseButton>
+      <div class="grid grid-flow-col gap-1.5">
+        <BaseButton
+          compact
+          tone="subtle"
+          :disabled="filteredEntries.length === 0"
+          @click="exportFilteredHistoryJson"
+        >
+          Export History JSON
+        </BaseButton>
+        <BaseButton compact tone="subtle" :disabled="sessionHistory.length === 0" @click="$emit('clear-history')">
+          Clear
+        </BaseButton>
+      </div>
     </div>
+
+    <section class="fd-subtle-card grid gap-2 rounded-md p-2.5">
+      <p class="text-xs font-semibold uppercase tracking-wide text-stone-600">Filters</p>
+      <div class="grid gap-2 sm:grid-cols-2">
+        <label class="grid gap-1 text-[11px] text-stone-600" for="historyModeFilter">
+          <span>Mode Filter</span>
+          <select
+            id="historyModeFilter"
+            v-model="modeFilter"
+            class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
+          >
+            <option value="all">All Modes</option>
+            <option value="class">Class</option>
+            <option value="quick">Quick</option>
+          </select>
+        </label>
+
+        <label class="grid gap-1 text-[11px] text-stone-600" for="historyOutcomeFilter">
+          <span>Outcome Filter</span>
+          <select
+            id="historyOutcomeFilter"
+            v-model="outcomeFilter"
+            class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
+          >
+            <option value="all">All Outcomes</option>
+            <option value="completed">Completed</option>
+            <option value="ended">Ended</option>
+          </select>
+        </label>
+
+        <label class="grid gap-1 text-[11px] text-stone-600" for="historyDateFromFilter">
+          <span>Date From</span>
+          <input
+            id="historyDateFromFilter"
+            v-model="dateFromFilter"
+            type="date"
+            class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
+          />
+        </label>
+
+        <label class="grid gap-1 text-[11px] text-stone-600" for="historyDateToFilter">
+          <span>Date To</span>
+          <input
+            id="historyDateToFilter"
+            v-model="dateToFilter"
+            type="date"
+            class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
+          />
+        </label>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-600">
+        <p>Showing {{ filteredEntries.length }} of {{ sessionHistory.length }} session(s).</p>
+        <button
+          type="button"
+          class="rounded border border-amber-200/90 bg-white/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
+          :disabled="!hasActiveFilters"
+          @click="resetFilters"
+        >
+          Reset Filters
+        </button>
+      </div>
+    </section>
 
     <section class="fd-subtle-card grid gap-2 rounded-md p-2.5">
       <p class="text-xs font-semibold uppercase tracking-wide text-stone-600">
@@ -73,6 +145,9 @@
     <p v-if="sessionHistory.length === 0" class="text-sm text-stone-500">
       No sessions recorded yet.
     </p>
+    <p v-else-if="filteredEntries.length === 0" class="text-sm text-stone-500">
+      No sessions match current filters.
+    </p>
 
     <article
       v-for="entry in recentEntries"
@@ -94,8 +169,12 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { buildSessionInsights } from "../composables/figureSession/sessionInsights";
+import {
+  createSessionHistoryExportPayload,
+  filterSessionHistory
+} from "../composables/figureSession/sessionHistoryFilters";
 import BaseButton from "./BaseButton.vue";
 
 const props = defineProps({
@@ -107,7 +186,26 @@ const props = defineProps({
 
 defineEmits(["clear-history"]);
 
-const recentEntries = computed(() => props.sessionHistory.slice(0, 10));
+const modeFilter = ref("all");
+const outcomeFilter = ref("all");
+const dateFromFilter = ref("");
+const dateToFilter = ref("");
+
+const activeFilters = computed(() => ({
+  mode: modeFilter.value,
+  outcome: outcomeFilter.value,
+  dateFrom: dateFromFilter.value,
+  dateTo: dateToFilter.value
+}));
+const filteredEntries = computed(() => filterSessionHistory(props.sessionHistory, activeFilters.value));
+const recentEntries = computed(() => filteredEntries.value.slice(0, 10));
+const hasActiveFilters = computed(
+  () =>
+    modeFilter.value !== "all" ||
+    outcomeFilter.value !== "all" ||
+    Boolean(dateFromFilter.value) ||
+    Boolean(dateToFilter.value)
+);
 const insights = computed(() => buildSessionInsights(props.sessionHistory));
 
 function formatTimestamp(value) {
@@ -138,5 +236,33 @@ function formatAverageSlides(averageSlides) {
   const safeValue = Math.max(0, Number(averageSlides) || 0);
   const hasFractionalPart = Math.abs(safeValue - Math.round(safeValue)) > 0.01;
   return hasFractionalPart ? safeValue.toFixed(1) : String(Math.round(safeValue));
+}
+
+function resetFilters() {
+  modeFilter.value = "all";
+  outcomeFilter.value = "all";
+  dateFromFilter.value = "";
+  dateToFilter.value = "";
+}
+
+function exportFilteredHistoryJson() {
+  if (filteredEntries.value.length === 0 || typeof window === "undefined") {
+    return;
+  }
+
+  const payload = createSessionHistoryExportPayload(filteredEntries.value, activeFilters.value);
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const blobUrl = URL.createObjectURL(blob);
+  const downloadLink = document.createElement("a");
+
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  downloadLink.href = blobUrl;
+  downloadLink.download = `figure-drawing-history-${dateStamp}.json`;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
+
+  URL.revokeObjectURL(blobUrl);
 }
 </script>

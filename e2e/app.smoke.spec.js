@@ -112,6 +112,159 @@ test("session preview appears before starting from setup wizard", async ({ page 
   await expect(wizard.getByText(/Pose 1/)).toBeVisible();
 });
 
+test("advanced photo manager supports drag-and-drop reordering", async ({ page }) => {
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
+    createPngFilePayload("drag-pose-1.png"),
+    createPngFilePayload("drag-pose-2.png"),
+    createPngFilePayload("drag-pose-3.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizardStepButton(page, 3, "Advanced").click();
+
+  const photoCards = wizard.locator('[aria-label="Source photo order"] article');
+  await expect(photoCards.nth(0)).toContainText("drag-pose-1.png");
+  await expect(photoCards.nth(2)).toContainText("drag-pose-3.png");
+
+  await photoCards.nth(2).dragTo(photoCards.nth(0));
+
+  await expect(photoCards.nth(0)).toContainText("drag-pose-3.png");
+});
+
+test("advanced photo manager keeps keyboard/button reorder fallback", async ({ page }) => {
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
+    createPngFilePayload("keys-pose-1.png"),
+    createPngFilePayload("keys-pose-2.png"),
+    createPngFilePayload("keys-pose-3.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizardStepButton(page, 3, "Advanced").click();
+
+  const photoCards = wizard.locator('[aria-label="Source photo order"] article');
+  await expect(photoCards.nth(0)).toContainText("keys-pose-1.png");
+  await expect(photoCards.nth(1)).toContainText("keys-pose-2.png");
+
+  const moveUpButton = wizard.getByRole("button", {
+    name: "Move keys-pose-2.png up"
+  });
+  await moveUpButton.focus();
+  await page.keyboard.press("Enter");
+
+  await expect(photoCards.nth(0)).toContainText("keys-pose-2.png");
+});
+
+test("advanced photo manager supports bulk tag apply and remove", async ({ page }) => {
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
+    createPngFilePayload("bulk-pose-1.png"),
+    createPngFilePayload("bulk-pose-2.png"),
+    createPngFilePayload("bulk-pose-3.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizardStepButton(page, 3, "Advanced").click();
+
+  await wizard.getByRole("checkbox", { name: "Select bulk-pose-1.png for bulk tag actions" }).check();
+  await wizard.getByRole("checkbox", { name: "Select bulk-pose-2.png for bulk tag actions" }).check();
+  await wizard.getByLabel("Tag Name").fill("gesture");
+  await wizard.getByRole("button", { name: "Apply Tag" }).click();
+
+  await expect(wizard.getByLabel("Tag for bulk-pose-1.png")).toHaveValue("gesture");
+  await expect(wizard.getByLabel("Tag for bulk-pose-2.png")).toHaveValue("gesture");
+  await expect(wizard.getByLabel("Tag for bulk-pose-3.png")).toHaveValue("");
+
+  await wizard.getByRole("button", { name: "Remove Tag" }).click();
+  await expect(wizard.getByLabel("Tag for bulk-pose-1.png")).toHaveValue("");
+  await expect(wizard.getByLabel("Tag for bulk-pose-2.png")).toHaveValue("");
+});
+
+test("history filters and export work from advanced setup", async ({ page }) => {
+  await page.goto("/");
+
+  await page.evaluate(() => {
+    const seededHistory = [
+      {
+        id: "seed-quick-completed",
+        sessionMode: "quick",
+        result: "completed",
+        startedAt: "2026-02-27T10:00:00.000Z",
+        endedAt: "2026-02-27T10:10:00.000Z",
+        elapsedSeconds: 600,
+        plannedSlides: 10,
+        completedSlides: 10,
+        templateName: "",
+        appliedTags: []
+      },
+      {
+        id: "seed-class-ended",
+        sessionMode: "class",
+        result: "ended",
+        startedAt: "2026-02-28T10:00:00.000Z",
+        endedAt: "2026-02-28T10:03:00.000Z",
+        elapsedSeconds: 180,
+        plannedSlides: 6,
+        completedSlides: 2,
+        templateName: "Custom Class Plan",
+        appliedTags: ["hands"]
+      },
+      {
+        id: "seed-quick-ended",
+        sessionMode: "quick",
+        result: "ended",
+        startedAt: "2026-02-15T10:00:00.000Z",
+        endedAt: "2026-02-15T10:02:00.000Z",
+        elapsedSeconds: 120,
+        plannedSlides: 8,
+        completedSlides: 2,
+        templateName: "",
+        appliedTags: []
+      }
+    ];
+
+    window.localStorage.setItem("figureDrawing.history.v1", JSON.stringify(seededHistory));
+  });
+
+  await page.reload();
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
+    createPngFilePayload("history-seed-pose-1.png")
+  ]);
+  await wizardStepButton(page, 3, "Advanced").click();
+
+  const wizard = wizardDialog(page);
+  await wizard.getByRole("button", { name: /Session History/i }).click();
+
+  await wizard.getByLabel("Mode Filter").selectOption("class");
+  await expect(wizard.getByText("Class | ended")).toBeVisible();
+  await expect(wizard.getByText("Quick | completed")).toHaveCount(0);
+
+  await wizard.getByLabel("Mode Filter").selectOption("all");
+  await wizard.getByLabel("Outcome Filter").selectOption("completed");
+  await expect(wizard.getByText("Quick | completed")).toBeVisible();
+  await expect(wizard.getByText("Class | ended")).toHaveCount(0);
+
+  const historyDownloadPromise = page.waitForEvent("download");
+  await wizard.getByRole("button", { name: "Export History JSON" }).click();
+  const historyDownload = await historyDownloadPromise;
+  expect(historyDownload.suggestedFilename()).toMatch(/^figure-drawing-history-\d{4}-\d{2}-\d{2}\.json$/);
+
+  await wizard.getByLabel("Date From").fill("2026-03-01");
+  await expect(wizard.getByText("No sessions match current filters.")).toBeVisible();
+});
+
 test("live quick timer does not reset when duration input is focused and blurred unchanged", async ({
   page
 }) => {

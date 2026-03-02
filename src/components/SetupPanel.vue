@@ -65,6 +65,7 @@
       @duration-input="$emit('duration-input', $event)"
       @duration-change="$emit('duration-change')"
       @photo-tag-update="$emit('photo-tag-update', $event)"
+      @photo-tag-batch-update="$emit('photo-tag-batch-update', $event)"
       @photo-reorder="$emit('photo-reorder', $event)"
       @export-settings="$emit('export-settings')"
       @share-settings-link="$emit('share-settings-link')"

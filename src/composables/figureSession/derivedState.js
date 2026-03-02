@@ -134,7 +134,7 @@ export function useFigureSessionDerivedState({
     }
     if (phase.value === "ready") {
       return sessionMode.value === SESSION_MODE_CLASS
-        ? "Class set prepared. Press Start Class."
+        ? "Class set prepared. Press Start Class to review pose slots."
         : "Random set prepared. Press Start Session.";
     }
     return "Preparing session...";

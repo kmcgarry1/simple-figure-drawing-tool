@@ -149,6 +149,43 @@ test("class dialog closes on Escape and restores trigger focus", async ({ page }
   await expect(trigger).toBeFocused();
 });
 
+test("class start opens review grid and allows pose image reassignment before launch", async ({
+  page
+}) => {
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await page.getByRole("button", { name: "1. Photos" }).click();
+  await page.getByLabel("Upload Photos").setInputFiles([
+    createPngFilePayload("pose-1.png"),
+    createPngFilePayload("pose-2.png"),
+    createPngFilePayload("pose-3.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizard.getByRole("button", { name: "2. Session" }).click();
+  await wizard.getByRole("button", { name: "Life Class Wizard" }).click();
+  await wizard.getByRole("button", { name: "Start Class" }).click();
+
+  const reviewDialog = page.getByRole("dialog", { name: "Review Class Pose Grid" });
+  await expect(reviewDialog).toBeVisible();
+
+  const cards = reviewDialog.locator("article");
+  const firstCard = cards.first();
+  const secondCard = cards.nth(1);
+
+  const firstCardDuration = await firstCard.locator("span").nth(1).innerText();
+  const secondCardSummary = await secondCard.locator("p").innerText();
+
+  await firstCard.getByRole("button", { name: "Later" }).click();
+
+  await expect(cards.first().locator("span").nth(1)).toHaveText(firstCardDuration);
+  await expect(cards.first().locator("p")).toHaveText(secondCardSummary);
+
+  await reviewDialog.getByRole("button", { name: "Start Class" }).click();
+  await expect(page.getByRole("button", { name: "End" })).toBeVisible();
+});
+
 test("mode and duration persist after reload", async ({ page }) => {
   await page.goto("/");
 

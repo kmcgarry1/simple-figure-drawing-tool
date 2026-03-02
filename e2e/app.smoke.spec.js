@@ -112,6 +112,56 @@ test("session preview appears before starting from setup wizard", async ({ page 
   await expect(wizard.getByText(/Pose 1/)).toBeVisible();
 });
 
+test("advanced photo manager supports drag-and-drop reordering", async ({ page }) => {
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
+    createPngFilePayload("drag-pose-1.png"),
+    createPngFilePayload("drag-pose-2.png"),
+    createPngFilePayload("drag-pose-3.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizardStepButton(page, 3, "Advanced").click();
+
+  const photoCards = wizard.locator('[aria-label="Source photo order"] article');
+  await expect(photoCards.nth(0)).toContainText("drag-pose-1.png");
+  await expect(photoCards.nth(2)).toContainText("drag-pose-3.png");
+
+  await photoCards.nth(2).dragTo(photoCards.nth(0));
+
+  await expect(photoCards.nth(0)).toContainText("drag-pose-3.png");
+});
+
+test("advanced photo manager keeps keyboard/button reorder fallback", async ({ page }) => {
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
+    createPngFilePayload("keys-pose-1.png"),
+    createPngFilePayload("keys-pose-2.png"),
+    createPngFilePayload("keys-pose-3.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizardStepButton(page, 3, "Advanced").click();
+
+  const photoCards = wizard.locator('[aria-label="Source photo order"] article');
+  await expect(photoCards.nth(0)).toContainText("keys-pose-1.png");
+  await expect(photoCards.nth(1)).toContainText("keys-pose-2.png");
+
+  const moveUpButton = wizard.getByRole("button", {
+    name: "Move keys-pose-2.png up"
+  });
+  await moveUpButton.focus();
+  await page.keyboard.press("Enter");
+
+  await expect(photoCards.nth(0)).toContainText("keys-pose-2.png");
+});
+
 test("live quick timer does not reset when duration input is focused and blurred unchanged", async ({
   page
 }) => {

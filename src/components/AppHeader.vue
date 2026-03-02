@@ -1,6 +1,6 @@
 <template>
   <header class="surface-panel hero-panel relative overflow-hidden rounded-3xl px-6 py-6 max-[720px]:rounded-xl max-[720px]:px-4 max-[720px]:py-5">
-    <div aria-hidden="true" class="pointer-events-none absolute inset-y-0 right-0 w-56 bg-gradient-to-l from-white/70 to-transparent" />
+    <div aria-hidden="true" class="fd-header-glow pointer-events-none absolute inset-y-0 right-0 w-56 bg-gradient-to-l from-white/70 to-transparent" />
 
     <div class="relative flex flex-wrap items-start justify-between gap-6">
       <div class="grid gap-2">

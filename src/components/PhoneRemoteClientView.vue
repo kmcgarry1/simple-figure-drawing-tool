@@ -16,6 +16,23 @@
       Pairing link detected. Offer token is pre-filled below.
     </p>
 
+    <section class="fd-subtle-card grid gap-1 rounded-md p-2.5">
+      <p class="fd-text-body text-[12px] font-semibold">Connection Diagnostics</p>
+      <p class="fd-text-muted text-[11px]">
+        Status: {{ remoteDiagnostics.statusLabel }}
+      </p>
+      <p class="fd-text-muted text-[11px]">
+        Peer: {{ remoteDiagnostics.connectionState }} | ICE: {{ remoteDiagnostics.iceConnectionState }} |
+        Channel: {{ remoteDiagnostics.dataChannelState }}
+      </p>
+      <p class="fd-text-muted text-[11px]">
+        {{ remoteDiagnostics.hint }}
+      </p>
+      <BaseButton v-if="remoteDiagnostics.retryRecommended" tone="subtle" @click="$emit('retry-connection')">
+        Retry Connection
+      </BaseButton>
+    </section>
+
     <label class="fd-text-body grid gap-1 text-[13px]" for="desktopOfferToken">
       <span class="inline-flex items-center gap-1.5">
         <KeyRound class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
@@ -101,6 +118,10 @@ const props = defineProps({
     type: String,
     required: true
   },
+  remoteDiagnostics: {
+    type: Object,
+    required: true
+  },
   answerToken: {
     type: String,
     required: true
@@ -115,7 +136,13 @@ const props = defineProps({
   }
 });
 
-defineEmits(["create-answer-token", "copy-answer-token", "send-command", "disconnect"]);
+defineEmits([
+  "create-answer-token",
+  "copy-answer-token",
+  "send-command",
+  "retry-connection",
+  "disconnect"
+]);
 
 const desktopOfferToken = ref(props.initialOfferToken || "");
 

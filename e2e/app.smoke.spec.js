@@ -380,3 +380,191 @@ test("remote page pre-fills offer token from pairing link", async ({ page }) => 
   await page.goto(`/?remote=1&offer=${encodeURIComponent(offerToken)}`);
   await expect(page.getByLabel("Desktop Offer Token")).toHaveValue(offerToken);
 });
+
+test("live controls remote diagnostics handle reconnect and retry flow", async ({ page }) => {
+  await page.addInitScript(() => {
+    class FakeDataChannel {
+      constructor(label) {
+        this.label = label;
+        this.readyState = "connecting";
+        this.onopen = null;
+        this.onclose = null;
+        this.onerror = null;
+        this.onmessage = null;
+      }
+
+      send() {}
+
+      close() {
+        if (this.readyState === "closed") {
+          return;
+        }
+
+        this.readyState = "closed";
+        this.onclose?.();
+      }
+
+      open() {
+        if (this.readyState === "open") {
+          return;
+        }
+
+        this.readyState = "open";
+        this.onopen?.();
+      }
+    }
+
+    const peers = [];
+    let offerSequence = 0;
+
+    class FakeRTCPeerConnection extends EventTarget {
+      constructor() {
+        super();
+        this.connectionState = "new";
+        this.iceConnectionState = "new";
+        this.iceGatheringState = "complete";
+        this.localDescription = null;
+        this.remoteDescription = null;
+        this.onconnectionstatechange = null;
+        this.oniceconnectionstatechange = null;
+        this.ondatachannel = null;
+        this._hostChannel = null;
+        peers.push(this);
+      }
+
+      createDataChannel(label) {
+        this._hostChannel = new FakeDataChannel(label);
+        return this._hostChannel;
+      }
+
+      async createOffer() {
+        this.connectionState = "connecting";
+        this.iceConnectionState = "checking";
+        this.#emitConnectionState();
+        offerSequence += 1;
+        return {
+          type: "offer",
+          sdp: `fake-offer-${offerSequence}`
+        };
+      }
+
+      async setLocalDescription(description) {
+        this.localDescription = description;
+      }
+
+      async setRemoteDescription(description) {
+        this.remoteDescription = description;
+        this.connectionState = "connected";
+        this.iceConnectionState = "connected";
+        this.#emitConnectionState();
+        this._hostChannel?.open();
+      }
+
+      restartIce() {
+        this.connectionState = "connecting";
+        this.iceConnectionState = "checking";
+        this.#emitConnectionState();
+      }
+
+      close() {
+        this.connectionState = "closed";
+        this.iceConnectionState = "closed";
+        this.#emitConnectionState();
+        this._hostChannel?.close();
+      }
+
+      forceDisconnect() {
+        this.connectionState = "disconnected";
+        this.iceConnectionState = "disconnected";
+        this.#emitConnectionState();
+        this._hostChannel?.close();
+      }
+
+      #emitConnectionState() {
+        this.onconnectionstatechange?.();
+        this.oniceconnectionstatechange?.();
+      }
+    }
+
+    window.RTCPeerConnection = FakeRTCPeerConnection;
+    window.RTCSessionDescription = class {
+      constructor(init) {
+        Object.assign(this, init || {});
+      }
+    };
+    window.__remoteTestHarness = {
+      buildAnswerToken() {
+        return btoa(
+          encodeURIComponent(
+            JSON.stringify({
+              type: "answer",
+              sdp: "fake-answer"
+            })
+          )
+        );
+      },
+      disconnectLatestPeer() {
+        peers.at(-1)?.forceDisconnect();
+      }
+    };
+  });
+
+  await page.goto("/");
+
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([createPngFilePayload("remote-pose-1.png")]);
+
+  const wizard = wizardDialog(page);
+  await wizard.getByRole("button", { name: "Quick Session" }).click();
+  await wizard.getByRole("button", { name: "Start Session" }).click();
+
+  await expect(page.getByRole("button", { name: "End" })).toBeVisible();
+
+  await page.locator('button[aria-controls="advanced-controls-panel"]').click();
+  await page.getByRole("button", { name: "Generate Offer" }).click();
+
+  const offerTokenBeforeReconnect = await page
+    .getByLabel("Offer Token (send to phone)")
+    .inputValue();
+  expect(offerTokenBeforeReconnect.length).toBeGreaterThan(0);
+
+  const answerToken = await page.evaluate(() => window.__remoteTestHarness.buildAnswerToken());
+  await page.getByLabel("Answer Token (from phone)").fill(answerToken);
+  await page.getByRole("button", { name: "Apply Answer" }).click();
+
+  await expect(page.getByText("Status: Connected")).toBeVisible();
+
+  await page.evaluate(() => {
+    window.__remoteTestHarness.disconnectLatestPeer();
+  });
+
+  await expect(page.getByText("Status: Reconnecting")).toBeVisible();
+  await expect(page.getByText("Transient disconnect detected. Waiting for automatic recovery.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Retry Reconnect" }).click();
+
+  await expect(page.getByText("Reconnect offer ready. Generate a new answer token on phone.")).toBeVisible();
+  await expect(page.getByText("Status: Connecting")).toBeVisible();
+
+  const offerTokenAfterReconnect = await page
+    .getByLabel("Offer Token (send to phone)")
+    .inputValue();
+  expect(offerTokenAfterReconnect).not.toBe(offerTokenBeforeReconnect);
+});
+
+test("remote client shows diagnostics and retry guidance for invalid desktop offer token", async ({
+  page
+}) => {
+  await page.goto("/?remote=1");
+
+  await expect(page.getByText("Connection Diagnostics")).toBeVisible();
+  await expect(page.getByText("Status: Idle")).toBeVisible();
+
+  await page.getByLabel("Desktop Offer Token").fill("not-a-valid-token");
+  await page.getByRole("button", { name: "Generate Answer Token" }).click();
+
+  await expect(page.getByText("Invalid desktop offer token.")).toBeVisible();
+  await expect(page.getByText("Desktop offer token is invalid. Request a fresh offer token.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Retry Connection" })).toBeVisible();
+});

@@ -112,6 +112,18 @@
             Phone Remote
           </p>
           <p class="fd-text-muted text-[12px]">{{ remoteStatus }}</p>
+          <div class="fd-callout-muted grid gap-1 rounded-md p-2">
+            <p class="fd-text-body text-[11px] font-semibold">
+              Status: {{ remoteDiagnostics.statusLabel }}
+            </p>
+            <p class="fd-text-muted text-[11px]">
+              Peer: {{ remoteDiagnostics.connectionState }} | ICE: {{ remoteDiagnostics.iceConnectionState }} |
+              Channel: {{ remoteDiagnostics.dataChannelState }}
+            </p>
+            <p class="fd-text-muted text-[11px]">
+              {{ remoteDiagnostics.hint }}
+            </p>
+          </div>
 
           <div class="grid grid-cols-2 gap-2">
             <BaseButton compact tone="subtle" @click="$emit('remote-create-offer')">
@@ -123,6 +135,11 @@
               Copy Offer
             </BaseButton>
           </div>
+
+          <BaseButton compact tone="subtle" :disabled="!remoteOfferToken" @click="$emit('remote-retry-reconnect')">
+            <PlugZap class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+            Retry Reconnect
+          </BaseButton>
 
           <label v-if="remotePairingUrl" class="fd-text-body grid gap-1 text-[12px]" for="remotePairingUrl">
             <span>Pairing Link (open on phone)</span>
@@ -267,6 +284,10 @@ defineProps({
     type: String,
     required: true
   },
+  remoteDiagnostics: {
+    type: Object,
+    required: true
+  },
   remoteOfferToken: {
     type: String,
     required: true
@@ -301,6 +322,7 @@ const emit = defineEmits([
   "remote-copy-offer-token",
   "remote-copy-pairing-link",
   "remote-apply-answer",
+  "remote-retry-reconnect",
   "remote-disconnect"
 ]);
 

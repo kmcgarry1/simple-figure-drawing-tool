@@ -62,6 +62,7 @@
           @start-session="startFreshSession"
           @new-random-set="createNewRandomSet"
           @clear-history="clearSessionHistory"
+          @rerun-history="rerunSessionFromHistory"
         />
 
         <ClassLaunchReviewDialog
@@ -224,6 +225,7 @@ const {
   goToNextSlide,
   createNewRandomSet,
   clearSessionHistory,
+  rerunSessionFromHistory,
   stopSession,
   applyDurationChange,
   updatePhotoTag,

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { appendSessionHistory, normalizeSessionHistory } from "./sessionHistory";
+import {
+  appendSessionHistory,
+  normalizeHistoryRerunSettings,
+  normalizeSessionHistory
+} from "./sessionHistory";
 
 describe("normalizeSessionHistory", () => {
   it("normalizes malformed entries", () => {
@@ -23,7 +27,41 @@ describe("normalizeSessionHistory", () => {
       plannedSlides: 5,
       completedSlides: 5,
       templateName: "Gesture Warmups",
-      appliedTags: ["hands", "torso"]
+      appliedTags: ["hands", "torso"],
+      rerunSettings: {
+        sessionMode: "class",
+        durationSeconds: 60,
+        classPresetId: "class-1h",
+        classPhotoOrder: "shuffle",
+        avoidImmediateRepeats: true
+      }
+    });
+  });
+});
+
+describe("normalizeHistoryRerunSettings", () => {
+  it("sanitizes malformed rerun settings with a provided mode fallback", () => {
+    const settings = normalizeHistoryRerunSettings(
+      {
+        sessionMode: "invalid",
+        durationSeconds: -10,
+        classPresetId: "not-real",
+        classBlocks: [],
+        classPhotoOrder: "weird",
+        avoidImmediateRepeats: "bad"
+      },
+      {
+        fallbackSessionMode: "quick"
+      }
+    );
+
+    expect(settings).toMatchObject({
+      schemaVersion: 1,
+      sessionMode: "quick",
+      durationSeconds: 5,
+      classPresetId: "class-1h",
+      classPhotoOrder: "shuffle",
+      avoidImmediateRepeats: true
     });
   });
 });
@@ -54,5 +92,9 @@ describe("appendSessionHistory", () => {
 
     expect(second[0].id).toBe("two");
     expect(second[1].id).toBe("one");
+    expect(second[0].rerunSettings).toMatchObject({
+      schemaVersion: 1,
+      sessionMode: "class"
+    });
   });
 });

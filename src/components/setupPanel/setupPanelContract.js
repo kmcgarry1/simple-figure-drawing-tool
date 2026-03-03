@@ -128,5 +128,6 @@ export const setupPanelEmits = [
   "class-template-import",
   "start-session",
   "new-random-set",
-  "clear-history"
+  "clear-history",
+  "rerun-history"
 ];

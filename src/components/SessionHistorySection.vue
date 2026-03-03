@@ -164,6 +164,9 @@
         <span>{{ entry.completedSlides }} / {{ entry.plannedSlides }} slides</span>
         <span>{{ formatDuration(entry.elapsedSeconds) }}</span>
       </div>
+      <div class="pt-1">
+        <BaseButton compact tone="subtle" @click="rerunFromEntry(entry.id)">Rerun Setup</BaseButton>
+      </div>
     </article>
   </section>
 </template>
@@ -184,7 +187,7 @@ const props = defineProps({
   }
 });
 
-defineEmits(["clear-history"]);
+const emit = defineEmits(["clear-history", "rerun-history"]);
 
 const modeFilter = ref("all");
 const outcomeFilter = ref("all");
@@ -264,5 +267,9 @@ function exportFilteredHistoryJson() {
   downloadLink.remove();
 
   URL.revokeObjectURL(blobUrl);
+}
+
+function rerunFromEntry(entryId) {
+  emit("rerun-history", entryId);
 }
 </script>

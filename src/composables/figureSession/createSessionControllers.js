@@ -2,9 +2,10 @@ import { CLASS_BLOCK_TYPE_BREAK, sanitizeClassBlocks } from "../../utils/classPl
 import { createClassPlanActions } from "./classPlanActions";
 import { createClassTemplateActions } from "./classTemplateActions";
 import { findClassTemplateMatch } from "./classTemplates";
-import { SESSION_MODE_CLASS } from "./constants";
+import { SESSION_MODE_CLASS, SESSION_MODE_QUICK } from "./constants";
 import { createPlaybackRuntime } from "./playbackRuntime";
 import { createPhotoTagActions } from "./photoTagActions";
+import { normalizeHistoryRerunSettings } from "./sessionHistory";
 import { createSessionHistoryActions } from "./sessionHistoryActions";
 import { createSessionRuntimeActions } from "./sessionRuntimeActions";
 import { createSettingsTransferActions } from "./settingsTransferActions";
@@ -154,10 +155,20 @@ export function createSessionControllers({
     runStartedAtMs,
     runPlannedSlides,
     getSessionHistoryContext: () => {
+      const rerunSettings = {
+        sessionMode: sessionMode.value,
+        durationSeconds: durationSeconds.value,
+        classPresetId: classPresetId.value,
+        classBlocks: sanitizeClassBlocks(classBlocks.value).map((block) => ({ ...block })),
+        classPhotoOrder: classPhotoOrder.value,
+        avoidImmediateRepeats: avoidImmediateRepeats.value
+      };
+
       if (sessionMode.value !== SESSION_MODE_CLASS) {
         return {
           templateName: "",
-          appliedTags: []
+          appliedTags: [],
+          rerunSettings
         };
       }
 
@@ -174,7 +185,8 @@ export function createSessionControllers({
 
       return {
         templateName: matchingTemplate?.name || "Custom Class Plan",
-        appliedTags
+        appliedTags,
+        rerunSettings
       };
     }
   });
@@ -266,6 +278,60 @@ export function createSessionControllers({
     audioVolumePercent
   });
 
+  function rerunSessionFromHistory(sessionId) {
+    const normalizedSessionId = String(sessionId ?? "").trim();
+    if (!normalizedSessionId) {
+      return;
+    }
+
+    if (isSessionLive.value) {
+      statusMessage.value = "End the current run before rerunning from history.";
+      return;
+    }
+
+    const historyEntry = Array.from(sessionHistory.value || []).find(
+      (entry) => entry?.id === normalizedSessionId
+    );
+    if (!historyEntry) {
+      statusMessage.value = "Selected history run is no longer available.";
+      return;
+    }
+
+    const rerunSettings = normalizeHistoryRerunSettings(historyEntry.rerunSettings, {
+      fallbackSessionMode: historyEntry.sessionMode
+    });
+
+    sessionMode.value = rerunSettings.sessionMode;
+    durationSeconds.value = rerunSettings.durationSeconds;
+    classPresetId.value = rerunSettings.classPresetId;
+    classBlocks.value = rerunSettings.classBlocks.map((block) => ({ ...block }));
+    classPhotoOrder.value = rerunSettings.classPhotoOrder;
+    avoidImmediateRepeats.value = rerunSettings.avoidImmediateRepeats;
+
+    isClassLaunchReviewOpen.value = false;
+    clearClassLaunchReviewAssignments?.();
+    clearTimers();
+    revokeSlideUrl();
+    resetPlaybackState();
+    sessionSlides.value = [];
+
+    if (!hasSourcePhotos.value) {
+      const restoredModeLabel =
+        rerunSettings.sessionMode === SESSION_MODE_QUICK ? "quick" : "class";
+      statusMessage.value = `Restored ${restoredModeLabel} setup. Add photos to start.`;
+      return;
+    }
+
+    const hasPreparedSet = prepareActiveSet();
+    if (!hasPreparedSet) {
+      return;
+    }
+
+    const restoredModeLabel =
+      rerunSettings.sessionMode === SESSION_MODE_QUICK ? "quick" : "class";
+    statusMessage.value = `Restored ${restoredModeLabel} setup from session history. Review and start when ready.`;
+  }
+
   return {
     clearTimers,
     revokeSlideUrl,
@@ -287,6 +353,7 @@ export function createSessionControllers({
     setAvoidImmediateRepeats,
     applyClassBuilderAssistant,
     clearSessionHistory,
+    rerunSessionFromHistory,
     exportSettingsJson,
     importSettingsFromFile,
     copySettingsShareLink,

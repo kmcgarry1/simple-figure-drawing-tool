@@ -70,6 +70,8 @@ Status on working branch (2026-03-03): platform items 1-3 are implemented; QA it
 
 ## Release 1.5.0 (Session Repeatability)
 
+Status on working branch (2026-03-03): Product item 1 is implemented with smoke e2e coverage.
+
 ### Product
 
 1. Add "Rerun From History" to restore prior setup quickly.

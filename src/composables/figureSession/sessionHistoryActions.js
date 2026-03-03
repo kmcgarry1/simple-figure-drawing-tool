@@ -1,6 +1,7 @@
 import {
   appendSessionHistory,
   clearSessionHistoryStore,
+  normalizeHistoryRerunSettings,
   persistSessionHistory
 } from "./sessionHistory";
 
@@ -15,7 +16,10 @@ export function createSessionHistoryActions({
 }) {
   let runContext = {
     templateName: "",
-    appliedTags: []
+    appliedTags: [],
+    rerunSettings: normalizeHistoryRerunSettings(null, {
+      fallbackSessionMode: sessionMode.value
+    })
   };
 
   function normalizeSessionHistoryContext(rawContext) {
@@ -38,7 +42,10 @@ export function createSessionHistoryActions({
 
     return {
       templateName,
-      appliedTags
+      appliedTags,
+      rerunSettings: normalizeHistoryRerunSettings(rawContext?.rerunSettings, {
+        fallbackSessionMode: sessionMode.value
+      })
     };
   }
 
@@ -57,7 +64,10 @@ export function createSessionHistoryActions({
     runPlannedSlides.value = 0;
     runContext = {
       templateName: "",
-      appliedTags: []
+      appliedTags: [],
+      rerunSettings: normalizeHistoryRerunSettings(null, {
+        fallbackSessionMode: sessionMode.value
+      })
     };
   }
 
@@ -83,7 +93,8 @@ export function createSessionHistoryActions({
       plannedSlides,
       completedSlides: normalizedCompletedSlides,
       templateName: runContext.templateName,
-      appliedTags: runContext.appliedTags
+      appliedTags: runContext.appliedTags,
+      rerunSettings: runContext.rerunSettings
     });
     persistSessionHistory(sessionHistory.value);
     resetRunTracking();

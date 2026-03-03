@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.3.0...figure-drawing-v1.4.0) (2026-03-03)
+
+
+### Features
+
+* add rerun from session history ([bc6ee00](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/bc6ee00109ba9fd791581891df7204e4f5e84bd4))
+* add rerun-from-history setup restore ([15e0c55](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/15e0c55b14fe68158942881d23b098de2187e51d))
+
 ## [1.3.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.2.0...figure-drawing-v1.3.0) (2026-03-03)
 
 

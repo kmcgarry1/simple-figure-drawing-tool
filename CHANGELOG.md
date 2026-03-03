@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.3.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.2.0...figure-drawing-v1.3.0) (2026-03-03)
+
+
+### Features
+
+* add bulk photo tag actions ([3f21248](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/3f212482e46e627593e3849a3f5d511b9ad89951))
+* add bulk photo tag actions ([b6226dc](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/b6226dcb1ad52c2b8293ff83b6dbaf1af45e2a89))
+* add drag-and-drop source photo reordering ([4f8e7c5](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/4f8e7c50bcb29cd7b1c3e2841b9d39cae0ef31c0))
+* add drag-and-drop source photo reordering ([da75826](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/da758262d86bdbcba8ba5e7cba4a8d38acc086bb))
+* add session history filters and JSON export ([10f5caf](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/10f5cafe9ee5ed55554d5d45932f8158a0066376))
+* add session history filters and JSON export ([9372625](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/9372625e6c6d5f8009a5c81fa9b2c1fe28e431b7))
+* deliver 1.3.0 workflow speed upgrades ([7b465b7](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/7b465b7e60750c620953592959c429c1ddf19ee0))
+* improve phone remote reliability and reconnect UX ([c146568](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/c14656819569f49547db7c2287e75f7f25dc3c89))
+* ship workflow speed upgrades and remote reliability improvements ([929a262](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/929a26202ae8085b7ca36337675ffeb96ee0069b))
+
+
+### Bug Fixes
+
+* **ci:** run required checks on release-please PRs ([3606c31](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/3606c31451ba51bd7129cc66563b7c02cbe43901))
+* **ci:** trigger release PR checks via dedicated token ([5bcaf9d](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/5bcaf9df64d4ae1559defd24bfecd0d39a0a7f1e))
+
 ## [1.2.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.1.0...figure-drawing-v1.2.0) (2026-03-02)
 
 

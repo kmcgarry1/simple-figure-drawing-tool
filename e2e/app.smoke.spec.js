@@ -323,6 +323,78 @@ test("history rerun restores saved quick setup", async ({ page }) => {
   await expect(wizard.getByLabel("Seconds Per Photo")).toHaveValue("95");
 });
 
+test("named run snapshots can save and restore setup", async ({ page }) => {
+  await page.goto("/");
+
+  await page.evaluate(() => {
+    const seededHistory = [
+      {
+        id: "seed-snapshot-quick",
+        sessionMode: "quick",
+        result: "completed",
+        startedAt: "2026-03-01T10:00:00.000Z",
+        endedAt: "2026-03-01T10:05:00.000Z",
+        elapsedSeconds: 300,
+        plannedSlides: 5,
+        completedSlides: 5,
+        templateName: "",
+        appliedTags: [],
+        rerunSettings: {
+          sessionMode: "quick",
+          durationSeconds: 95,
+          classPresetId: "class-3h",
+          classBlocks: [
+            {
+              blockType: "pose",
+              label: "Gesture Drill",
+              durationSeconds: 45,
+              poseCount: 8,
+              photoTag: "all"
+            }
+          ],
+          classPhotoOrder: "sequential",
+          avoidImmediateRepeats: false
+        }
+      }
+    ];
+
+    window.localStorage.setItem("figureDrawing.history.v1", JSON.stringify(seededHistory));
+    window.localStorage.removeItem("figureDrawing.runSnapshots.v1");
+  });
+
+  await page.reload();
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
+    createPngFilePayload("snapshot-restore-pose-1.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizardStepButton(page, 3, "Advanced").click();
+  await wizard.getByRole("button", { name: /Session History/i }).click();
+
+  const quickHistoryCard = wizard.locator("article").filter({ hasText: "Quick | completed" }).first();
+  await quickHistoryCard.getByLabel("Snapshot Name").fill("Quick 95 Snapshot");
+  await quickHistoryCard.getByRole("button", { name: "Save Snapshot" }).click();
+
+  await expect(wizard.getByText("Run Snapshots")).toBeVisible();
+  const snapshotCard = wizard.locator("article").filter({ hasText: "Quick 95 Snapshot" }).first();
+  await expect(snapshotCard).toBeVisible();
+
+  await wizardStepButton(page, 2, "Session").click();
+  await wizard.getByRole("button", { name: "Quick Session" }).click();
+  await wizard.getByLabel("Seconds Per Photo").fill("30");
+  await wizard.getByLabel("Seconds Per Photo").blur();
+
+  await wizardStepButton(page, 3, "Advanced").click();
+  await wizard.getByRole("button", { name: /Session History/i }).click();
+
+  await snapshotCard.getByRole("button", { name: "Restore Snapshot" }).click();
+
+  await wizardStepButton(page, 2, "Session").click();
+  await expect(wizard.getByLabel("Seconds Per Photo")).toHaveValue("95");
+});
+
 test("live quick timer does not reset when duration input is focused and blurred unchanged", async ({
   page
 }) => {

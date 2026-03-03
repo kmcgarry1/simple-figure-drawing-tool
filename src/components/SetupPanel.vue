@@ -74,6 +74,9 @@
       @new-random-set="$emit('new-random-set')"
       @clear-history="$emit('clear-history')"
       @rerun-history="$emit('rerun-history', $event)"
+      @save-history-snapshot="$emit('save-history-snapshot', $event)"
+      @restore-run-snapshot="$emit('restore-run-snapshot', $event)"
+      @delete-run-snapshot="$emit('delete-run-snapshot', $event)"
       @open-class-dialog="openClassDialog"
       @wizard-step-change="handleWizardStepChange"
     />

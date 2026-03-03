@@ -70,7 +70,7 @@ Status on working branch (2026-03-03): platform items 1-3 are implemented; QA it
 
 ## Release 1.5.0 (Session Repeatability)
 
-Status on working branch (2026-03-03): Product item 1 is implemented with smoke e2e coverage.
+Status on working branch (2026-03-03): Product items 1-2 are implemented with smoke e2e coverage for rerun and snapshot restore paths.
 
 ### Product
 

@@ -104,6 +104,7 @@
             :tagged-photos="taggedPhotos"
             :available-photo-tags="availablePhotoTags"
             :session-history="sessionHistory"
+            :run-snapshots="runSnapshots"
             @photo-tag-update="$emit('photo-tag-update', $event)"
             @photo-tag-batch-update="$emit('photo-tag-batch-update', $event)"
             @photo-reorder="$emit('photo-reorder', $event)"
@@ -112,6 +113,9 @@
             @import-settings="onImportSettingsSelected"
             @clear-history="$emit('clear-history')"
             @rerun-history="$emit('rerun-history', $event)"
+            @save-history-snapshot="$emit('save-history-snapshot', $event)"
+            @restore-run-snapshot="$emit('restore-run-snapshot', $event)"
+            @delete-run-snapshot="$emit('delete-run-snapshot', $event)"
           />
 
           <footer class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--fd-border)/0.82)] pt-3">
@@ -175,6 +179,9 @@ const emit = defineEmits([
   "new-random-set",
   "clear-history",
   "rerun-history",
+  "save-history-snapshot",
+  "restore-run-snapshot",
+  "delete-run-snapshot",
   "open-class-dialog",
   "wizard-step-change"
 ]);

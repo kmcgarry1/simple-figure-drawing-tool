@@ -8,6 +8,7 @@ import { loadSessionPreferences } from "./figureSession/persistence";
 import { IDLE_MESSAGE } from "./figureSession/sessionMessages";
 import { loadClassTemplates } from "./figureSession/classTemplates";
 import { loadSessionHistory } from "./figureSession/sessionHistory";
+import { loadRunSnapshots } from "./figureSession/runSnapshots";
 import { useFigureSessionLifecycle } from "./figureSession/useFigureSessionLifecycle";
 import { formatDurationShort } from "./figureSession/formatters";
 import { useAudioCues } from "./useAudioCues";
@@ -39,6 +40,7 @@ export function useFigureSession() {
     persistedPreferences.avoidImmediateRepeats
   );
   const sessionHistory = ref(loadSessionHistory());
+  const runSnapshots = ref(loadRunSnapshots());
   const photoTagsById = ref(persistedPreferences.photoTagsById || {});
   const mirrorLiveView = ref(Boolean(persistedPreferences.mirrorLiveView));
   const grayscaleLiveView = ref(Boolean(persistedPreferences.grayscaleLiveView));
@@ -155,6 +157,9 @@ export function useFigureSession() {
     applyClassBuilderAssistant,
     clearSessionHistory,
     rerunSessionFromHistory,
+    saveRunSnapshotFromHistory,
+    restoreRunSnapshot,
+    deleteRunSnapshot,
     exportSettingsJson,
     importSettingsFromFile,
     copySettingsShareLink,
@@ -192,6 +197,7 @@ export function useFigureSession() {
     classPhotoOrder,
     avoidImmediateRepeats,
     sessionHistory,
+    runSnapshots,
     photoTagsById,
     mirrorLiveView,
     grayscaleLiveView,
@@ -350,6 +356,7 @@ export function useFigureSession() {
     classPhotoOrder,
     avoidImmediateRepeats,
     sessionHistory,
+    runSnapshots,
     mirrorLiveView,
     grayscaleLiveView,
     hideLiveOverlay,
@@ -416,6 +423,9 @@ export function useFigureSession() {
     stopSession: endSession,
     clearSessionHistory,
     rerunSessionFromHistory,
+    saveRunSnapshotFromHistory,
+    restoreRunSnapshot,
+    deleteRunSnapshot,
     applyDurationChange,
     updatePhotoTag,
     updatePhotoTagsBatch,

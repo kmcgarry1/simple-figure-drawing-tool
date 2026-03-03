@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.4.0...figure-drawing-v1.5.0) (2026-03-03)
+
+
+### Features
+
+* add named run snapshots for setup restore ([02c2eac](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/02c2eac809e4ff0ee14a86cc023977b42b25b563))
+
 ## [1.4.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.3.0...figure-drawing-v1.4.0) (2026-03-03)
 
 

@@ -111,6 +111,7 @@
             @share-settings-link="$emit('share-settings-link')"
             @import-settings="onImportSettingsSelected"
             @clear-history="$emit('clear-history')"
+            @rerun-history="$emit('rerun-history', $event)"
           />
 
           <footer class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--fd-border)/0.82)] pt-3">
@@ -173,6 +174,7 @@ const emit = defineEmits([
   "start-session",
   "new-random-set",
   "clear-history",
+  "rerun-history",
   "open-class-dialog",
   "wizard-step-change"
 ]);

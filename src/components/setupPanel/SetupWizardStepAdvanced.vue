@@ -86,6 +86,7 @@
         <SessionHistorySection
           :session-history="props.sessionHistory"
           @clear-history="$emit('clear-history')"
+          @rerun-history="$emit('rerun-history', $event)"
         />
       </div>
     </section>
@@ -121,7 +122,8 @@ defineEmits([
   "export-settings",
   "share-settings-link",
   "import-settings",
-  "clear-history"
+  "clear-history",
+  "rerun-history"
 ]);
 
 const openSections = ref(new Set(["tagging", "settings"]));

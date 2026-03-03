@@ -1,5 +1,9 @@
+import { SESSION_MODE_CLASS, SESSION_MODE_QUICK } from "./constants";
+import { normalizeSessionPreferences } from "./persistence";
+
 const STORAGE_KEY = "figureDrawing.history.v1";
 const MAX_HISTORY_ENTRIES = 100;
+const RERUN_SETTINGS_SCHEMA_VERSION = 1;
 
 function canUseStorage() {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -30,9 +34,44 @@ function normalizeAppliedTags(rawAppliedTags) {
   return normalizedTags;
 }
 
+function normalizeSessionMode(rawSessionMode, fallbackSessionMode = SESSION_MODE_CLASS) {
+  if (rawSessionMode === SESSION_MODE_QUICK || rawSessionMode === SESSION_MODE_CLASS) {
+    return rawSessionMode;
+  }
+
+  return fallbackSessionMode === SESSION_MODE_QUICK ? SESSION_MODE_QUICK : SESSION_MODE_CLASS;
+}
+
+export function normalizeHistoryRerunSettings(rawRerunSettings, options = {}) {
+  const fallbackSessionMode = normalizeSessionMode(options.fallbackSessionMode);
+  const normalizedSessionMode = normalizeSessionMode(
+    rawRerunSettings?.sessionMode,
+    fallbackSessionMode
+  );
+  const normalizedPreferences = normalizeSessionPreferences({
+    sessionMode: normalizedSessionMode,
+    durationSeconds: rawRerunSettings?.durationSeconds,
+    classPresetId: rawRerunSettings?.classPresetId,
+    classBlocks: rawRerunSettings?.classBlocks,
+    classPhotoOrder: rawRerunSettings?.classPhotoOrder,
+    avoidImmediateRepeats: rawRerunSettings?.avoidImmediateRepeats
+  });
+
+  return {
+    schemaVersion: RERUN_SETTINGS_SCHEMA_VERSION,
+    sessionMode: normalizedPreferences.sessionMode,
+    durationSeconds: normalizedPreferences.durationSeconds,
+    classPresetId: normalizedPreferences.classPresetId,
+    classBlocks: normalizedPreferences.classBlocks.map((block) => ({ ...block })),
+    classPhotoOrder: normalizedPreferences.classPhotoOrder,
+    avoidImmediateRepeats: normalizedPreferences.avoidImmediateRepeats
+  };
+}
+
 function normalizeHistoryEntry(rawEntry, index) {
   const idCandidate = String(rawEntry?.id ?? "").trim();
   const id = idCandidate || `session-${index + 1}`;
+  const sessionMode = normalizeSessionMode(rawEntry?.sessionMode);
   const startedAt = String(rawEntry?.startedAt ?? "").trim() || new Date().toISOString();
   const endedAt = String(rawEntry?.endedAt ?? "").trim() || startedAt;
   const elapsedSecondsRaw = Number.parseInt(String(rawEntry?.elapsedSeconds), 10);
@@ -46,7 +85,7 @@ function normalizeHistoryEntry(rawEntry, index) {
 
   return {
     id,
-    sessionMode: rawEntry?.sessionMode === "quick" ? "quick" : "class",
+    sessionMode,
     result: rawEntry?.result === "completed" ? "completed" : "ended",
     startedAt,
     endedAt,
@@ -54,7 +93,10 @@ function normalizeHistoryEntry(rawEntry, index) {
     plannedSlides,
     completedSlides,
     templateName: normalizeTemplateName(rawEntry?.templateName),
-    appliedTags: normalizeAppliedTags(rawEntry?.appliedTags)
+    appliedTags: normalizeAppliedTags(rawEntry?.appliedTags),
+    rerunSettings: normalizeHistoryRerunSettings(rawEntry?.rerunSettings, {
+      fallbackSessionMode: sessionMode
+    })
   };
 }
 

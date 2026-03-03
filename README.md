@@ -11,6 +11,7 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
 - Advanced setup:
   - Visual photo list with thumbnails, drag-and-drop reordering, and per-photo tags.
   - Multi-select bulk tag apply/remove actions.
+  - Session history rerun to restore prior setup quickly.
   - Reordered list is used for class sessions in sequential photo order mode.
 - Quick session mode:
   - Load individual images or an entire folder in one step.

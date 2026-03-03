@@ -265,6 +265,64 @@ test("history filters and export work from advanced setup", async ({ page }) => 
   await expect(wizard.getByText("No sessions match current filters.")).toBeVisible();
 });
 
+test("history rerun restores saved quick setup", async ({ page }) => {
+  await page.goto("/");
+
+  await page.evaluate(() => {
+    const seededHistory = [
+      {
+        id: "seed-rerun-quick",
+        sessionMode: "quick",
+        result: "completed",
+        startedAt: "2026-03-01T10:00:00.000Z",
+        endedAt: "2026-03-01T10:05:00.000Z",
+        elapsedSeconds: 300,
+        plannedSlides: 5,
+        completedSlides: 5,
+        templateName: "",
+        appliedTags: [],
+        rerunSettings: {
+          sessionMode: "quick",
+          durationSeconds: 95,
+          classPresetId: "class-3h",
+          classBlocks: [
+            {
+              blockType: "pose",
+              label: "Gesture Drill",
+              durationSeconds: 45,
+              poseCount: 8,
+              photoTag: "all"
+            }
+          ],
+          classPhotoOrder: "sequential",
+          avoidImmediateRepeats: false
+        }
+      }
+    ];
+
+    window.localStorage.setItem("figureDrawing.history.v1", JSON.stringify(seededHistory));
+  });
+
+  await page.reload();
+  await openSetupWizard(page);
+  await wizardStepButton(page, 1, "Photos").click();
+  await wizardDialog(page).locator("#photoInput").setInputFiles([
+    createPngFilePayload("history-rerun-pose-1.png")
+  ]);
+
+  const wizard = wizardDialog(page);
+  await wizardStepButton(page, 3, "Advanced").click();
+  await wizard.getByRole("button", { name: /Session History/i }).click();
+
+  const quickHistoryCard = wizard.locator("article").filter({ hasText: "Quick | completed" }).first();
+  await quickHistoryCard.getByRole("button", { name: "Rerun Setup" }).click();
+
+  await wizardStepButton(page, 2, "Session").click();
+  const quickModeButton = wizard.getByRole("button", { name: "Quick Session" });
+  await expect(quickModeButton).toHaveAttribute("aria-pressed", "true");
+  await expect(wizard.getByLabel("Seconds Per Photo")).toHaveValue("95");
+});
+
 test("live quick timer does not reset when duration input is focused and blurred unchanged", async ({
   page
 }) => {

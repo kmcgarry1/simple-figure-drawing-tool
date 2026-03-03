@@ -73,6 +73,7 @@
       @start-session="handleStartSession"
       @new-random-set="$emit('new-random-set')"
       @clear-history="$emit('clear-history')"
+      @rerun-history="$emit('rerun-history', $event)"
       @open-class-dialog="openClassDialog"
       @wizard-step-change="handleWizardStepChange"
     />

@@ -6,7 +6,7 @@
         Step 3: Advanced tools
       </p>
       <p class="fd-text-muted text-[13px] leading-5">
-        Fine-tune tags, transfer settings, and manage session history.
+        Fine-tune tags, transfer settings, and manage session history and snapshots.
       </p>
     </div>
 
@@ -85,8 +85,12 @@
       <div v-if="isOpen('history')" id="advanced-history-panel">
         <SessionHistorySection
           :session-history="props.sessionHistory"
+          :run-snapshots="props.runSnapshots"
           @clear-history="$emit('clear-history')"
           @rerun-history="$emit('rerun-history', $event)"
+          @save-history-snapshot="$emit('save-history-snapshot', $event)"
+          @restore-run-snapshot="$emit('restore-run-snapshot', $event)"
+          @delete-run-snapshot="$emit('delete-run-snapshot', $event)"
         />
       </div>
     </section>
@@ -112,6 +116,10 @@ const props = defineProps({
   sessionHistory: {
     type: Array,
     required: true
+  },
+  runSnapshots: {
+    type: Array,
+    required: true
   }
 });
 
@@ -123,7 +131,10 @@ defineEmits([
   "share-settings-link",
   "import-settings",
   "clear-history",
-  "rerun-history"
+  "rerun-history",
+  "save-history-snapshot",
+  "restore-run-snapshot",
+  "delete-run-snapshot"
 ]);
 
 const openSections = ref(new Set(["tagging", "settings"]));

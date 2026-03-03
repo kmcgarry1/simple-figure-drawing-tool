@@ -164,10 +164,58 @@
         <span>{{ entry.completedSlides }} / {{ entry.plannedSlides }} slides</span>
         <span>{{ formatDuration(entry.elapsedSeconds) }}</span>
       </div>
-      <div class="pt-1">
+      <label class="grid gap-1 pt-1 text-[11px] text-stone-600" :for="`snapshot-name-${entry.id}`">
+        <span>Snapshot Name</span>
+        <input
+          :id="`snapshot-name-${entry.id}`"
+          type="text"
+          class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
+          :value="snapshotNamesByEntryId[entry.id] || ''"
+          :placeholder="buildDefaultSnapshotName(entry)"
+          @input="setSnapshotDraftName(entry.id, $event.target.value)"
+        />
+      </label>
+      <div class="grid grid-cols-2 gap-2 pt-1">
         <BaseButton compact tone="subtle" @click="rerunFromEntry(entry.id)">Rerun Setup</BaseButton>
+        <BaseButton compact tone="subtle" @click="saveSnapshotFromEntry(entry)">Save Snapshot</BaseButton>
       </div>
     </article>
+
+    <section class="fd-subtle-card grid gap-2 rounded-md p-2.5">
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-xs font-semibold uppercase tracking-wide text-stone-600">
+          Run Snapshots
+        </p>
+        <p class="text-[11px] text-stone-500">
+          {{ recentSnapshots.length }} saved
+        </p>
+      </div>
+
+      <p v-if="recentSnapshots.length === 0" class="text-xs text-stone-500">
+        Save snapshots from history entries to reuse named setups quickly.
+      </p>
+
+      <article
+        v-for="snapshot in recentSnapshots"
+        :key="snapshot.id"
+        class="fd-callout-muted grid gap-1 rounded-md px-2.5 py-2 text-xs text-stone-600"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="font-semibold text-stone-800">{{ snapshot.name }}</span>
+          <span>{{ formatTimestamp(snapshot.updatedAt) }}</span>
+        </div>
+        <p class="text-[11px] text-stone-500">
+          {{ snapshot.sessionMode === "class" ? "Class" : "Quick" }} setup
+          <template v-if="snapshot.templateName">
+            | Template: {{ snapshot.templateName }}
+          </template>
+        </p>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <BaseButton compact tone="subtle" @click="restoreSnapshot(snapshot.id)">Restore Snapshot</BaseButton>
+          <BaseButton compact tone="danger" @click="deleteSnapshot(snapshot.id)">Delete Snapshot</BaseButton>
+        </div>
+      </article>
+    </section>
   </section>
 </template>
 
@@ -184,15 +232,26 @@ const props = defineProps({
   sessionHistory: {
     type: Array,
     required: true
+  },
+  runSnapshots: {
+    type: Array,
+    required: true
   }
 });
 
-const emit = defineEmits(["clear-history", "rerun-history"]);
+const emit = defineEmits([
+  "clear-history",
+  "rerun-history",
+  "save-history-snapshot",
+  "restore-run-snapshot",
+  "delete-run-snapshot"
+]);
 
 const modeFilter = ref("all");
 const outcomeFilter = ref("all");
 const dateFromFilter = ref("");
 const dateToFilter = ref("");
+const snapshotNamesByEntryId = ref({});
 
 const activeFilters = computed(() => ({
   mode: modeFilter.value,
@@ -202,6 +261,7 @@ const activeFilters = computed(() => ({
 }));
 const filteredEntries = computed(() => filterSessionHistory(props.sessionHistory, activeFilters.value));
 const recentEntries = computed(() => filteredEntries.value.slice(0, 10));
+const recentSnapshots = computed(() => Array.from(props.runSnapshots || []).slice(0, 10));
 const hasActiveFilters = computed(
   () =>
     modeFilter.value !== "all" ||
@@ -271,5 +331,46 @@ function exportFilteredHistoryJson() {
 
 function rerunFromEntry(entryId) {
   emit("rerun-history", entryId);
+}
+
+function setSnapshotDraftName(entryId, nextName) {
+  snapshotNamesByEntryId.value = {
+    ...snapshotNamesByEntryId.value,
+    [entryId]: String(nextName ?? "")
+  };
+}
+
+function buildDefaultSnapshotName(entry) {
+  const modeLabel = entry?.sessionMode === "class" ? "Class" : "Quick";
+  const timestamp = Date.parse(String(entry?.endedAt || ""));
+  if (Number.isNaN(timestamp)) {
+    return `${modeLabel} Snapshot`;
+  }
+
+  const dateLabel = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric"
+  }).format(new Date(timestamp));
+
+  return `${modeLabel} ${dateLabel}`;
+}
+
+function saveSnapshotFromEntry(entry) {
+  const currentName = String(snapshotNamesByEntryId.value[entry.id] || "").trim();
+  const resolvedName = currentName || buildDefaultSnapshotName(entry);
+
+  setSnapshotDraftName(entry.id, resolvedName);
+  emit("save-history-snapshot", {
+    sessionId: entry.id,
+    name: resolvedName
+  });
+}
+
+function restoreSnapshot(snapshotId) {
+  emit("restore-run-snapshot", snapshotId);
+}
+
+function deleteSnapshot(snapshotId) {
+  emit("delete-run-snapshot", snapshotId);
 }
 </script>

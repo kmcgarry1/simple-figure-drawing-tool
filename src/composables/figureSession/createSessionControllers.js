@@ -5,6 +5,12 @@ import { findClassTemplateMatch } from "./classTemplates";
 import { SESSION_MODE_CLASS, SESSION_MODE_QUICK } from "./constants";
 import { createPlaybackRuntime } from "./playbackRuntime";
 import { createPhotoTagActions } from "./photoTagActions";
+import {
+  getRunSnapshotById,
+  persistRunSnapshots,
+  removeRunSnapshotById,
+  saveRunSnapshot
+} from "./runSnapshots";
 import { normalizeHistoryRerunSettings } from "./sessionHistory";
 import { createSessionHistoryActions } from "./sessionHistoryActions";
 import { createSessionRuntimeActions } from "./sessionRuntimeActions";
@@ -25,6 +31,7 @@ export function createSessionControllers({
   classPhotoOrder,
   avoidImmediateRepeats,
   sessionHistory,
+  runSnapshots,
   photoTagsById,
   mirrorLiveView,
   grayscaleLiveView,
@@ -278,6 +285,40 @@ export function createSessionControllers({
     audioVolumePercent
   });
 
+  function applyRerunSettings(rerunSettings, sourceLabel) {
+    const normalizedSettings = normalizeHistoryRerunSettings(rerunSettings, {
+      fallbackSessionMode: sessionMode.value
+    });
+    const restoredModeLabel =
+      normalizedSettings.sessionMode === SESSION_MODE_QUICK ? "quick" : "class";
+
+    sessionMode.value = normalizedSettings.sessionMode;
+    durationSeconds.value = normalizedSettings.durationSeconds;
+    classPresetId.value = normalizedSettings.classPresetId;
+    classBlocks.value = normalizedSettings.classBlocks.map((block) => ({ ...block }));
+    classPhotoOrder.value = normalizedSettings.classPhotoOrder;
+    avoidImmediateRepeats.value = normalizedSettings.avoidImmediateRepeats;
+
+    isClassLaunchReviewOpen.value = false;
+    clearClassLaunchReviewAssignments?.();
+    clearTimers();
+    revokeSlideUrl();
+    resetPlaybackState();
+    sessionSlides.value = [];
+
+    if (!hasSourcePhotos.value) {
+      statusMessage.value = `Restored ${restoredModeLabel} setup from ${sourceLabel}. Add photos to start.`;
+      return;
+    }
+
+    const hasPreparedSet = prepareActiveSet();
+    if (!hasPreparedSet) {
+      return;
+    }
+
+    statusMessage.value = `Restored ${restoredModeLabel} setup from ${sourceLabel}. Review and start when ready.`;
+  }
+
   function rerunSessionFromHistory(sessionId) {
     const normalizedSessionId = String(sessionId ?? "").trim();
     if (!normalizedSessionId) {
@@ -297,39 +338,83 @@ export function createSessionControllers({
       return;
     }
 
-    const rerunSettings = normalizeHistoryRerunSettings(historyEntry.rerunSettings, {
-      fallbackSessionMode: historyEntry.sessionMode
+    applyRerunSettings(historyEntry.rerunSettings, "session history");
+  }
+
+  function saveRunSnapshotFromHistory(payloadOrSessionId, snapshotName) {
+    const sessionId =
+      payloadOrSessionId && typeof payloadOrSessionId === "object"
+        ? payloadOrSessionId.sessionId
+        : payloadOrSessionId;
+    const resolvedSnapshotName =
+      payloadOrSessionId && typeof payloadOrSessionId === "object"
+        ? payloadOrSessionId.name
+        : snapshotName;
+    const normalizedSessionId = String(sessionId ?? "").trim();
+
+    if (!normalizedSessionId) {
+      return;
+    }
+
+    const historyEntry = Array.from(sessionHistory.value || []).find(
+      (entry) => entry?.id === normalizedSessionId
+    );
+    if (!historyEntry) {
+      statusMessage.value = "Selected history run is no longer available.";
+      return;
+    }
+
+    const result = saveRunSnapshot(runSnapshots.value, {
+      name: resolvedSnapshotName,
+      sessionMode: historyEntry.sessionMode,
+      sourceSessionId: historyEntry.id,
+      templateName: historyEntry.templateName,
+      appliedTags: historyEntry.appliedTags,
+      rerunSettings: historyEntry.rerunSettings
     });
 
-    sessionMode.value = rerunSettings.sessionMode;
-    durationSeconds.value = rerunSettings.durationSeconds;
-    classPresetId.value = rerunSettings.classPresetId;
-    classBlocks.value = rerunSettings.classBlocks.map((block) => ({ ...block }));
-    classPhotoOrder.value = rerunSettings.classPhotoOrder;
-    avoidImmediateRepeats.value = rerunSettings.avoidImmediateRepeats;
-
-    isClassLaunchReviewOpen.value = false;
-    clearClassLaunchReviewAssignments?.();
-    clearTimers();
-    revokeSlideUrl();
-    resetPlaybackState();
-    sessionSlides.value = [];
-
-    if (!hasSourcePhotos.value) {
-      const restoredModeLabel =
-        rerunSettings.sessionMode === SESSION_MODE_QUICK ? "quick" : "class";
-      statusMessage.value = `Restored ${restoredModeLabel} setup. Add photos to start.`;
+    if (!result.saved) {
+      statusMessage.value = "Enter a snapshot name before saving.";
       return;
     }
 
-    const hasPreparedSet = prepareActiveSet();
-    if (!hasPreparedSet) {
+    runSnapshots.value = result.snapshots;
+    persistRunSnapshots(runSnapshots.value);
+    statusMessage.value = result.updated
+      ? `Updated snapshot "${result.snapshot.name}".`
+      : `Saved snapshot "${result.snapshot.name}".`;
+  }
+
+  function restoreRunSnapshot(snapshotId) {
+    const normalizedSnapshotId = String(snapshotId ?? "").trim();
+    if (!normalizedSnapshotId) {
       return;
     }
 
-    const restoredModeLabel =
-      rerunSettings.sessionMode === SESSION_MODE_QUICK ? "quick" : "class";
-    statusMessage.value = `Restored ${restoredModeLabel} setup from session history. Review and start when ready.`;
+    if (isSessionLive.value) {
+      statusMessage.value = "End the current run before restoring a snapshot.";
+      return;
+    }
+
+    const snapshot = getRunSnapshotById(runSnapshots.value, normalizedSnapshotId);
+    if (!snapshot) {
+      statusMessage.value = "Snapshot not found.";
+      return;
+    }
+
+    applyRerunSettings(snapshot.rerunSettings, `snapshot "${snapshot.name}"`);
+  }
+
+  function deleteRunSnapshot(snapshotId) {
+    const nextSnapshots = removeRunSnapshotById(runSnapshots.value, snapshotId);
+    if (nextSnapshots.length === runSnapshots.value.length) {
+      statusMessage.value = "Snapshot not found.";
+      return;
+    }
+
+    runSnapshots.value = nextSnapshots;
+    persistRunSnapshots(runSnapshots.value);
+    statusMessage.value = "Snapshot deleted.";
   }
 
   return {
@@ -354,6 +439,9 @@ export function createSessionControllers({
     applyClassBuilderAssistant,
     clearSessionHistory,
     rerunSessionFromHistory,
+    saveRunSnapshotFromHistory,
+    restoreRunSnapshot,
+    deleteRunSnapshot,
     exportSettingsJson,
     importSettingsFromFile,
     copySettingsShareLink,

@@ -79,6 +79,10 @@ export const setupPanelProps = {
     type: Array,
     required: true
   },
+  runSnapshots: {
+    type: Array,
+    required: true
+  },
   statusMessage: {
     type: String,
     required: true
@@ -129,5 +133,8 @@ export const setupPanelEmits = [
   "start-session",
   "new-random-set",
   "clear-history",
-  "rerun-history"
+  "rerun-history",
+  "save-history-snapshot",
+  "restore-run-snapshot",
+  "delete-run-snapshot"
 ];

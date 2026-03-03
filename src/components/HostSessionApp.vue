@@ -30,6 +30,7 @@
           :regenerate-action-label="regenerateActionLabel"
           :has-source-photos="hasSourcePhotos"
           :session-history="sessionHistory"
+          :run-snapshots="runSnapshots"
           :status-message="statusMessage"
           :upload-notice="uploadNotice"
           :settings-save-status-text="settingsSaveStatusText"
@@ -63,6 +64,9 @@
           @new-random-set="createNewRandomSet"
           @clear-history="clearSessionHistory"
           @rerun-history="rerunSessionFromHistory"
+          @save-history-snapshot="saveRunSnapshotFromHistory"
+          @restore-run-snapshot="restoreRunSnapshot"
+          @delete-run-snapshot="deleteRunSnapshot"
         />
 
         <ClassLaunchReviewDialog
@@ -174,6 +178,7 @@ const {
   regenerateActionLabel,
   restartActionLabel,
   sessionHistory,
+  runSnapshots,
   statusMessage,
   uploadNotice,
   settingsSaveStatusText,
@@ -226,6 +231,9 @@ const {
   createNewRandomSet,
   clearSessionHistory,
   rerunSessionFromHistory,
+  saveRunSnapshotFromHistory,
+  restoreRunSnapshot,
+  deleteRunSnapshot,
   stopSession,
   applyDurationChange,
   updatePhotoTag,

@@ -1,6 +1,6 @@
 # Product Roadmap (Post v1.2.0)
 
-Last updated: 2026-03-02
+Last updated: 2026-03-03
 
 ## Planning Frame
 
@@ -51,6 +51,8 @@ Last updated: 2026-03-02
 2. Add e2e coverage for multi-select tagging and filtered history views.
 
 ## Release 1.4.0 (Remote Reliability)
+
+Status on working branch (2026-03-03): platform items 1-3 are implemented; QA items 1-2 are covered with unit + smoke e2e regression tests.
 
 ### Platform
 

@@ -88,6 +88,7 @@
           :pause-label="pauseLabel"
           :restart-label="restartActionLabel"
           :remote-status="hostRemoteStatus"
+          :remote-diagnostics="hostRemoteDiagnostics"
           :remote-offer-token="hostOfferToken"
           :remote-pairing-url="hostRemotePairingUrl"
           :remote-pairing-qr-data-url="hostRemotePairingQrDataUrl"
@@ -107,6 +108,7 @@
           @remote-copy-offer-token="copyHostOfferToken"
           @remote-copy-pairing-link="copyHostPairingLink"
           @remote-apply-answer="applyHostAnswerToken"
+          @remote-retry-reconnect="retryHostReconnect"
           @remote-disconnect="disconnectHostRemote"
         />
       </section>
@@ -236,6 +238,7 @@ function updateDurationSeconds(value) {
 
 const {
   remoteStatus: hostRemoteStatus,
+  remoteDiagnostics: hostRemoteDiagnostics,
   offerToken: hostOfferToken,
   pairingUrl: hostRemotePairingUrl,
   pairingQrDataUrl: hostRemotePairingQrDataUrl,
@@ -244,6 +247,7 @@ const {
   copyHostOfferToken,
   copyHostPairingLink,
   applyAnswerToken: applyHostAnswerToken,
+  retryHostReconnect,
   disconnectHostRemote
 } = usePhoneRemoteHost({
   onTogglePause: togglePause,

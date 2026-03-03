@@ -9,7 +9,8 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
   - Landing panel keeps only setup progress, primary actions, and live status.
   - Non-live layout is single-column; the image stage appears only during live fullscreen session.
 - Advanced setup:
-  - Visual photo list with thumbnails, manual up/down reordering, and per-photo tags.
+  - Visual photo list with thumbnails, drag-and-drop reordering, and per-photo tags.
+  - Multi-select bulk tag apply/remove actions.
   - Reordered list is used for class sessions in sequential photo order mode.
 - Quick session mode:
   - Load individual images or an entire folder in one step.
@@ -31,6 +32,7 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
   - Per-pose countdown with progress bar.
   - Pose counter, active pose label, and total session time remaining.
   - Keyboard shortcuts: `Space` pause/resume, `Right Arrow` next, `Esc` end.
+  - Phone remote diagnostics and reconnect retry flow with optional TURN fallback.
 - Professional baseline:
   - Persistent session preferences (`localStorage`).
   - Modal focus trap + focus return for keyboard users.
@@ -111,6 +113,10 @@ Branch protection details and required settings are documented in `.github/branc
 - Optional Sentry env vars:
   - `VITE_SENTRY_DSN`
   - `VITE_SENTRY_TRACES_SAMPLE_RATE` (between `0` and `1`)
+- Optional remote TURN fallback env vars:
+  - `VITE_TURN_URL`
+  - `VITE_TURN_USERNAME`
+  - `VITE_TURN_CREDENTIAL`
 
 ## App Metadata
 

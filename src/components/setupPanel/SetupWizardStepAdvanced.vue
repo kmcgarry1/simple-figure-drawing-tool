@@ -52,9 +52,30 @@
         <span class="fd-kicker text-[10px]">{{ isOpen("settings") ? "Hide" : "Show" }}</span>
       </button>
       <div v-if="isOpen('settings')" id="advanced-settings-panel" class="fd-callout-muted grid gap-2 rounded-md p-2.5">
-        <div class="grid grid-cols-3 gap-2 max-[680px]:grid-cols-1">
+        <div class="grid grid-cols-4 gap-2 max-[680px]:grid-cols-1">
           <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
-          <BaseButton tone="subtle" @click="$emit('share-settings-link')">Copy Share Link</BaseButton>
+          <label class="fd-text-body grid gap-1 text-[12px]" for="shareLinkExpiry">
+            <span>Share Link Expiry</span>
+            <select
+              id="shareLinkExpiry"
+              v-model.number="shareExpirySeconds"
+              class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
+            >
+              <option
+                v-for="option in shareExpiryOptions"
+                :key="`share-expiry-${option.valueSeconds}`"
+                :value="option.valueSeconds"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+          <BaseButton
+            tone="subtle"
+            @click="$emit('share-settings-link', { expiresInSeconds: shareExpirySeconds })"
+          >
+            Copy Share Link
+          </BaseButton>
           <label class="fd-text-body grid gap-1 text-[12px]">
             <span>Import JSON</span>
             <input
@@ -100,6 +121,10 @@
 <script setup>
 import { ref } from "vue";
 import { FolderSync, History, SlidersHorizontal, Tags } from "lucide-vue-next";
+import {
+  DEFAULT_SETTINGS_SHARE_EXPIRY_SECONDS,
+  SETTINGS_SHARE_EXPIRY_OPTIONS
+} from "../../composables/figureSession/settingsTransfer";
 import BaseButton from "../BaseButton.vue";
 import PhotoTagManagerSection from "../PhotoTagManagerSection.vue";
 import SessionHistorySection from "../SessionHistorySection.vue";
@@ -138,6 +163,8 @@ defineEmits([
 ]);
 
 const openSections = ref(new Set(["tagging", "settings"]));
+const shareExpiryOptions = SETTINGS_SHARE_EXPIRY_OPTIONS;
+const shareExpirySeconds = ref(DEFAULT_SETTINGS_SHARE_EXPIRY_SECONDS);
 
 function isOpen(sectionName) {
   return openSections.value.has(sectionName);

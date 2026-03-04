@@ -2,9 +2,12 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 const REMOTE_QUERY_PARAM = "remote";
 const OFFER_QUERY_PARAM = "offer";
+const SIGNAL_QUERY_PARAM = "signal";
 const DEFAULT_STUN_SERVER_URL = "stun:stun.l.google.com:19302";
 const REMOTE_RECONNECT_TIMEOUT_MS = 10000;
 const ICE_GATHERING_TIMEOUT_MS = 6000;
+const DEFAULT_SIGNALING_POLL_INTERVAL_MS = 1500;
+const DEFAULT_SIGNALING_TIMEOUT_MS = 5000;
 const DIAGNOSTIC_STATE_UNKNOWN = "n/a";
 
 function canUseWebRtc() {
@@ -74,6 +77,90 @@ function readRemoteEnv(overrides) {
   return import.meta.env || {};
 }
 
+function parsePositiveInteger(rawValue, fallbackValue) {
+  const parsedValue = Number.parseInt(String(rawValue), 10);
+  if (Number.isNaN(parsedValue) || parsedValue <= 0) {
+    return fallbackValue;
+  }
+
+  return parsedValue;
+}
+
+function normalizeSignalingSessionId(rawSessionId) {
+  return normalizeText(rawSessionId);
+}
+
+function buildSignalingEndpointUrl({ endpoint, pathname = "" }) {
+  const normalizedEndpoint = normalizeText(endpoint);
+  if (!normalizedEndpoint) {
+    return "";
+  }
+
+  try {
+    const baseUrl = new URL(
+      normalizedEndpoint.endsWith("/") ? normalizedEndpoint : `${normalizedEndpoint}/`
+    );
+    const normalizedPathname = String(pathname || "")
+      .split("/")
+      .map((part, index) => {
+        if (index === 0 && part === "") {
+          return "";
+        }
+        return encodeURIComponent(part);
+      })
+      .join("/");
+    return new URL(normalizedPathname, baseUrl).toString();
+  } catch {
+    return "";
+  }
+}
+
+function getFetchImpl() {
+  if (typeof fetch !== "function") {
+    return null;
+  }
+
+  return fetch;
+}
+
+async function requestJson(url, options = {}) {
+  const fetchImpl = getFetchImpl();
+  if (!fetchImpl) {
+    throw new Error("fetch-unavailable");
+  }
+
+  const headers = {
+    Accept: "application/json",
+    ...options.headers
+  };
+
+  const timeoutMs = parsePositiveInteger(options.timeoutMs, DEFAULT_SIGNALING_TIMEOUT_MS);
+  const controller = typeof AbortController === "function" ? new AbortController() : null;
+  const timeoutId =
+    controller !== null
+      ? setTimeout(() => {
+          controller.abort();
+        }, timeoutMs)
+      : null;
+
+  try {
+    const response = await fetchImpl(url, {
+      ...options,
+      headers,
+      signal: controller?.signal
+    });
+    if (!response.ok) {
+      throw new Error(`request-failed-${response.status}`);
+    }
+
+    return await response.json();
+  } finally {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 export function buildRemoteIceServers(options = {}) {
   const env = readRemoteEnv(options.env);
   const turnUrls = normalizeIceServerUrls(
@@ -97,6 +184,30 @@ export function buildRemoteIceServers(options = {}) {
   }
 
   return iceServers;
+}
+
+export function buildRemoteSignalingConfig(options = {}) {
+  const env = readRemoteEnv(options.env);
+  const endpoint = normalizeText(
+    options.endpoint ?? env.VITE_REMOTE_SIGNALING_ENDPOINT ?? env.REMOTE_SIGNALING_ENDPOINT
+  );
+  const pollIntervalMs = parsePositiveInteger(
+    options.pollIntervalMs ?? env.VITE_REMOTE_SIGNALING_POLL_MS ?? env.REMOTE_SIGNALING_POLL_MS,
+    DEFAULT_SIGNALING_POLL_INTERVAL_MS
+  );
+  const requestTimeoutMs = parsePositiveInteger(
+    options.requestTimeoutMs ??
+      env.VITE_REMOTE_SIGNALING_TIMEOUT_MS ??
+      env.REMOTE_SIGNALING_TIMEOUT_MS,
+    DEFAULT_SIGNALING_TIMEOUT_MS
+  );
+
+  return {
+    enabled: Boolean(endpoint),
+    endpoint,
+    pollIntervalMs,
+    requestTimeoutMs
+  };
 }
 
 export function deriveRemoteDiagnostics(options = {}) {
@@ -201,20 +312,113 @@ export function readOfferTokenFromSearch(search) {
   }
 }
 
-export function buildRemotePairingUrl({ currentUrl, offerToken }) {
+export function readSignalingSessionIdFromSearch(search) {
+  try {
+    const params = new URLSearchParams(String(search || ""));
+    return normalizeSignalingSessionId(params.get(SIGNAL_QUERY_PARAM));
+  } catch {
+    return "";
+  }
+}
+
+export function buildRemotePairingUrl({ currentUrl, offerToken, signalSessionId }) {
   const normalizedOfferToken = String(offerToken || "").trim();
-  if (!normalizedOfferToken) {
+  const normalizedSignalSessionId = normalizeSignalingSessionId(signalSessionId);
+  if (!normalizedOfferToken && !normalizedSignalSessionId) {
     return "";
   }
 
   try {
     const url = new URL(String(currentUrl || ""));
     url.searchParams.set(REMOTE_QUERY_PARAM, "1");
+
+    if (normalizedSignalSessionId) {
+      url.searchParams.set(SIGNAL_QUERY_PARAM, normalizedSignalSessionId);
+      url.searchParams.delete(OFFER_QUERY_PARAM);
+      return url.toString();
+    }
+
     url.searchParams.set(OFFER_QUERY_PARAM, normalizedOfferToken);
+    url.searchParams.delete(SIGNAL_QUERY_PARAM);
     return url.toString();
   } catch {
     return "";
   }
+}
+
+async function createSignalingSession({ endpoint, offerToken, requestTimeoutMs }) {
+  const sessionUrl = buildSignalingEndpointUrl({
+    endpoint,
+    pathname: "sessions"
+  });
+  if (!sessionUrl) {
+    throw new Error("invalid-signaling-endpoint");
+  }
+
+  const payload = await requestJson(sessionUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      offerToken: normalizeText(offerToken)
+    }),
+    timeoutMs: requestTimeoutMs
+  });
+
+  const sessionId = normalizeSignalingSessionId(payload?.sessionId);
+  if (!sessionId) {
+    throw new Error("missing-signaling-session-id");
+  }
+
+  return {
+    sessionId
+  };
+}
+
+async function readSignalingSession({ endpoint, sessionId, requestTimeoutMs }) {
+  const normalizedSessionId = normalizeSignalingSessionId(sessionId);
+  if (!normalizedSessionId) {
+    throw new Error("missing-signaling-session-id");
+  }
+
+  const sessionUrl = buildSignalingEndpointUrl({
+    endpoint,
+    pathname: `sessions/${normalizedSessionId}`
+  });
+  if (!sessionUrl) {
+    throw new Error("invalid-signaling-endpoint");
+  }
+
+  return await requestJson(sessionUrl, {
+    timeoutMs: requestTimeoutMs
+  });
+}
+
+async function writeSignalingAnswer({ endpoint, sessionId, answerToken, requestTimeoutMs }) {
+  const normalizedSessionId = normalizeSignalingSessionId(sessionId);
+  if (!normalizedSessionId) {
+    throw new Error("missing-signaling-session-id");
+  }
+
+  const answerUrl = buildSignalingEndpointUrl({
+    endpoint,
+    pathname: `sessions/${normalizedSessionId}/answer`
+  });
+  if (!answerUrl) {
+    throw new Error("invalid-signaling-endpoint");
+  }
+
+  await requestJson(answerUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      answerToken: normalizeText(answerToken)
+    }),
+    timeoutMs: requestTimeoutMs
+  });
 }
 
 function encodeSignalPayload(payload) {
@@ -297,8 +501,10 @@ export function usePhoneRemoteHost({
   const isRemoteConnected = ref(false);
   const pairingUrl = ref("");
   const pairingQrDataUrl = ref("");
+  const signalSessionId = ref("");
 
   const iceServers = buildRemoteIceServers();
+  const signalingConfig = buildRemoteSignalingConfig();
   const turnFallbackEnabled = hasTurnIceServer(iceServers);
   const remoteDiagnostics = ref(
     deriveRemoteDiagnostics({
@@ -313,11 +519,27 @@ export function usePhoneRemoteHost({
   let reconnectTimedOut = false;
   let diagnosticsErrorCategory = "";
   let diagnosticsErrorHint = "";
+  let signalingPollIntervalId = null;
+  let isPollingForSignalingAnswer = false;
+  let lastSignalingAnswerToken = "";
 
   function clearPairingArtifacts() {
     qrRenderRequestId += 1;
     pairingUrl.value = "";
     pairingQrDataUrl.value = "";
+  }
+
+  function clearSignalingSession() {
+    signalSessionId.value = "";
+    lastSignalingAnswerToken = "";
+  }
+
+  function stopSignalingAnswerPolling() {
+    if (signalingPollIntervalId !== null) {
+      clearInterval(signalingPollIntervalId);
+      signalingPollIntervalId = null;
+    }
+    isPollingForSignalingAnswer = false;
   }
 
   function clearReconnectTimeout({ resetTimedOut = false } = {}) {
@@ -435,6 +657,7 @@ export function usePhoneRemoteHost({
 
   function closeHostConnection({ resetOfferToken = true } = {}) {
     clearReconnectTimeout({ resetTimedOut: true });
+    stopSignalingAnswerPolling();
 
     if (dataChannel) {
       dataChannel.close();
@@ -450,6 +673,7 @@ export function usePhoneRemoteHost({
 
     if (resetOfferToken) {
       offerToken.value = "";
+      clearSignalingSession();
       clearPairingArtifacts();
     }
 
@@ -481,6 +705,7 @@ export function usePhoneRemoteHost({
     dataChannel.onopen = () => {
       isRemoteConnected.value = true;
       clearReconnectTimeout({ resetTimedOut: true });
+      stopSignalingAnswerPolling();
       clearDiagnosticsError();
       remoteStatus.value = "Phone remote connected.";
       syncHostDiagnostics();
@@ -509,10 +734,78 @@ export function usePhoneRemoteHost({
     syncHostDiagnostics();
   }
 
+  async function initializeSignalingSession() {
+    clearSignalingSession();
+    if (!signalingConfig.enabled || !offerToken.value) {
+      return {
+        enabled: signalingConfig.enabled,
+        sessionReady: false
+      };
+    }
+
+    try {
+      const session = await createSignalingSession({
+        endpoint: signalingConfig.endpoint,
+        offerToken: offerToken.value,
+        requestTimeoutMs: signalingConfig.requestTimeoutMs
+      });
+      signalSessionId.value = session.sessionId;
+      return {
+        enabled: true,
+        sessionReady: true
+      };
+    } catch {
+      clearSignalingSession();
+      return {
+        enabled: true,
+        sessionReady: false
+      };
+    }
+  }
+
+  function startSignalingAnswerPolling() {
+    stopSignalingAnswerPolling();
+    if (!signalingConfig.enabled || !peerConnection || !signalSessionId.value) {
+      return;
+    }
+
+    const pollForAnswer = async () => {
+      if (!peerConnection || isRemoteConnected.value || isPollingForSignalingAnswer) {
+        return;
+      }
+
+      isPollingForSignalingAnswer = true;
+      try {
+        const session = await readSignalingSession({
+          endpoint: signalingConfig.endpoint,
+          sessionId: signalSessionId.value,
+          requestTimeoutMs: signalingConfig.requestTimeoutMs
+        });
+        const nextAnswerToken = normalizeText(session?.answerToken);
+        if (!nextAnswerToken || nextAnswerToken === lastSignalingAnswerToken) {
+          return;
+        }
+
+        lastSignalingAnswerToken = nextAnswerToken;
+        await applyAnswerToken(nextAnswerToken, { source: "signaling" });
+      } catch {
+        // Preserve local/manual pairing even if signaling polling fails.
+      } finally {
+        isPollingForSignalingAnswer = false;
+      }
+    };
+
+    void pollForAnswer();
+    signalingPollIntervalId = setInterval(() => {
+      void pollForAnswer();
+    }, signalingConfig.pollIntervalMs);
+  }
+
   async function refreshPairingArtifacts() {
     const nextPairingUrl = buildRemotePairingUrl({
       currentUrl: typeof window !== "undefined" ? window.location.href : "",
-      offerToken: offerToken.value
+      offerToken: offerToken.value,
+      signalSessionId: signalSessionId.value
     });
 
     pairingUrl.value = nextPairingUrl;
@@ -573,10 +866,21 @@ export function usePhoneRemoteHost({
       await waitForIceGatheringComplete(peerConnection);
 
       offerToken.value = encodeSignalPayload(peerConnection.localDescription);
+      const signalingSession = await initializeSignalingSession();
       await refreshPairingArtifacts();
-      remoteStatus.value = turnFallbackEnabled
-        ? "Offer ready. Share pairing link/QR with phone (TURN fallback enabled)."
-        : "Offer ready. Share pairing link/QR with your phone.";
+      if (signalingSession.sessionReady) {
+        startSignalingAnswerPolling();
+        remoteStatus.value = turnFallbackEnabled
+          ? "Offer ready. Share pairing link/QR with phone (TURN + signaling enabled)."
+          : "Offer ready. Share pairing link/QR with phone (auto-answer signaling enabled).";
+      } else if (signalingSession.enabled) {
+        remoteStatus.value =
+          "Offer ready. Signaling unavailable, so apply answer token manually.";
+      } else {
+        remoteStatus.value = turnFallbackEnabled
+          ? "Offer ready. Share pairing link/QR with phone (TURN fallback enabled)."
+          : "Offer ready. Share pairing link/QR with your phone.";
+      }
       clearDiagnosticsError();
       syncHostDiagnostics();
     } catch {
@@ -586,7 +890,9 @@ export function usePhoneRemoteHost({
     }
   }
 
-  async function applyAnswerToken(answerToken) {
+  async function applyAnswerToken(answerToken, options = {}) {
+    const source = options.source === "signaling" ? "signaling" : "manual";
+
     if (!peerConnection) {
       remoteStatus.value = "Create an offer before applying an answer.";
       return;
@@ -594,7 +900,10 @@ export function usePhoneRemoteHost({
 
     const normalizedAnswerToken = normalizeText(answerToken);
     if (!normalizedAnswerToken) {
-      remoteStatus.value = "Paste an answer token from phone first.";
+      remoteStatus.value =
+        source === "signaling"
+          ? "Waiting for answer from signaling relay."
+          : "Paste an answer token from phone first.";
       return;
     }
 
@@ -603,14 +912,17 @@ export function usePhoneRemoteHost({
       await peerConnection.setRemoteDescription(new RTCSessionDescription(answerPayload));
       clearReconnectTimeout({ resetTimedOut: true });
       clearDiagnosticsError();
-      remoteStatus.value = "Answer applied. Waiting for phone to connect.";
+      remoteStatus.value =
+        source === "signaling"
+          ? "Answer applied from signaling relay. Waiting for phone to connect."
+          : "Answer applied. Waiting for phone to connect.";
       syncHostDiagnostics();
     } catch {
-      remoteStatus.value = "Invalid answer token. Check copy/paste and retry.";
-      setDiagnosticsError(
-        "invalid-answer-token",
-        "Answer token is invalid. Copy it again from phone and retry."
-      );
+      remoteStatus.value =
+        source === "signaling"
+          ? "Signaling answer is invalid. Retry reconnect or apply manual answer token."
+          : "Invalid answer token. Check copy/paste and retry.";
+      setDiagnosticsError("invalid-answer-token", "Answer token is invalid.");
     }
   }
 
@@ -633,9 +945,18 @@ export function usePhoneRemoteHost({
       await waitForIceGatheringComplete(peerConnection);
 
       offerToken.value = encodeSignalPayload(peerConnection.localDescription);
+      const signalingSession = await initializeSignalingSession();
       await refreshPairingArtifacts();
       startReconnectTimeout();
-      remoteStatus.value = "Reconnect offer ready. Generate a new answer token on phone.";
+      if (signalingSession.sessionReady) {
+        startSignalingAnswerPolling();
+        remoteStatus.value = "Reconnect offer ready. Waiting for phone answer via signaling.";
+      } else if (signalingSession.enabled) {
+        remoteStatus.value =
+          "Reconnect offer ready. Signaling unavailable; generate a new answer token on phone.";
+      } else {
+        remoteStatus.value = "Reconnect offer ready. Generate a new answer token on phone.";
+      }
       syncHostDiagnostics();
     } catch {
       remoteStatus.value = "Unable to retry reconnect. Generate a fresh offer token.";
@@ -676,11 +997,17 @@ export function usePhoneRemoteClient() {
   const remoteStatus = ref("Paste desktop offer to pair, or open a pairing link.");
   const answerToken = ref("");
   const isRemoteConnected = ref(false);
+  const initialSignalSessionId = ref(
+    typeof window === "undefined"
+      ? ""
+      : readSignalingSessionIdFromSearch(window.location.search)
+  );
   const initialOfferToken = ref(
     typeof window === "undefined" ? "" : readOfferTokenFromSearch(window.location.search)
   );
 
   const iceServers = buildRemoteIceServers();
+  const signalingConfig = buildRemoteSignalingConfig();
   const turnFallbackEnabled = hasTurnIceServer(iceServers);
   const remoteDiagnostics = ref(
     deriveRemoteDiagnostics({
@@ -852,6 +1179,59 @@ export function usePhoneRemoteClient() {
     syncClientDiagnostics();
   }
 
+  async function createAnswerFromSignalingSession(rawSessionId) {
+    if (!signalingConfig.enabled) {
+      remoteStatus.value = "Signaling link detected, but signaling is not configured here.";
+      return;
+    }
+
+    const sessionId = normalizeSignalingSessionId(rawSessionId);
+    if (!sessionId) {
+      remoteStatus.value = "Signaling link is invalid. Request a fresh pairing link.";
+      return;
+    }
+
+    remoteStatus.value = "Signaling link detected. Fetching desktop offer...";
+    try {
+      const session = await readSignalingSession({
+        endpoint: signalingConfig.endpoint,
+        sessionId,
+        requestTimeoutMs: signalingConfig.requestTimeoutMs
+      });
+      const sessionOfferToken = normalizeText(session?.offerToken);
+      if (!sessionOfferToken) {
+        remoteStatus.value = "Signaling session is missing desktop offer. Retry from desktop.";
+        setDiagnosticsError(
+          "signaling-offer-missing",
+          "No offer is available in this signaling session yet."
+        );
+        return;
+      }
+
+      await createAnswerToken(sessionOfferToken, { source: "signaling" });
+      if (!answerToken.value) {
+        return;
+      }
+
+      await writeSignalingAnswer({
+        endpoint: signalingConfig.endpoint,
+        sessionId,
+        answerToken: answerToken.value,
+        requestTimeoutMs: signalingConfig.requestTimeoutMs
+      });
+      clearDiagnosticsError();
+      syncClientDiagnostics();
+      remoteStatus.value = "Answer sent via signaling. Waiting for desktop connection.";
+    } catch {
+      remoteStatus.value =
+        "Unable to use signaling service. Paste desktop offer token and pair manually.";
+      setDiagnosticsError(
+        "signaling-unavailable",
+        "Signaling service is unavailable. Use manual token pairing."
+      );
+    }
+  }
+
   async function createAnswerToken(offerToken, options = {}) {
     if (!canUseWebRtc()) {
       remoteStatus.value = "WebRTC is not supported in this browser.";
@@ -870,9 +1250,12 @@ export function usePhoneRemoteClient() {
         ? "pair-link"
         : options.source === "retry"
           ? "retry"
+          : options.source === "signaling"
+            ? "signaling"
           : "manual";
 
     lastDesktopOfferToken = normalizedOfferToken;
+    answerToken.value = "";
     closeClientConnection();
     attachClientPeerConnection(buildPeerConnection({ iceServers }));
     peerConnection.ondatachannel = (event) => {
@@ -893,11 +1276,15 @@ export function usePhoneRemoteClient() {
           ? "Answer ready from pairing link. Copy it back to desktop."
           : source === "retry"
             ? "Retry answer ready. Copy it back to desktop."
+            : source === "signaling"
+              ? "Answer generated. Sending to desktop through signaling..."
             : "Answer ready. Paste it back on desktop.";
     } catch {
       remoteStatus.value =
         source === "pair-link"
           ? "Pairing link is invalid or expired. Request a new one from desktop."
+          : source === "signaling"
+            ? "Signaling session is invalid or expired. Request a new pairing link."
           : "Invalid desktop offer token.";
       setDiagnosticsError(
         "invalid-offer-token",
@@ -947,6 +1334,11 @@ export function usePhoneRemoteClient() {
   });
 
   onMounted(() => {
+    if (initialSignalSessionId.value) {
+      void createAnswerFromSignalingSession(initialSignalSessionId.value);
+      return;
+    }
+
     if (!initialOfferToken.value) {
       return;
     }

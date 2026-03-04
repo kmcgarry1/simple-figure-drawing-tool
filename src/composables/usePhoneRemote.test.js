@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   buildRemoteIceServers,
   buildRemotePairingUrl,
+  buildRemoteSignalingConfig,
   deriveRemoteDiagnostics,
-  readOfferTokenFromSearch
+  readOfferTokenFromSearch,
+  readSignalingSessionIdFromSearch
 } from "./usePhoneRemote";
 
 describe("readOfferTokenFromSearch", () => {
@@ -14,6 +16,19 @@ describe("readOfferTokenFromSearch", () => {
 
   it("extracts and trims the offer token", () => {
     expect(readOfferTokenFromSearch("?remote=1&offer=%20abc123%20")).toBe("abc123");
+  });
+});
+
+describe("readSignalingSessionIdFromSearch", () => {
+  it("returns an empty string when no signaling session id is present", () => {
+    expect(readSignalingSessionIdFromSearch("")).toBe("");
+    expect(readSignalingSessionIdFromSearch("?remote=1")).toBe("");
+  });
+
+  it("extracts and trims the signaling session id", () => {
+    expect(readSignalingSessionIdFromSearch("?remote=1&signal=%20session-123%20")).toBe(
+      "session-123"
+    );
   });
 });
 
@@ -37,6 +52,19 @@ describe("buildRemotePairingUrl", () => {
     expect(parsed.searchParams.get("foo")).toBe("bar");
     expect(parsed.searchParams.get("remote")).toBe("1");
     expect(parsed.searchParams.get("offer")).toBe("test-offer-token");
+  });
+
+  it("prefers signaling session id over embedding offer token", () => {
+    const pairingUrl = buildRemotePairingUrl({
+      currentUrl: "https://example.com/",
+      offerToken: "test-offer-token",
+      signalSessionId: "session-123"
+    });
+
+    const parsed = new URL(pairingUrl);
+    expect(parsed.searchParams.get("remote")).toBe("1");
+    expect(parsed.searchParams.get("signal")).toBe("session-123");
+    expect(parsed.searchParams.get("offer")).toBeNull();
   });
 
   it("returns an empty string for invalid current urls", () => {
@@ -93,6 +121,38 @@ describe("buildRemoteIceServers", () => {
         urls: "stun:stun.l.google.com:19302"
       }
     ]);
+  });
+});
+
+describe("buildRemoteSignalingConfig", () => {
+  it("returns disabled config when no endpoint is configured", () => {
+    const config = buildRemoteSignalingConfig({
+      env: {}
+    });
+
+    expect(config).toEqual({
+      enabled: false,
+      endpoint: "",
+      pollIntervalMs: 1500,
+      requestTimeoutMs: 5000
+    });
+  });
+
+  it("returns enabled config when signaling endpoint is configured", () => {
+    const config = buildRemoteSignalingConfig({
+      env: {
+        VITE_REMOTE_SIGNALING_ENDPOINT: "https://signal.example.com",
+        VITE_REMOTE_SIGNALING_POLL_MS: "2500",
+        VITE_REMOTE_SIGNALING_TIMEOUT_MS: "7000"
+      }
+    });
+
+    expect(config).toEqual({
+      enabled: true,
+      endpoint: "https://signal.example.com",
+      pollIntervalMs: 2500,
+      requestTimeoutMs: 7000
+    });
   });
 });
 

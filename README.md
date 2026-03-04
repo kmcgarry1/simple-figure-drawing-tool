@@ -14,6 +14,7 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
   - Session history rerun to restore prior setup quickly.
   - Named run snapshots with one-click setup restore.
   - Rich session summaries with elapsed/planned timing, break usage, and attribution.
+  - Share links support configurable expiry; optional persisted-share backend for cross-device retrieval.
   - Reordered list is used for class sessions in sequential photo order mode.
 - Quick session mode:
   - Load individual images or an entire folder in one step.
@@ -36,6 +37,7 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
   - Pose counter, active pose label, and total session time remaining.
   - Keyboard shortcuts: `Space` pause/resume, `Right Arrow` next, `Esc` end.
   - Phone remote diagnostics and reconnect retry flow with optional TURN fallback.
+  - Optional signaling relay pairing mode that auto-applies phone answers (no manual answer paste).
 - Professional baseline:
   - Persistent session preferences (`localStorage`).
   - Modal focus trap + focus return for keyboard users.
@@ -120,6 +122,20 @@ Branch protection details and required settings are documented in `.github/branc
   - `VITE_TURN_URL`
   - `VITE_TURN_USERNAME`
   - `VITE_TURN_CREDENTIAL`
+- Optional remote signaling env vars:
+  - `VITE_REMOTE_SIGNALING_ENDPOINT`
+  - `VITE_REMOTE_SIGNALING_POLL_MS` (default `1500`)
+  - `VITE_REMOTE_SIGNALING_TIMEOUT_MS` (default `5000`)
+- Signaling endpoint contract (opt-in only):
+  - `POST /sessions` with `{ "offerToken": "<token>" }` returns `{ "sessionId": "<id>" }`
+  - `GET /sessions/:sessionId` returns current session payload including `offerToken` and optional `answerToken`
+  - `POST /sessions/:sessionId/answer` with `{ "answerToken": "<token>" }`
+- Optional settings share storage env vars:
+  - `VITE_SETTINGS_SHARE_ENDPOINT`
+  - `VITE_SETTINGS_SHARE_TIMEOUT_MS` (default `5000`)
+- Settings share storage contract (opt-in only):
+  - `POST /shares` with `{ "payload": <settingsPayload>, "expiresInSeconds": <number> }` returns `{ "shareReference": "<id>" }` (or `shareId`)
+  - `GET /shares/:shareReference` returns `{ "payload": <settingsPayload> }` (or the payload directly)
 
 ## App Metadata
 

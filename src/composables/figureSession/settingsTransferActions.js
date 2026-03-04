@@ -1,9 +1,14 @@
 import {
+  buildSettingsShareStorageConfig,
   buildSettingsShareUrl,
   createSettingsExportPayload,
   createSettingsShareToken,
+  DEFAULT_SETTINGS_SHARE_EXPIRY_SECONDS,
+  normalizeSettingsShareExpirySeconds,
   parseSettingsImportText,
   parseSettingsShareToken,
+  readSettingsShareReferenceFromSearch,
+  SETTINGS_SHARE_EXPIRY_OPTIONS,
   readSettingsShareTokenFromSearch
 } from "./settingsTransfer";
 
@@ -27,6 +32,8 @@ export function createSettingsTransferActions({
   sessionSlides,
   prepareActiveSet
 }) {
+  const shareStorageConfig = buildSettingsShareStorageConfig();
+
   async function writeClipboardText(rawText) {
     if (typeof navigator === "undefined" || typeof navigator.clipboard?.writeText !== "function") {
       return false;
@@ -38,6 +45,123 @@ export function createSettingsTransferActions({
     } catch {
       return false;
     }
+  }
+
+  function resolveShareExpirySeconds(rawOptions) {
+    const rawExpirySeconds =
+      rawOptions && typeof rawOptions === "object"
+        ? rawOptions.expiresInSeconds
+        : rawOptions;
+    return normalizeSettingsShareExpirySeconds(
+      rawExpirySeconds,
+      DEFAULT_SETTINGS_SHARE_EXPIRY_SECONDS
+    );
+  }
+
+  function formatShareExpiryLabel(expiresInSeconds) {
+    const matchingOption = SETTINGS_SHARE_EXPIRY_OPTIONS.find(
+      (option) => option.valueSeconds === expiresInSeconds
+    );
+    if (matchingOption) {
+      return matchingOption.label;
+    }
+
+    const hours = Math.round(expiresInSeconds / 3600);
+    return `${hours} hour${hours === 1 ? "" : "s"}`;
+  }
+
+  function buildShareStorageRequestUrl(pathname) {
+    const normalizedEndpoint = String(shareStorageConfig.endpoint || "").trim();
+    if (!normalizedEndpoint) {
+      return "";
+    }
+
+    try {
+      const endpointBaseUrl = new URL(
+        normalizedEndpoint.endsWith("/") ? normalizedEndpoint : `${normalizedEndpoint}/`
+      );
+      return new URL(pathname, endpointBaseUrl).toString();
+    } catch {
+      return "";
+    }
+  }
+
+  async function requestShareStorageJson(url, options = {}) {
+    if (typeof fetch !== "function") {
+      throw new Error("share-storage-fetch-unavailable");
+    }
+
+    const timeoutMs = Number.parseInt(String(shareStorageConfig.requestTimeoutMs), 10) || 5000;
+    const abortController =
+      typeof AbortController === "function" ? new AbortController() : null;
+    const timeoutId =
+      abortController !== null
+        ? setTimeout(() => {
+            abortController.abort();
+          }, timeoutMs)
+        : null;
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: abortController?.signal,
+        headers: {
+          Accept: "application/json",
+          ...(options.headers || {})
+        }
+      });
+
+      if (!response.ok) {
+        const requestError = new Error(`share-storage-request-failed-${response.status}`);
+        requestError.status = response.status;
+        throw requestError;
+      }
+
+      return await response.json();
+    } finally {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+    }
+  }
+
+  async function createPersistedShareReference(payload, expiresInSeconds) {
+    const url = buildShareStorageRequestUrl("shares");
+    if (!url) {
+      throw new Error("share-storage-endpoint-invalid");
+    }
+
+    const responsePayload = await requestShareStorageJson(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        payload,
+        expiresInSeconds
+      })
+    });
+
+    const reference = String(
+      responsePayload?.shareReference ?? responsePayload?.shareId ?? responsePayload?.id ?? ""
+    ).trim();
+    if (!reference) {
+      throw new Error("share-storage-reference-missing");
+    }
+
+    return reference;
+  }
+
+  async function readPersistedSharePayload(shareReference) {
+    const url = buildShareStorageRequestUrl(`shares/${encodeURIComponent(shareReference)}`);
+    if (!url) {
+      throw new Error("share-storage-endpoint-invalid");
+    }
+
+    const responsePayload = await requestShareStorageJson(url, {
+      method: "GET"
+    });
+    return responsePayload?.payload ?? responsePayload;
   }
 
   function getCurrentPreferences() {
@@ -126,14 +250,46 @@ export function createSettingsTransferActions({
     }
   }
 
-  async function copySettingsShareLink() {
+  async function copySettingsShareLink(options = {}) {
     if (typeof window === "undefined") {
       statusMessage.value = "Share links are only available in the browser.";
       return;
     }
 
+    const expiresInSeconds = resolveShareExpirySeconds(options);
+    const expiryLabel = formatShareExpiryLabel(expiresInSeconds);
+
     try {
-      const shareToken = createSettingsShareToken(getCurrentPreferences());
+      if (shareStorageConfig.enabled) {
+        try {
+          const sharePayload = createSettingsExportPayload(getCurrentPreferences(), {
+            includeExpiry: true,
+            expiresInSeconds
+          });
+          const shareReference = await createPersistedShareReference(
+            sharePayload,
+            expiresInSeconds
+          );
+          const persistedShareUrl = buildSettingsShareUrl({
+            currentUrl: window.location.href,
+            shareReference
+          });
+
+          if (persistedShareUrl) {
+            const copiedPersisted = await writeClipboardText(persistedShareUrl);
+            statusMessage.value = copiedPersisted
+              ? `Persisted share link copied (expires in ${expiryLabel}).`
+              : "Clipboard unavailable. Copy the generated share link manually.";
+            return;
+          }
+        } catch {
+          // Fall back to local token link if remote share storage is unavailable.
+        }
+      }
+
+      const shareToken = createSettingsShareToken(getCurrentPreferences(), {
+        expiresInSeconds
+      });
       const shareUrl = buildSettingsShareUrl({
         currentUrl: window.location.href,
         shareToken
@@ -145,24 +301,27 @@ export function createSettingsTransferActions({
 
       const copied = await writeClipboardText(shareUrl);
       statusMessage.value = copied
-        ? "Share link copied."
+        ? `Share link copied (expires in ${expiryLabel}).`
         : "Clipboard unavailable. Use Export JSON instead.";
     } catch {
       statusMessage.value = "Unable to generate a share link.";
     }
   }
 
-  function clearShareTokenFromCurrentUrl() {
+  function clearShareParamsFromCurrentUrl() {
     if (typeof window === "undefined") {
       return;
     }
 
     const url = new URL(window.location.href);
-    if (!url.searchParams.has("share")) {
+    const hasShareToken = url.searchParams.has("share");
+    const hasShareReference = url.searchParams.has("shareRef");
+    if (!hasShareToken && !hasShareReference) {
       return;
     }
 
     url.searchParams.delete("share");
+    url.searchParams.delete("shareRef");
     window.history.replaceState(
       window.history.state,
       "",
@@ -170,13 +329,14 @@ export function createSettingsTransferActions({
     );
   }
 
-  function applySettingsFromShareUrl() {
+  async function applySettingsFromShareUrl() {
     if (typeof window === "undefined") {
       return false;
     }
 
+    const shareReference = readSettingsShareReferenceFromSearch(window.location.search);
     const shareToken = readSettingsShareTokenFromSearch(window.location.search);
-    if (!shareToken) {
+    if (!shareToken && !shareReference) {
       return false;
     }
 
@@ -185,14 +345,47 @@ export function createSettingsTransferActions({
       return false;
     }
 
+    if (shareReference) {
+      if (!shareStorageConfig.enabled) {
+        statusMessage.value =
+          "Shared link requires configured storage endpoint. Configure settings share storage or request a token link.";
+        clearShareParamsFromCurrentUrl();
+        return false;
+      }
+
+      try {
+        const persistedPayload = await readPersistedSharePayload(shareReference);
+        const importedPreferences = parseSettingsImportText(
+          JSON.stringify(persistedPayload),
+          { enforceExpiry: true }
+        );
+        applyImportedPreferences(importedPreferences, "Settings loaded from persisted shared link.");
+        clearShareParamsFromCurrentUrl();
+        return true;
+      } catch (error) {
+        if (error?.code === "share-expired" || error?.status === 410) {
+          statusMessage.value = "Shared configuration link has expired.";
+        } else if (error?.status === 404) {
+          statusMessage.value = "Shared configuration link was not found or has expired.";
+        } else {
+          statusMessage.value = "Shared configuration link is invalid.";
+        }
+        clearShareParamsFromCurrentUrl();
+        return false;
+      }
+    }
+
     try {
       const importedPreferences = parseSettingsShareToken(shareToken);
       applyImportedPreferences(importedPreferences, "Settings loaded from shared link.");
-      clearShareTokenFromCurrentUrl();
+      clearShareParamsFromCurrentUrl();
       return true;
-    } catch {
-      statusMessage.value = "Shared configuration link is invalid.";
-      clearShareTokenFromCurrentUrl();
+    } catch (error) {
+      statusMessage.value =
+        error?.code === "share-expired"
+          ? "Shared configuration link has expired."
+          : "Shared configuration link is invalid.";
+      clearShareParamsFromCurrentUrl();
       return false;
     }
   }

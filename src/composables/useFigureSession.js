@@ -249,7 +249,7 @@ export function useFigureSession() {
   });
 
   onMounted(() => {
-    applySettingsFromShareUrl();
+    void applySettingsFromShareUrl();
   });
 
   const saveTimeFormatter = new Intl.DateTimeFormat(undefined, {

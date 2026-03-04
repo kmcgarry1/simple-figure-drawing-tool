@@ -14,6 +14,7 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
   - Session history rerun to restore prior setup quickly.
   - Named run snapshots with one-click setup restore.
   - Rich session summaries with elapsed/planned timing, break usage, and attribution.
+  - Share links support configurable expiry; optional persisted-share backend for cross-device retrieval.
   - Reordered list is used for class sessions in sequential photo order mode.
 - Quick session mode:
   - Load individual images or an entire folder in one step.
@@ -129,6 +130,12 @@ Branch protection details and required settings are documented in `.github/branc
   - `POST /sessions` with `{ "offerToken": "<token>" }` returns `{ "sessionId": "<id>" }`
   - `GET /sessions/:sessionId` returns current session payload including `offerToken` and optional `answerToken`
   - `POST /sessions/:sessionId/answer` with `{ "answerToken": "<token>" }`
+- Optional settings share storage env vars:
+  - `VITE_SETTINGS_SHARE_ENDPOINT`
+  - `VITE_SETTINGS_SHARE_TIMEOUT_MS` (default `5000`)
+- Settings share storage contract (opt-in only):
+  - `POST /shares` with `{ "payload": <settingsPayload>, "expiresInSeconds": <number> }` returns `{ "shareReference": "<id>" }` (or `shareId`)
+  - `GET /shares/:shareReference` returns `{ "payload": <settingsPayload> }` (or the payload directly)
 
 ## App Metadata
 

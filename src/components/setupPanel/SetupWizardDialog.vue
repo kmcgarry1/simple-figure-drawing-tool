@@ -109,7 +109,7 @@
             @photo-tag-batch-update="$emit('photo-tag-batch-update', $event)"
             @photo-reorder="$emit('photo-reorder', $event)"
             @export-settings="$emit('export-settings')"
-            @share-settings-link="$emit('share-settings-link')"
+            @share-settings-link="$emit('share-settings-link', $event)"
             @import-settings="onImportSettingsSelected"
             @clear-history="$emit('clear-history')"
             @rerun-history="$emit('rerun-history', $event)"

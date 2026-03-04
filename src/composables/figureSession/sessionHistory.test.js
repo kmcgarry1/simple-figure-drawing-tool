@@ -26,7 +26,16 @@ describe("normalizeSessionHistory", () => {
       elapsedSeconds: 0,
       plannedSlides: 5,
       completedSlides: 5,
+      plannedDurationSeconds: 0,
+      completedDurationSeconds: 0,
+      durationDeltaSeconds: 0,
+      plannedBreakCount: 0,
+      completedBreakCount: 0,
+      plannedBreakDurationSeconds: 0,
+      completedBreakDurationSeconds: 0,
       templateName: "Gesture Warmups",
+      presetId: "class-1h",
+      presetLabel: "1 Hour",
       appliedTags: ["hands", "torso"],
       rerunSettings: {
         sessionMode: "class",
@@ -92,6 +101,12 @@ describe("appendSessionHistory", () => {
 
     expect(second[0].id).toBe("two");
     expect(second[1].id).toBe("one");
+    expect(second[0]).toMatchObject({
+      presetId: "class-1h",
+      presetLabel: "1 Hour",
+      plannedDurationSeconds: 300,
+      durationDeltaSeconds: 0
+    });
     expect(second[0].rerunSettings).toMatchObject({
       schemaVersion: 1,
       sessionMode: "class"

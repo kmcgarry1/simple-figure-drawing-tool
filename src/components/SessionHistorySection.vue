@@ -164,6 +164,15 @@
         <span>{{ entry.completedSlides }} / {{ entry.plannedSlides }} slides</span>
         <span>{{ formatDuration(entry.elapsedSeconds) }}</span>
       </div>
+      <p class="text-[11px] text-stone-500">
+        {{ buildTimingSummary(entry) }}
+      </p>
+      <p class="text-[11px] text-stone-500">
+        {{ buildBreakSummary(entry) }}
+      </p>
+      <p class="text-[11px] text-stone-500">
+        {{ buildAttributionSummary(entry) }}
+      </p>
       <label class="grid gap-1 pt-1 text-[11px] text-stone-600" :for="`snapshot-name-${entry.id}`">
         <span>Snapshot Name</span>
         <input
@@ -301,6 +310,15 @@ function formatAverageSlides(averageSlides) {
   return hasFractionalPart ? safeValue.toFixed(1) : String(Math.round(safeValue));
 }
 
+function parseToNumber(rawValue, fallback = 0) {
+  const parsedValue = Number(rawValue);
+  if (!Number.isFinite(parsedValue)) {
+    return fallback;
+  }
+
+  return parsedValue;
+}
+
 function resetFilters() {
   modeFilter.value = "all";
   outcomeFilter.value = "all";
@@ -353,6 +371,58 @@ function buildDefaultSnapshotName(entry) {
   }).format(new Date(timestamp));
 
   return `${modeLabel} ${dateLabel}`;
+}
+
+function buildTimingSummary(entry) {
+  const elapsedSeconds = Math.max(0, parseToNumber(entry?.elapsedSeconds, 0));
+  const plannedDurationSeconds = Math.max(
+    0,
+    parseToNumber(entry?.plannedDurationSeconds, elapsedSeconds)
+  );
+  const deltaSeconds = parseToNumber(
+    entry?.durationDeltaSeconds,
+    elapsedSeconds - plannedDurationSeconds
+  );
+
+  if (deltaSeconds === 0) {
+    return `Timing: ${formatDuration(elapsedSeconds)} elapsed vs ${formatDuration(plannedDurationSeconds)} planned (on target)`;
+  }
+
+  const deltaLabel =
+    deltaSeconds > 0
+      ? `${formatDuration(Math.abs(deltaSeconds))} over planned`
+      : `${formatDuration(Math.abs(deltaSeconds))} under planned`;
+
+  return `Timing: ${formatDuration(elapsedSeconds)} elapsed vs ${formatDuration(plannedDurationSeconds)} planned (${deltaLabel})`;
+}
+
+function buildBreakSummary(entry) {
+  const plannedBreakCount = Math.max(0, Math.round(parseToNumber(entry?.plannedBreakCount, 0)));
+  const completedBreakCount = Math.min(
+    plannedBreakCount,
+    Math.max(0, Math.round(parseToNumber(entry?.completedBreakCount, 0)))
+  );
+  const plannedBreakDurationSeconds = Math.max(
+    0,
+    parseToNumber(entry?.plannedBreakDurationSeconds, 0)
+  );
+  const completedBreakDurationSeconds = Math.min(
+    plannedBreakDurationSeconds,
+    Math.max(0, parseToNumber(entry?.completedBreakDurationSeconds, 0))
+  );
+
+  if (plannedBreakCount === 0) {
+    return "Breaks: None planned.";
+  }
+
+  return `Breaks: ${completedBreakCount} / ${plannedBreakCount} completed (${formatDuration(completedBreakDurationSeconds)} / ${formatDuration(plannedBreakDurationSeconds)})`;
+}
+
+function buildAttributionSummary(entry) {
+  const templateName = String(entry?.templateName || "").trim();
+  const presetLabel = String(entry?.presetLabel || "").trim();
+
+  return `Attribution: Template ${templateName || "none"} | Preset ${presetLabel || "n/a"}`;
 }
 
 function saveSnapshotFromEntry(entry) {

@@ -36,6 +36,7 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
   - Pose counter, active pose label, and total session time remaining.
   - Keyboard shortcuts: `Space` pause/resume, `Right Arrow` next, `Esc` end.
   - Phone remote diagnostics and reconnect retry flow with optional TURN fallback.
+  - Optional signaling relay pairing mode that auto-applies phone answers (no manual answer paste).
 - Professional baseline:
   - Persistent session preferences (`localStorage`).
   - Modal focus trap + focus return for keyboard users.
@@ -120,6 +121,14 @@ Branch protection details and required settings are documented in `.github/branc
   - `VITE_TURN_URL`
   - `VITE_TURN_USERNAME`
   - `VITE_TURN_CREDENTIAL`
+- Optional remote signaling env vars:
+  - `VITE_REMOTE_SIGNALING_ENDPOINT`
+  - `VITE_REMOTE_SIGNALING_POLL_MS` (default `1500`)
+  - `VITE_REMOTE_SIGNALING_TIMEOUT_MS` (default `5000`)
+- Signaling endpoint contract (opt-in only):
+  - `POST /sessions` with `{ "offerToken": "<token>" }` returns `{ "sessionId": "<id>" }`
+  - `GET /sessions/:sessionId` returns current session payload including `offerToken` and optional `answerToken`
+  - `POST /sessions/:sessionId/answer` with `{ "answerToken": "<token>" }`
 
 ## App Metadata
 

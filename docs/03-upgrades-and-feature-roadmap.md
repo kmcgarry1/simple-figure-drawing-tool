@@ -87,6 +87,8 @@ Status on working branch (2026-03-04): Product items 1-3 are implemented with sm
 
 ## Release 1.6.0 (Optional Multi-Device Foundation)
 
+Status on working branch (2026-03-04): Platform item 1 has an opt-in signaling relay path implemented for auto answer exchange; local/manual token pairing remains available by default.
+
 ### Platform
 
 1. Add minimal signaling service option to remove manual offer/answer copy flow.

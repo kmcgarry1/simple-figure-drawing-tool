@@ -7,6 +7,7 @@ import { useFigureSessionDerivedState } from "./figureSession/derivedState";
 import { loadSessionPreferences } from "./figureSession/persistence";
 import { IDLE_MESSAGE } from "./figureSession/sessionMessages";
 import { loadClassTemplates } from "./figureSession/classTemplates";
+import { loadClassTemplateSyncKey } from "./figureSession/classTemplateSync";
 import { loadSessionHistory } from "./figureSession/sessionHistory";
 import { loadRunSnapshots } from "./figureSession/runSnapshots";
 import { useFigureSessionLifecycle } from "./figureSession/useFigureSessionLifecycle";
@@ -35,6 +36,7 @@ export function useFigureSession() {
     persistedPreferences.classBlocks || createBlocksFromPreset(classPresetId.value)
   );
   const classTemplates = ref(loadClassTemplates());
+  const classTemplateSyncKey = ref(loadClassTemplateSyncKey());
   const classPhotoOrder = ref(persistedPreferences.classPhotoOrder || PHOTO_ORDER_SHUFFLE);
   const avoidImmediateRepeats = ref(
     persistedPreferences.avoidImmediateRepeats
@@ -164,6 +166,8 @@ export function useFigureSession() {
     importSettingsFromFile,
     copySettingsShareLink,
     applySettingsFromShareUrl,
+    classTemplateSyncEnabled,
+    setClassTemplateSyncKey,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
@@ -171,6 +175,8 @@ export function useFigureSession() {
     duplicateClassTemplateById,
     exportClassTemplatesJson,
     importClassTemplatesFromFile,
+    pullClassTemplatesFromSync,
+    pushClassTemplatesToSync,
     startFreshSession,
     cancelClassLaunchReview,
     startClassFromReview,
@@ -194,6 +200,7 @@ export function useFigureSession() {
     classPresetId,
     classBlocks,
     classTemplates,
+    classTemplateSyncKey,
     classPhotoOrder,
     avoidImmediateRepeats,
     sessionHistory,
@@ -353,6 +360,8 @@ export function useFigureSession() {
     taggedPhotos,
     availablePhotoTags,
     classTemplates,
+    classTemplateSyncEnabled,
+    classTemplateSyncKey,
     classPhotoOrder,
     avoidImmediateRepeats,
     sessionHistory,
@@ -404,6 +413,7 @@ export function useFigureSession() {
     exportSettingsJson,
     importSettingsFromFile,
     copySettingsShareLink,
+    setClassTemplateSyncKey,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
@@ -411,6 +421,8 @@ export function useFigureSession() {
     duplicateClassTemplateById,
     exportClassTemplatesJson,
     importClassTemplatesFromFile,
+    pullClassTemplatesFromSync,
+    pushClassTemplatesToSync,
     startFreshSession,
     isClassLaunchReviewOpen,
     classLaunchReviewSlots,

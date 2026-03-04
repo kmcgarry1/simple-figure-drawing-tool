@@ -43,6 +43,14 @@ export const setupPanelProps = {
     type: Array,
     required: true
   },
+  classTemplateSyncEnabled: {
+    type: Boolean,
+    required: true
+  },
+  classTemplateSyncKey: {
+    type: String,
+    required: true
+  },
   hasClassPlan: {
     type: Boolean,
     required: true
@@ -130,6 +138,9 @@ export const setupPanelEmits = [
   "class-template-duplicate",
   "class-template-export",
   "class-template-import",
+  "class-template-sync-key-change",
+  "class-template-sync-pull",
+  "class-template-sync-push",
   "start-session",
   "new-random-set",
   "clear-history",

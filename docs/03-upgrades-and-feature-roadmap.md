@@ -87,7 +87,7 @@ Status on working branch (2026-03-04): Product items 1-3 are implemented with sm
 
 ## Release 1.6.0 (Optional Multi-Device Foundation)
 
-Status on working branch (2026-03-04): Platform items 1-2 are implemented with opt-in signaling relay and persisted settings share links (with expiry controls); local/manual token pairing and local token links remain available by default.
+Status on working branch (2026-03-04): Platform items 1-3 are implemented with opt-in signaling relay, persisted settings share links (with expiry controls), and optional cross-device class template sync via shared sync key; local/manual workflows remain available by default.
 
 ### Platform
 

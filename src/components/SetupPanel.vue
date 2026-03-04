@@ -27,6 +27,8 @@
       :class-photo-order="classPhotoOrder"
       :avoid-immediate-repeats="avoidImmediateRepeats"
       :class-templates="classTemplates"
+      :class-template-sync-enabled="classTemplateSyncEnabled"
+      :class-template-sync-key="classTemplateSyncKey"
       :has-class-plan="hasClassPlan"
       :class-target-minutes="classTargetMinutes"
       :class-pose-count="classPoseCount"
@@ -52,6 +54,9 @@
       @class-template-duplicate="$emit('class-template-duplicate', $event)"
       @class-template-export="$emit('class-template-export')"
       @class-template-import="$emit('class-template-import', $event)"
+      @class-template-sync-key-change="$emit('class-template-sync-key-change', $event)"
+      @class-template-sync-pull="$emit('class-template-sync-pull')"
+      @class-template-sync-push="$emit('class-template-sync-push')"
       @start-session="handleStartSession"
       @new-random-set="$emit('new-random-set')"
     />

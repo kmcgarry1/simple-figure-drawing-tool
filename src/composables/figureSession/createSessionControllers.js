@@ -32,6 +32,7 @@ export function createSessionControllers({
   classPresetId,
   classBlocks,
   classTemplates,
+  classTemplateSyncKey,
   classPhotoOrder,
   avoidImmediateRepeats,
   sessionHistory,
@@ -234,18 +235,23 @@ export function createSessionControllers({
   });
 
   const {
+    classTemplateSyncEnabled,
+    setClassTemplateSyncKey,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
     renameClassTemplateById,
     duplicateClassTemplateById,
     exportClassTemplatesJson,
-    importClassTemplatesFromFile
+    importClassTemplatesFromFile,
+    pullClassTemplatesFromSync,
+    pushClassTemplatesToSync
   } =
     createClassTemplateActions({
       classTemplates,
       classBlocks,
-      statusMessage
+      statusMessage,
+      classTemplateSyncKey
     });
 
   const {
@@ -455,6 +461,8 @@ export function createSessionControllers({
     importSettingsFromFile,
     copySettingsShareLink,
     applySettingsFromShareUrl,
+    classTemplateSyncEnabled,
+    setClassTemplateSyncKey,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
@@ -462,6 +470,8 @@ export function createSessionControllers({
     duplicateClassTemplateById,
     exportClassTemplatesJson,
     importClassTemplatesFromFile,
+    pullClassTemplatesFromSync,
+    pushClassTemplatesToSync,
     startFreshSession,
     cancelClassLaunchReview,
     startClassFromReview,

@@ -1,4 +1,8 @@
-import { CLASS_BLOCK_TYPE_BREAK, sanitizeClassBlocks } from "../../utils/classPlan";
+import {
+  CLASS_BLOCK_TYPE_BREAK,
+  getClassPresetById,
+  sanitizeClassBlocks
+} from "../../utils/classPlan";
 import { createClassPlanActions } from "./classPlanActions";
 import { createClassTemplateActions } from "./classTemplateActions";
 import { findClassTemplateMatch } from "./classTemplates";
@@ -174,11 +178,14 @@ export function createSessionControllers({
       if (sessionMode.value !== SESSION_MODE_CLASS) {
         return {
           templateName: "",
+          presetId: "quick-session",
+          presetLabel: "Quick Session",
           appliedTags: [],
           rerunSettings
         };
       }
 
+      const classPreset = getClassPresetById(classPresetId.value);
       const safeClassBlocks = sanitizeClassBlocks(classBlocks.value);
       const matchingTemplate = findClassTemplateMatch(classTemplates.value, safeClassBlocks);
       const appliedTags = Array.from(
@@ -192,6 +199,8 @@ export function createSessionControllers({
 
       return {
         templateName: matchingTemplate?.name || "Custom Class Plan",
+        presetId: classPreset.id,
+        presetLabel: classPreset.label,
         appliedTags,
         rerunSettings
       };

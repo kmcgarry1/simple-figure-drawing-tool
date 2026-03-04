@@ -1,6 +1,6 @@
 # Product Roadmap (Post v1.2.0)
 
-Last updated: 2026-03-03
+Last updated: 2026-03-04
 
 ## Planning Frame
 
@@ -70,7 +70,7 @@ Status on working branch (2026-03-03): platform items 1-3 are implemented; QA it
 
 ## Release 1.5.0 (Session Repeatability)
 
-Status on working branch (2026-03-03): Product items 1-2 are implemented with smoke e2e coverage for rerun and snapshot restore paths.
+Status on working branch (2026-03-04): Product items 1-3 are implemented with smoke e2e coverage for rerun and snapshot restore paths.
 
 ### Product
 

@@ -1,3 +1,4 @@
+import { getClassPresetById } from "../../utils/classPlan";
 import { SESSION_MODE_CLASS, SESSION_MODE_QUICK } from "./constants";
 import { normalizeSessionPreferences } from "./persistence";
 
@@ -12,6 +13,19 @@ function canUseStorage() {
 function normalizeTemplateName(rawTemplateName) {
   const normalizedTemplateName = String(rawTemplateName ?? "").trim();
   return normalizedTemplateName || "";
+}
+
+function normalizePresetId(rawPresetId) {
+  return String(rawPresetId ?? "").trim();
+}
+
+function normalizePresetLabel(rawPresetLabel, fallbackPresetLabel = "") {
+  const normalizedPresetLabel = String(rawPresetLabel ?? "").trim();
+  if (normalizedPresetLabel) {
+    return normalizedPresetLabel;
+  }
+
+  return String(fallbackPresetLabel || "").trim();
 }
 
 function normalizeAppliedTags(rawAppliedTags) {
@@ -40,6 +54,24 @@ function normalizeSessionMode(rawSessionMode, fallbackSessionMode = SESSION_MODE
   }
 
   return fallbackSessionMode === SESSION_MODE_QUICK ? SESSION_MODE_QUICK : SESSION_MODE_CLASS;
+}
+
+function parseNonNegativeInteger(rawValue, fallbackValue = 0) {
+  const parsedValue = Number.parseInt(String(rawValue), 10);
+  if (Number.isNaN(parsedValue)) {
+    return Math.max(0, Number.parseInt(String(fallbackValue), 10) || 0);
+  }
+
+  return Math.max(0, parsedValue);
+}
+
+function parseSignedInteger(rawValue, fallbackValue = 0) {
+  const parsedValue = Number.parseInt(String(rawValue), 10);
+  if (Number.isNaN(parsedValue)) {
+    return Number.parseInt(String(fallbackValue), 10) || 0;
+  }
+
+  return parsedValue;
 }
 
 export function normalizeHistoryRerunSettings(rawRerunSettings, options = {}) {
@@ -72,16 +104,52 @@ function normalizeHistoryEntry(rawEntry, index) {
   const idCandidate = String(rawEntry?.id ?? "").trim();
   const id = idCandidate || `session-${index + 1}`;
   const sessionMode = normalizeSessionMode(rawEntry?.sessionMode);
+  const rerunSettings = normalizeHistoryRerunSettings(rawEntry?.rerunSettings, {
+    fallbackSessionMode: sessionMode
+  });
   const startedAt = String(rawEntry?.startedAt ?? "").trim() || new Date().toISOString();
   const endedAt = String(rawEntry?.endedAt ?? "").trim() || startedAt;
-  const elapsedSecondsRaw = Number.parseInt(String(rawEntry?.elapsedSeconds), 10);
-  const elapsedSeconds = Number.isNaN(elapsedSecondsRaw) ? 0 : Math.max(0, elapsedSecondsRaw);
-  const plannedSlidesRaw = Number.parseInt(String(rawEntry?.plannedSlides), 10);
-  const plannedSlides = Number.isNaN(plannedSlidesRaw) ? 0 : Math.max(0, plannedSlidesRaw);
-  const completedSlidesRaw = Number.parseInt(String(rawEntry?.completedSlides), 10);
-  const completedSlides = Number.isNaN(completedSlidesRaw)
-    ? 0
-    : Math.min(plannedSlides, Math.max(0, completedSlidesRaw));
+  const elapsedSeconds = parseNonNegativeInteger(rawEntry?.elapsedSeconds, 0);
+  const plannedSlides = parseNonNegativeInteger(rawEntry?.plannedSlides, 0);
+  const completedSlides = Math.min(
+    plannedSlides,
+    parseNonNegativeInteger(rawEntry?.completedSlides, plannedSlides)
+  );
+
+  const plannedDurationSeconds = parseNonNegativeInteger(
+    rawEntry?.plannedDurationSeconds,
+    elapsedSeconds
+  );
+  const completedDurationSeconds = Math.min(
+    plannedDurationSeconds,
+    parseNonNegativeInteger(rawEntry?.completedDurationSeconds, elapsedSeconds)
+  );
+  const durationDeltaSeconds = parseSignedInteger(
+    rawEntry?.durationDeltaSeconds,
+    elapsedSeconds - plannedDurationSeconds
+  );
+
+  const plannedBreakCount = parseNonNegativeInteger(rawEntry?.plannedBreakCount, 0);
+  const completedBreakCount = Math.min(
+    plannedBreakCount,
+    parseNonNegativeInteger(rawEntry?.completedBreakCount, 0)
+  );
+  const plannedBreakDurationSeconds = parseNonNegativeInteger(
+    rawEntry?.plannedBreakDurationSeconds,
+    0
+  );
+  const completedBreakDurationSeconds = Math.min(
+    plannedBreakDurationSeconds,
+    parseNonNegativeInteger(rawEntry?.completedBreakDurationSeconds, 0)
+  );
+
+  const classPreset = getClassPresetById(rerunSettings.classPresetId);
+  const defaultPresetId =
+    sessionMode === SESSION_MODE_QUICK ? "quick-session" : classPreset.id;
+  const defaultPresetLabel =
+    sessionMode === SESSION_MODE_QUICK ? "Quick Session" : classPreset.label;
+  const presetId = normalizePresetId(rawEntry?.presetId) || defaultPresetId;
+  const presetLabel = normalizePresetLabel(rawEntry?.presetLabel, defaultPresetLabel);
 
   return {
     id,
@@ -92,11 +160,18 @@ function normalizeHistoryEntry(rawEntry, index) {
     elapsedSeconds,
     plannedSlides,
     completedSlides,
+    plannedDurationSeconds,
+    completedDurationSeconds,
+    durationDeltaSeconds,
+    plannedBreakCount,
+    completedBreakCount,
+    plannedBreakDurationSeconds,
+    completedBreakDurationSeconds,
     templateName: normalizeTemplateName(rawEntry?.templateName),
+    presetId,
+    presetLabel,
     appliedTags: normalizeAppliedTags(rawEntry?.appliedTags),
-    rerunSettings: normalizeHistoryRerunSettings(rawEntry?.rerunSettings, {
-      fallbackSessionMode: sessionMode
-    })
+    rerunSettings
   };
 }
 

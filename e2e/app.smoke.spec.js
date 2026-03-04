@@ -204,7 +204,16 @@ test("history filters and export work from advanced setup", async ({ page }) => 
         elapsedSeconds: 600,
         plannedSlides: 10,
         completedSlides: 10,
+        plannedDurationSeconds: 600,
+        completedDurationSeconds: 600,
+        durationDeltaSeconds: 0,
+        plannedBreakCount: 0,
+        completedBreakCount: 0,
+        plannedBreakDurationSeconds: 0,
+        completedBreakDurationSeconds: 0,
         templateName: "",
+        presetId: "quick-session",
+        presetLabel: "Quick Session",
         appliedTags: []
       },
       {
@@ -216,7 +225,16 @@ test("history filters and export work from advanced setup", async ({ page }) => 
         elapsedSeconds: 180,
         plannedSlides: 6,
         completedSlides: 2,
+        plannedDurationSeconds: 600,
+        completedDurationSeconds: 180,
+        durationDeltaSeconds: -420,
+        plannedBreakCount: 2,
+        completedBreakCount: 1,
+        plannedBreakDurationSeconds: 300,
+        completedBreakDurationSeconds: 120,
         templateName: "Custom Class Plan",
+        presetId: "class-2h",
+        presetLabel: "2 Hour",
         appliedTags: ["hands"]
       },
       {
@@ -228,7 +246,16 @@ test("history filters and export work from advanced setup", async ({ page }) => 
         elapsedSeconds: 120,
         plannedSlides: 8,
         completedSlides: 2,
+        plannedDurationSeconds: 240,
+        completedDurationSeconds: 120,
+        durationDeltaSeconds: -120,
+        plannedBreakCount: 0,
+        completedBreakCount: 0,
+        plannedBreakDurationSeconds: 0,
+        completedBreakDurationSeconds: 0,
         templateName: "",
+        presetId: "quick-session",
+        presetLabel: "Quick Session",
         appliedTags: []
       }
     ];
@@ -249,6 +276,9 @@ test("history filters and export work from advanced setup", async ({ page }) => 
 
   await wizard.getByLabel("Mode Filter").selectOption("class");
   await expect(wizard.getByText("Class | ended")).toBeVisible();
+  await expect(wizard.getByText("Timing: 3m 00s elapsed vs 10m 00s planned (7m 00s under planned)")).toBeVisible();
+  await expect(wizard.getByText("Breaks: 1 / 2 completed (2m 00s / 5m 00s)")).toBeVisible();
+  await expect(wizard.getByText("Attribution: Template Custom Class Plan | Preset 2 Hour")).toBeVisible();
   await expect(wizard.getByText("Quick | completed")).toHaveCount(0);
 
   await wizard.getByLabel("Mode Filter").selectOption("all");

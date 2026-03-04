@@ -9,12 +9,44 @@ import {
   removeClassTemplateById,
   saveClassTemplate
 } from "./classTemplates";
+import {
+  buildClassTemplateSyncConfig,
+  normalizeClassTemplateSyncKey,
+  persistClassTemplateSyncKey,
+  pullClassTemplatesFromRemote,
+  pushClassTemplatesToRemote
+} from "./classTemplateSync";
 
 export function createClassTemplateActions({
   classTemplates,
   classBlocks,
-  statusMessage
+  statusMessage,
+  classTemplateSyncKey
 }) {
+  const classTemplateSyncConfig = buildClassTemplateSyncConfig();
+
+  function setClassTemplateSyncKey(nextSyncKey) {
+    const normalizedSyncKey = normalizeClassTemplateSyncKey(nextSyncKey);
+    classTemplateSyncKey.value = normalizedSyncKey;
+    persistClassTemplateSyncKey(normalizedSyncKey);
+  }
+
+  function resolveSyncKeyOrSetStatus() {
+    if (!classTemplateSyncConfig.enabled) {
+      statusMessage.value =
+        "Class template sync endpoint is not configured. Local templates remain available.";
+      return "";
+    }
+
+    const normalizedSyncKey = normalizeClassTemplateSyncKey(classTemplateSyncKey.value);
+    if (!normalizedSyncKey) {
+      statusMessage.value = "Enter a sync key before syncing templates.";
+      return "";
+    }
+
+    return normalizedSyncKey;
+  }
+
   function saveClassTemplateByName(templateName) {
     const result = saveClassTemplate(classTemplates.value, {
       name: templateName,
@@ -143,13 +175,66 @@ export function createClassTemplateActions({
     }
   }
 
+  async function pullClassTemplatesFromSync() {
+    const syncKey = resolveSyncKeyOrSetStatus();
+    if (!syncKey) {
+      return;
+    }
+
+    try {
+      const pullResult = await pullClassTemplatesFromRemote({
+        endpoint: classTemplateSyncConfig.endpoint,
+        requestTimeoutMs: classTemplateSyncConfig.requestTimeoutMs,
+        syncKey
+      });
+      const mergeResult = mergeClassTemplatesByName(
+        classTemplates.value,
+        pullResult.templates
+      );
+
+      classTemplates.value = mergeResult.templates;
+      persistClassTemplates(classTemplates.value);
+      statusMessage.value = `Sync pull complete (${mergeResult.addedCount} added, ${mergeResult.updatedCount} updated).`;
+    } catch (error) {
+      if (error?.status === 404) {
+        statusMessage.value = "No synced templates found for this sync key.";
+        return;
+      }
+
+      statusMessage.value = "Unable to pull templates from sync service.";
+    }
+  }
+
+  async function pushClassTemplatesToSync() {
+    const syncKey = resolveSyncKeyOrSetStatus();
+    if (!syncKey) {
+      return;
+    }
+
+    try {
+      const pushResult = await pushClassTemplatesToRemote({
+        endpoint: classTemplateSyncConfig.endpoint,
+        requestTimeoutMs: classTemplateSyncConfig.requestTimeoutMs,
+        syncKey,
+        templates: classTemplates.value
+      });
+      statusMessage.value = `Sync push complete (${pushResult.templateCount} template(s)).`;
+    } catch {
+      statusMessage.value = "Unable to push templates to sync service.";
+    }
+  }
+
   return {
+    classTemplateSyncEnabled: classTemplateSyncConfig.enabled,
+    setClassTemplateSyncKey,
     saveClassTemplateByName,
     loadClassTemplateById,
     deleteClassTemplateById,
     renameClassTemplateById,
     duplicateClassTemplateById,
     exportClassTemplatesJson,
-    importClassTemplatesFromFile
+    importClassTemplatesFromFile,
+    pullClassTemplatesFromSync,
+    pushClassTemplatesToSync
   };
 }

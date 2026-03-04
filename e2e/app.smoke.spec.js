@@ -4,6 +4,7 @@ const ONE_PIXEL_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+X4NwAAAAASUVORK5CYII=",
   "base64"
 );
+const TEMPLATE_SYNC_ENDPOINT_PATH = "/__e2e-class-template-sync/templates/";
 
 function createPngFilePayload(name) {
   return {
@@ -515,6 +516,168 @@ test("class start opens review grid and allows pose image reassignment before la
 
   await reviewDialog.getByRole("button", { name: "Start Class" }).click();
   await expect(page.getByRole("button", { name: "End" })).toBeVisible();
+});
+
+test("class template sync can persist sync key and push/pull templates", async ({
+  page
+}) => {
+  const remoteSyncState = {
+    templates: [
+      {
+        id: "remote-template-initial",
+        name: "Remote Gesture Set",
+        blocks: [
+          {
+            blockType: "pose",
+            label: "Remote Gestures",
+            durationSeconds: 30,
+            poseCount: 6,
+            photoTag: "all"
+          }
+        ],
+        createdAt: "2026-03-04T10:00:00.000Z",
+        updatedAt: "2026-03-04T10:00:00.000Z"
+      }
+    ]
+  };
+
+  await page.route(`**${TEMPLATE_SYNC_ENDPOINT_PATH}*`, async (route) => {
+    const request = route.request();
+    const method = request.method();
+    const requestUrl = new URL(request.url());
+    const syncKey = decodeURIComponent(requestUrl.pathname.split("/").pop() || "");
+
+    if (syncKey !== "studio-sync") {
+      await route.fulfill({
+        status: 404,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "unknown-sync-key" })
+      });
+      return;
+    }
+
+    if (method === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ templates: remoteSyncState.templates })
+      });
+      return;
+    }
+
+    if (method === "PUT") {
+      const payload = JSON.parse(request.postData() || "{}");
+      remoteSyncState.templates = Array.isArray(payload.templates)
+        ? payload.templates
+        : [];
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ synced: true })
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 405,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "method-not-allowed" })
+    });
+  });
+
+  await page.goto("/");
+  await page.evaluate(() => {
+    const localTemplates = [
+      {
+        id: "local-template-1",
+        name: "Local Warmups",
+        blocks: [
+          {
+            blockType: "pose",
+            label: "Warm-up",
+            durationSeconds: 60,
+            poseCount: 5,
+            photoTag: "all"
+          }
+        ],
+        createdAt: "2026-03-03T08:00:00.000Z",
+        updatedAt: "2026-03-03T08:00:00.000Z"
+      }
+    ];
+    window.localStorage.setItem("figureDrawing.classTemplates.v1", JSON.stringify(localTemplates));
+    window.localStorage.removeItem("figureDrawing.classTemplateSyncKey.v1");
+  });
+
+  await page.reload();
+  await openSetupWizard(page);
+  await wizardStepButton(page, 2, "Session").click();
+  const wizard = wizardDialog(page);
+  await wizard.getByRole("button", { name: "Life Class Wizard" }).click();
+  await wizard.getByRole("button", { name: "Edit Class Plan" }).click();
+
+  const classDialog = page.getByRole("dialog", { name: "Life Drawing Class Wizard" });
+  await expect(classDialog).toBeVisible();
+  await expect(classDialog.getByText("Cross-Device Sync")).toBeVisible();
+
+  const syncKeyInput = classDialog.getByLabel("Sync Key");
+  await syncKeyInput.fill("studio-sync");
+  await expect(syncKeyInput).toHaveValue("studio-sync");
+
+  await expect(classDialog.getByRole("button", { name: "Push To Sync" })).toBeEnabled();
+  await expect(classDialog.getByRole("button", { name: "Pull From Sync" })).toBeEnabled();
+
+  const pushRequestPromise = page.waitForRequest((request) => {
+    return (
+      request.method() === "PUT" &&
+      request.url().includes(`${TEMPLATE_SYNC_ENDPOINT_PATH}studio-sync`)
+    );
+  });
+  await classDialog.getByRole("button", { name: "Push To Sync" }).click();
+  const pushRequest = await pushRequestPromise;
+  const pushedPayload = JSON.parse(pushRequest.postData() || "{}");
+  expect(Array.isArray(pushedPayload.templates)).toBe(true);
+  expect(
+    pushedPayload.templates.some((template) => template.name === "Local Warmups")
+  ).toBe(true);
+
+  remoteSyncState.templates = [
+    {
+      id: "remote-template-new",
+      name: "Remote Long Poses",
+      blocks: [
+        {
+          blockType: "pose",
+          label: "Remote Long Pose",
+          durationSeconds: 300,
+          poseCount: 2,
+          photoTag: "all"
+        }
+      ],
+      createdAt: "2026-03-04T10:05:00.000Z",
+      updatedAt: "2026-03-04T10:05:00.000Z"
+    }
+  ];
+
+  const pullResponsePromise = page.waitForResponse((response) => {
+    const request = response.request();
+    return (
+      request.method() === "GET" &&
+      request.url().includes(`${TEMPLATE_SYNC_ENDPOINT_PATH}studio-sync`) &&
+      response.ok()
+    );
+  });
+  await classDialog.getByRole("button", { name: "Pull From Sync" }).click();
+  await pullResponsePromise;
+
+  const templateNameValues = await classDialog
+    .getByLabel("Template Name")
+    .evaluateAll((inputs) => inputs.map((input) => input.value));
+  expect(templateNameValues).toContain("Remote Long Poses");
+
+  const persistedSyncKey = await page.evaluate(() =>
+    window.localStorage.getItem("figureDrawing.classTemplateSyncKey.v1")
+  );
+  expect(persistedSyncKey).toBe("studio-sync");
 });
 
 test("mode and duration persist after reload", async ({ page }) => {

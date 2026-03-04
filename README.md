@@ -29,6 +29,7 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
     - 2 hour class: 30 minutes
     - 3 hour class: 60 minutes
   - Editable pose blocks (name, seconds per pose, pose count).
+  - Optional cross-device class template sync (shared sync key, pull/push actions).
   - Shuffle or sequential photo order.
   - Optional back-to-back repeat prevention in shuffle mode.
 - Live mode:
@@ -136,6 +137,12 @@ Branch protection details and required settings are documented in `.github/branc
 - Settings share storage contract (opt-in only):
   - `POST /shares` with `{ "payload": <settingsPayload>, "expiresInSeconds": <number> }` returns `{ "shareReference": "<id>" }` (or `shareId`)
   - `GET /shares/:shareReference` returns `{ "payload": <settingsPayload> }` (or the payload directly)
+- Optional class template sync env vars:
+  - `VITE_CLASS_TEMPLATE_SYNC_ENDPOINT` (also supports `VITE_CLASS_TEMPLATES_SYNC_ENDPOINT`)
+  - `VITE_CLASS_TEMPLATE_SYNC_TIMEOUT_MS` (default `5000`)
+- Class template sync contract (opt-in only):
+  - `PUT /templates/:syncKey` with `{ "templates": [...], "syncedAt": "<iso>" }`
+  - `GET /templates/:syncKey` returning `{ "templates": [...] }` (or a raw array)
 
 ## App Metadata
 

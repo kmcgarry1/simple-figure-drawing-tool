@@ -21,6 +21,8 @@
           :class-photo-order="classPhotoOrder"
           :avoid-immediate-repeats="avoidImmediateRepeats"
           :class-templates="classTemplates"
+          :class-template-sync-enabled="classTemplateSyncEnabled"
+          :class-template-sync-key="classTemplateSyncKey"
           :has-class-plan="hasClassPlan"
           :class-target-minutes="classTargetMinutes"
           :class-pose-count="classPoseCount"
@@ -60,6 +62,9 @@
           @class-template-duplicate="duplicateClassTemplateById"
           @class-template-export="exportClassTemplatesJson"
           @class-template-import="importClassTemplatesFromFile"
+          @class-template-sync-key-change="setClassTemplateSyncKey"
+          @class-template-sync-pull="pullClassTemplatesFromSync"
+          @class-template-sync-push="pushClassTemplatesToSync"
           @start-session="startFreshSession"
           @new-random-set="createNewRandomSet"
           @clear-history="clearSessionHistory"
@@ -169,6 +174,8 @@ const {
   audioMuted,
   audioVolumePercent,
   classTemplates,
+  classTemplateSyncEnabled,
+  classTemplateSyncKey,
   hasClassPlan,
   classTargetMinutes,
   classPoseCount,
@@ -220,6 +227,9 @@ const {
   duplicateClassTemplateById,
   exportClassTemplatesJson,
   importClassTemplatesFromFile,
+  setClassTemplateSyncKey,
+  pullClassTemplatesFromSync,
+  pushClassTemplatesToSync,
   startFreshSession,
   isClassLaunchReviewOpen,
   classLaunchReviewSlots,

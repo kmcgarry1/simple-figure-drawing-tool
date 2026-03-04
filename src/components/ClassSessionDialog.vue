@@ -67,6 +67,8 @@
 
               <ClassTemplatesSection
                 :class-templates="classTemplates"
+                :class-template-sync-enabled="classTemplateSyncEnabled"
+                :class-template-sync-key="classTemplateSyncKey"
                 @class-template-save="$emit('class-template-save', $event)"
                 @class-template-load="$emit('class-template-load', $event)"
                 @class-template-delete="$emit('class-template-delete', $event)"
@@ -74,6 +76,9 @@
                 @class-template-duplicate="$emit('class-template-duplicate', $event)"
                 @class-template-export="$emit('class-template-export')"
                 @class-template-import="$emit('class-template-import', $event)"
+                @class-template-sync-key-change="$emit('class-template-sync-key-change', $event)"
+                @class-template-sync-pull="$emit('class-template-sync-pull')"
+                @class-template-sync-push="$emit('class-template-sync-push')"
               />
             </div>
 
@@ -164,6 +169,14 @@ const props = defineProps({
     type: Array,
     required: true
   },
+  classTemplateSyncEnabled: {
+    type: Boolean,
+    required: true
+  },
+  classTemplateSyncKey: {
+    type: String,
+    required: true
+  },
   hasClassPlan: {
     type: Boolean,
     required: true
@@ -222,6 +235,9 @@ const emit = defineEmits([
   "class-template-duplicate",
   "class-template-export",
   "class-template-import",
+  "class-template-sync-key-change",
+  "class-template-sync-pull",
+  "class-template-sync-push",
   "start-session",
   "new-random-set"
 ]);

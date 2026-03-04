@@ -57,6 +57,43 @@
       </BaseButton>
     </div>
 
+    <div class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
+      <div class="grid gap-1">
+        <p class="fd-text-body inline-flex items-center gap-1.5 text-[12px] font-semibold">
+          <component :is="classTemplateSyncEnabled ? CloudUpload : CloudOff" class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
+          Cross-Device Sync
+        </p>
+        <p class="text-[12px] text-stone-600">
+          {{
+            classTemplateSyncEnabled
+              ? "Use a shared sync key across devices, then push or pull your template set."
+              : "Sync endpoint is not configured. Local template save/import/export remains available."
+          }}
+        </p>
+      </div>
+      <label class="grid gap-1 text-[12px] text-stone-700" for="templateSyncKeyInput">
+        <span>Sync Key</span>
+        <input
+          id="templateSyncKeyInput"
+          v-model.trim="templateSyncKeyInput"
+          type="text"
+          :disabled="!classTemplateSyncEnabled"
+          placeholder="e.g. studio-team-1"
+          class="fd-input w-full rounded-md px-2 py-1.5 text-sm"
+        />
+      </label>
+      <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
+        <BaseButton compact tone="subtle" :disabled="!canSyncTemplates" @click="$emit('class-template-sync-push')">
+          <CloudUpload class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+          Push To Sync
+        </BaseButton>
+        <BaseButton compact tone="subtle" :disabled="!canSyncTemplates" @click="$emit('class-template-sync-pull')">
+          <CloudDownload class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+          Pull From Sync
+        </BaseButton>
+      </div>
+    </div>
+
     <div v-if="classTemplates.length === 0" class="text-[12px] text-stone-600">
       No custom templates saved yet.
     </div>
@@ -115,13 +152,32 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
-import { CopyPlus, Download, FolderOpenDot, Pencil, Save, Trash2, Upload } from "lucide-vue-next";
+import {
+  CloudDownload,
+  CloudOff,
+  CloudUpload,
+  CopyPlus,
+  Download,
+  FolderOpenDot,
+  Pencil,
+  Save,
+  Trash2,
+  Upload
+} from "lucide-vue-next";
 import { calculateClassPlanSummary } from "../../utils/classPlan";
 import BaseButton from "../BaseButton.vue";
 
 const props = defineProps({
   classTemplates: {
     type: Array,
+    required: true
+  },
+  classTemplateSyncEnabled: {
+    type: Boolean,
+    required: true
+  },
+  classTemplateSyncKey: {
+    type: String,
     required: true
   }
 });
@@ -133,13 +189,20 @@ const emit = defineEmits([
   "class-template-rename",
   "class-template-duplicate",
   "class-template-export",
-  "class-template-import"
+  "class-template-import",
+  "class-template-sync-key-change",
+  "class-template-sync-pull",
+  "class-template-sync-push"
 ]);
 const templateName = ref("");
 const templateNames = ref({});
+const templateSyncKeyInput = ref(props.classTemplateSyncKey || "");
 const templateImportInputRef = ref(null);
 const sortMode = ref("updated-desc");
 const RECENT_TEMPLATE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const canSyncTemplates = computed(
+  () => props.classTemplateSyncEnabled && templateSyncKeyInput.value.trim().length > 0
+);
 
 function saveTemplate() {
   emit("class-template-save", templateName.value);
@@ -230,4 +293,21 @@ watch(
   },
   { immediate: true, deep: true }
 );
+
+watch(
+  () => props.classTemplateSyncKey,
+  (nextSyncKey) => {
+    const normalizedNextSyncKey = String(nextSyncKey || "").trim();
+    if (normalizedNextSyncKey === templateSyncKeyInput.value) {
+      return;
+    }
+
+    templateSyncKeyInput.value = normalizedNextSyncKey;
+  },
+  { immediate: true }
+);
+
+watch(templateSyncKeyInput, (nextSyncKey) => {
+  emit("class-template-sync-key-change", nextSyncKey);
+});
 </script>

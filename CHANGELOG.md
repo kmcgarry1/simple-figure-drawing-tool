@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.7.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.6.0...figure-drawing-v1.7.0) (2026-03-04)
+
+
+### Features
+
+* add optional cross-device class template sync ([b08d909](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/b08d909ec30aea566be4d7886d67fa59600b1831))
+* add optional cross-device class template sync ([0cc2c60](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/0cc2c602c6fd342d1f1f6fc396c88f864f7f60b3))
+* evolve studio ui with wizard redesign and motion polish ([dbab1a0](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/dbab1a0cae63ff2a909643c585d4df656ce220b4))
+* infuse studio ui with artistic visual styling ([5d8e3cd](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/5d8e3cd37382309d3e6981e48e23f2dde631b159))
+
+
+### Bug Fixes
+
+* **ui:** remove remaining component gradients ([5492f24](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/5492f243366f4e73fdc2b64e9c57d8ea3e059f8e))
+* **ui:** remove remaining component gradients ([d45dd48](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/d45dd484881de91fd778c21ce27ca5177af51697))
+
 ## [1.6.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.5.0...figure-drawing-v1.6.0) (2026-03-04)
 
 

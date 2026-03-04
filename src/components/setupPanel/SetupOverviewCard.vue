@@ -3,7 +3,7 @@
     <section class="fd-hero-surface fd-studio-board relative grid gap-4 overflow-hidden rounded-[1.35rem] p-5 max-[720px]:p-4">
       <div
         aria-hidden="true"
-        class="pointer-events-none absolute inset-x-0 -top-16 h-40 bg-gradient-to-b from-white/45 to-transparent"
+        class="fd-soft-sheen pointer-events-none absolute inset-x-0 -top-16 h-40"
       />
       <div class="relative grid gap-3">
         <div class="flex flex-wrap items-start justify-between gap-2">
@@ -19,7 +19,7 @@
         <div class="grid gap-1.5">
           <div class="h-2 overflow-hidden rounded-full bg-[rgb(var(--fd-surface-muted)/0.84)]">
             <div
-              class="h-full rounded-full bg-gradient-to-r from-sky-300 via-emerald-300 to-orange-300 transition-[width] duration-300"
+              class="fd-progress-fill h-full rounded-full transition-[width] duration-300"
               :style="{ width: `${progressPercent}%` }"
             />
           </div>

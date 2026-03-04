@@ -2,11 +2,11 @@
   <header class="surface-panel hero-panel fd-hero-canvas relative overflow-hidden rounded-[2rem] px-6 py-6 max-[720px]:rounded-xl max-[720px]:px-4 max-[720px]:py-5">
     <div
       aria-hidden="true"
-      class="fd-header-glow pointer-events-none absolute -right-10 -top-10 h-56 w-56 rounded-full bg-gradient-to-b from-white/70 via-white/22 to-transparent blur-2xl"
+      class="fd-header-glow pointer-events-none absolute -right-10 -top-10 h-56 w-56 rounded-full blur-2xl"
     />
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute -left-16 bottom-0 h-40 w-40 rounded-full bg-gradient-to-tr from-amber-200/45 via-orange-200/22 to-transparent blur-2xl"
+      class="fd-header-glow-secondary pointer-events-none absolute -left-16 bottom-0 h-40 w-40 rounded-full blur-2xl"
     />
 
     <div class="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">

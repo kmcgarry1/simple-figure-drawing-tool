@@ -164,7 +164,7 @@
           </div>
           <div class="h-1.5 overflow-hidden rounded-full bg-[rgb(var(--fd-surface-muted)/0.84)]">
             <span
-              class="block h-full rounded-full bg-gradient-to-r from-sky-300 via-emerald-300 to-orange-300 transition-[width] duration-300"
+              class="fd-progress-fill block h-full rounded-full transition-[width] duration-300"
               :style="{ width: `${setupCompletionPercent}%` }"
             />
           </div>

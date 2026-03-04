@@ -1,6 +1,6 @@
 <template>
   <div class="grid gap-3">
-    <section class="fd-hero-surface relative grid gap-4 overflow-hidden rounded-[1.35rem] p-5 max-[720px]:p-4">
+    <section class="fd-hero-surface fd-studio-board relative grid gap-4 overflow-hidden rounded-[1.35rem] p-5 max-[720px]:p-4">
       <div
         aria-hidden="true"
         class="pointer-events-none absolute inset-x-0 -top-16 h-40 bg-gradient-to-b from-white/45 to-transparent"
@@ -27,10 +27,14 @@
         </div>
 
         <div class="fd-text-muted flex flex-wrap items-center gap-2 text-[11px]">
-          <span class="fd-chip rounded-full px-2.5 py-1">Quick To Configure</span>
-          <span class="fd-chip rounded-full px-2.5 py-1">Reusable Presets</span>
-          <span class="fd-chip rounded-full px-2.5 py-1">Live Control Ready</span>
+          <span class="fd-chip fd-chip-art rounded-full px-2.5 py-1">Quick To Configure</span>
+          <span class="fd-chip fd-chip-art rounded-full px-2.5 py-1">Reusable Presets</span>
+          <span class="fd-chip fd-chip-art rounded-full px-2.5 py-1">Live Control Ready</span>
         </div>
+
+        <p class="fd-studio-note text-[11px]">
+          Studio tip: mix class templates with tag filters to create themed gesture sets.
+        </p>
       </div>
 
       <div class="relative grid gap-2.5">
@@ -48,7 +52,7 @@
       </div>
     </section>
 
-    <div class="fd-callout grid gap-1.5 rounded-2xl px-3.5 py-3">
+    <div class="fd-callout fd-status-strip grid gap-1.5 rounded-2xl px-3.5 py-3">
       <p class="fd-text-body text-sm" role="status" aria-live="polite">{{ statusMessage }}</p>
       <p v-if="uploadNotice" class="fd-text-body text-sm">{{ uploadNotice }}</p>
       <p class="fd-text-caption text-xs" aria-live="polite">{{ settingsSaveStatusText }}</p>

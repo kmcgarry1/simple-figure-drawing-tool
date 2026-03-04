@@ -125,10 +125,10 @@
 
       <aside
         v-if="!isSessionLive"
-        class="surface-panel grid gap-3 rounded-[1.6rem] p-4 max-[720px]:rounded-xl max-[720px]:p-3"
+        class="surface-panel fd-context-rail grid gap-3 rounded-[1.6rem] p-4 max-[720px]:rounded-xl max-[720px]:p-3"
         aria-label="Studio context"
       >
-        <section class="fd-card grid gap-2 rounded-2xl p-3">
+        <section class="fd-card fd-context-card grid gap-2 rounded-2xl p-3">
           <p class="fd-section-label">Session Context</p>
           <p class="fd-text-strong text-sm font-semibold">{{ sessionModeLabel }}</p>
           <p class="fd-text-muted text-xs leading-5">
@@ -137,25 +137,25 @@
         </section>
 
         <section class="grid grid-cols-2 gap-2">
-          <article class="fd-subtle-card grid gap-0.5 rounded-xl px-2.5 py-2">
+          <article class="fd-subtle-card fd-metric-card grid gap-0.5 rounded-xl px-2.5 py-2">
             <p class="fd-kicker">Photos</p>
             <p class="fd-text-strong text-sm font-semibold">{{ taggedPhotos.length }}</p>
           </article>
-          <article class="fd-subtle-card grid gap-0.5 rounded-xl px-2.5 py-2">
+          <article class="fd-subtle-card fd-metric-card grid gap-0.5 rounded-xl px-2.5 py-2">
             <p class="fd-kicker">Templates</p>
             <p class="fd-text-strong text-sm font-semibold">{{ classTemplates.length }}</p>
           </article>
-          <article class="fd-subtle-card grid gap-0.5 rounded-xl px-2.5 py-2">
+          <article class="fd-subtle-card fd-metric-card grid gap-0.5 rounded-xl px-2.5 py-2">
             <p class="fd-kicker">History Runs</p>
             <p class="fd-text-strong text-sm font-semibold">{{ sessionHistory.length }}</p>
           </article>
-          <article class="fd-subtle-card grid gap-0.5 rounded-xl px-2.5 py-2">
+          <article class="fd-subtle-card fd-metric-card grid gap-0.5 rounded-xl px-2.5 py-2">
             <p class="fd-kicker">Snapshots</p>
             <p class="fd-text-strong text-sm font-semibold">{{ runSnapshots.length }}</p>
           </article>
         </section>
 
-        <section class="fd-callout grid gap-2 rounded-2xl p-3">
+        <section class="fd-callout fd-context-readiness grid gap-2 rounded-2xl p-3">
           <div class="flex items-center justify-between gap-2">
             <p class="fd-section-label">Readiness</p>
             <span class="fd-chip rounded-full px-2 py-0.5 text-[11px] font-semibold">
@@ -184,7 +184,7 @@
           </ul>
         </section>
 
-        <section class="fd-subtle-card grid gap-1.5 rounded-2xl p-3">
+        <section class="fd-subtle-card fd-context-defaults grid gap-1.5 rounded-2xl p-3">
           <p class="fd-section-label">Current Defaults</p>
           <p class="fd-text-body text-xs">
             <span class="font-semibold">Mode:</span> {{ sessionModeLabel }}

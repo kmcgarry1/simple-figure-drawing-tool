@@ -71,7 +71,7 @@
         role="listitem"
         :data-photo-id="photo.id"
         :aria-grabbed="draggedPhotoId === photo.id ? 'true' : 'false'"
-        class="fd-subtle-card grid gap-2 rounded-lg p-2 transition"
+        class="fd-subtle-card grid gap-2 rounded-lg p-2 transition-colors"
         :class="{
           'opacity-60 ring-2 ring-sky-300/80': draggedPhotoId === photo.id,
           'ring-2 ring-amber-300/80': dropTargetPhotoId === photo.id && draggedPhotoId !== photo.id

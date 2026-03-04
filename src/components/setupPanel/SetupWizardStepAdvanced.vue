@@ -51,42 +51,44 @@
         </span>
         <span class="fd-kicker text-[10px]">{{ isOpen("settings") ? "Hide" : "Show" }}</span>
       </button>
-      <div v-if="isOpen('settings')" id="advanced-settings-panel" class="fd-callout-muted grid gap-2 rounded-md p-2.5">
-        <div class="grid grid-cols-4 gap-2 max-[680px]:grid-cols-1">
-          <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
-          <label class="fd-text-body grid gap-1 text-[12px]" for="shareLinkExpiry">
-            <span>Share Link Expiry</span>
-            <select
-              id="shareLinkExpiry"
-              v-model.number="shareExpirySeconds"
-              class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
-            >
-              <option
-                v-for="option in shareExpiryOptions"
-                :key="`share-expiry-${option.valueSeconds}`"
-                :value="option.valueSeconds"
+      <Transition name="expand-fade">
+        <div v-if="isOpen('settings')" id="advanced-settings-panel" class="fd-callout-muted grid gap-2 rounded-md p-2.5">
+          <div class="grid grid-cols-4 gap-2 max-[680px]:grid-cols-1">
+            <BaseButton tone="subtle" @click="$emit('export-settings')">Export JSON</BaseButton>
+            <label class="fd-text-body grid gap-1 text-[12px]" for="shareLinkExpiry">
+              <span>Share Link Expiry</span>
+              <select
+                id="shareLinkExpiry"
+                v-model.number="shareExpirySeconds"
+                class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
               >
-                {{ option.label }}
-              </option>
-            </select>
-          </label>
-          <BaseButton
-            tone="subtle"
-            @click="$emit('share-settings-link', { expiresInSeconds: shareExpirySeconds })"
-          >
-            Copy Share Link
-          </BaseButton>
-          <label class="fd-text-body grid gap-1 text-[12px]">
-            <span>Import JSON</span>
-            <input
-              type="file"
-              accept="application/json,.json"
-              class="fd-file-input w-full rounded-md px-2 py-1.5 text-xs"
-              @change="$emit('import-settings', $event)"
-            />
-          </label>
+                <option
+                  v-for="option in shareExpiryOptions"
+                  :key="`share-expiry-${option.valueSeconds}`"
+                  :value="option.valueSeconds"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </label>
+            <BaseButton
+              tone="subtle"
+              @click="$emit('share-settings-link', { expiresInSeconds: shareExpirySeconds })"
+            >
+              Copy Share Link
+            </BaseButton>
+            <label class="fd-text-body grid gap-1 text-[12px]">
+              <span>Import JSON</span>
+              <input
+                type="file"
+                accept="application/json,.json"
+                class="fd-file-input w-full rounded-md px-2 py-1.5 text-xs"
+                @change="$emit('import-settings', $event)"
+              />
+            </label>
+          </div>
         </div>
-      </div>
+      </Transition>
     </section>
 
     <section class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
@@ -103,17 +105,19 @@
         </span>
         <span class="fd-kicker text-[10px]">{{ isOpen("history") ? "Hide" : "Show" }}</span>
       </button>
-      <div v-if="isOpen('history')" id="advanced-history-panel">
-        <SessionHistorySection
-          :session-history="props.sessionHistory"
-          :run-snapshots="props.runSnapshots"
-          @clear-history="$emit('clear-history')"
-          @rerun-history="$emit('rerun-history', $event)"
-          @save-history-snapshot="$emit('save-history-snapshot', $event)"
-          @restore-run-snapshot="$emit('restore-run-snapshot', $event)"
-          @delete-run-snapshot="$emit('delete-run-snapshot', $event)"
-        />
-      </div>
+      <Transition name="expand-fade">
+        <div v-if="isOpen('history')" id="advanced-history-panel">
+          <SessionHistorySection
+            :session-history="props.sessionHistory"
+            :run-snapshots="props.runSnapshots"
+            @clear-history="$emit('clear-history')"
+            @rerun-history="$emit('rerun-history', $event)"
+            @save-history-snapshot="$emit('save-history-snapshot', $event)"
+            @restore-run-snapshot="$emit('restore-run-snapshot', $event)"
+            @delete-run-snapshot="$emit('delete-run-snapshot', $event)"
+          />
+        </div>
+      </Transition>
     </section>
   </section>
 </template>

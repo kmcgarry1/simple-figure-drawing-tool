@@ -10,14 +10,19 @@
     />
 
     <div :class="imageWrapClass">
-      <img
-        v-if="currentSlideUrl"
-        :class="imageClass"
-        :style="imageFilterStyle"
-        :src="currentSlideUrl"
-        :alt="currentSlideAlt"
-      />
-      <p v-else class="m-4 text-center text-sm text-stone-500">{{ placeholderText }}</p>
+      <Transition name="stage-media" mode="out-in">
+        <img
+          v-if="currentSlideUrl"
+          :key="currentSlideUrl"
+          :class="imageClass"
+          :style="imageFilterStyle"
+          :src="currentSlideUrl"
+          :alt="currentSlideAlt"
+        />
+        <p v-else key="stage-placeholder" class="m-4 text-center text-sm text-stone-500">
+          {{ placeholderText }}
+        </p>
+      </Transition>
     </div>
   </section>
 </template>
@@ -80,13 +85,13 @@ const props = defineProps({
 const stageClass = computed(() =>
   props.isSessionLive
     ? "fixed inset-0 z-10 h-dvh w-screen overflow-hidden bg-black"
-    : "surface-panel relative overflow-hidden rounded-2xl max-[720px]:rounded-xl xl:sticky xl:top-4"
+    : "surface-panel relative overflow-hidden rounded-[1.2rem] max-[720px]:rounded-xl xl:sticky xl:top-4"
 );
 
 const imageWrapClass = computed(() =>
   props.isSessionLive
     ? "absolute inset-0 grid h-dvh min-h-dvh w-screen place-items-center bg-black"
-    : "fd-stage-placeholder grid h-[min(72vh,760px)] min-h-[min(72vh,760px)] w-full place-items-center max-[720px]:h-[58vh] max-[720px]:min-h-[58vh]"
+    : "fd-stage-placeholder grid h-[min(72vh,760px)] min-h-[min(72vh,760px)] w-full place-items-center rounded-[1.15rem] max-[720px]:h-[58vh] max-[720px]:min-h-[58vh]"
 );
 
 const imageClass = computed(() =>
@@ -111,3 +116,27 @@ const imageFilterStyle = computed(() => {
   };
 });
 </script>
+
+<style scoped>
+.stage-media-enter-active,
+.stage-media-leave-active {
+  transition:
+    opacity var(--fd-motion-slow) var(--fd-ease-standard),
+    transform var(--fd-motion-slow) var(--fd-ease-snappy),
+    filter var(--fd-motion-slow) var(--fd-ease-standard);
+}
+
+.stage-media-enter-from,
+.stage-media-leave-to {
+  opacity: 0;
+  transform: scale(0.992);
+  filter: blur(1.2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-media-enter-active,
+  .stage-media-leave-active {
+    transition: none;
+  }
+}
+</style>

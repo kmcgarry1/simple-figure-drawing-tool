@@ -5,9 +5,11 @@ A Vue 3 app for figure drawing practice with uploaded reference images.
 ## Features
 
 - Landing experience:
+  - Studio UI 2.0 visual system (new typography, modernized surfaces, upgraded action styling).
+  - Design direction cross-references Apple HIG foundations and Material Design 3 expressive principles.
   - Setup complexity is moved into a step-based modal wizard to reduce home-screen clutter.
   - Landing panel keeps only setup progress, primary actions, and live status.
-  - Non-live layout is single-column; the image stage appears only during live fullscreen session.
+  - Non-live layout uses a split workspace + context rail on wide screens; the image stage appears only during live fullscreen session.
 - Advanced setup:
   - Visual photo list with thumbnails, drag-and-drop reordering, and per-photo tags.
   - Multi-select bulk tag apply/remove actions.

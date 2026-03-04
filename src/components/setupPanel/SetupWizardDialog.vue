@@ -13,132 +13,189 @@
           aria-labelledby="setup-wizard-title"
           aria-describedby="setup-wizard-description"
           tabindex="-1"
-          class="fd-modal-surface max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-xl p-4"
+          class="fd-modal-surface max-h-[92dvh] w-full max-w-5xl overflow-y-auto rounded-[1.25rem] p-4"
           @keydown="onWizardKeydown"
         >
-          <header class="mb-3 flex items-start justify-between gap-3">
-            <div class="grid gap-1">
-              <h2 id="setup-wizard-title" class="fd-title-gradient text-[1.04rem] font-semibold">
-                Setup Wizard
-              </h2>
-              <p id="setup-wizard-description" class="fd-text-muted text-[13px] leading-5">
-                Configure photos, session behavior, and advanced tools step by step.
-              </p>
+          <header class="mb-4 grid gap-3 border-b border-[rgb(var(--fd-border)/0.78)] pb-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="grid gap-1">
+                <p class="fd-kicker">Guided Setup</p>
+                <h2 id="setup-wizard-title" class="fd-title-gradient text-[1.08rem] font-semibold">
+                  Setup Wizard
+                </h2>
+                <p id="setup-wizard-description" class="fd-text-muted text-[13px] leading-5">
+                  Configure photos, session behavior, and advanced tools in a structured flow.
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close setup wizard dialog"
+                class="fd-accordion-toggle rounded-md px-2.5 py-1.5 text-xs font-semibold focus-visible:ring-offset-transparent"
+                @click="closeWizard"
+              >
+                Close
+              </button>
             </div>
-            <button
-              type="button"
-              aria-label="Close setup wizard dialog"
-              class="fd-accordion-toggle rounded-md px-2.5 py-1.5 text-xs font-semibold focus-visible:ring-offset-transparent"
-              @click="closeWizard"
-            >
-              Close
-            </button>
+
+            <div class="grid gap-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="fd-text-strong text-[13px] font-semibold">
+                  Step {{ wizardStep }} of {{ wizardStepCount }} | {{ currentStepMeta.title }}
+                </p>
+                <span class="fd-chip rounded-full px-2 py-0.5 text-[11px] font-semibold">
+                  {{ wizardProgressPercent }}%
+                </span>
+              </div>
+              <div class="h-1.5 overflow-hidden rounded-full bg-[rgb(var(--fd-surface-muted)/0.84)]">
+                <span
+                  class="fd-progress-fill block h-full rounded-full transition-[width] duration-300"
+                  :style="{ width: `${wizardProgressPercent}%` }"
+                />
+              </div>
+            </div>
           </header>
 
-          <div class="mb-3 grid gap-2.5">
-            <p class="fd-kicker">
-              Step {{ wizardStep }} of {{ wizardStepCount }}
-            </p>
-            <ol class="grid gap-2 md:grid-cols-3" aria-label="Setup wizard progress">
-              <li v-for="step in wizardSteps" :key="`wizard-step-${step.number}`">
-                <button
-                  type="button"
-                  :class="wizardStepCardClass(step.number)"
-                  :disabled="!canNavigateToStep(step.number)"
-                  :aria-current="wizardStep === step.number ? 'step' : undefined"
-                  :aria-describedby="`wizard-step-hint-${step.number}`"
-                  @click="setWizardStep(step.number)"
-                >
-                  <span class="fd-kicker text-[10px]">
-                    Step {{ step.number }}
-                  </span>
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="inline-flex items-center gap-1.5 text-[15px] font-semibold">
+          <div class="grid gap-4 xl:grid-cols-[260px_minmax(0,1fr)]">
+            <aside class="fd-callout-muted grid gap-2.5 self-start rounded-2xl p-3 xl:sticky xl:top-2">
+              <p class="fd-kicker">Workflow</p>
+              <ol class="grid gap-2" aria-label="Setup wizard progress">
+                <li v-for="step in wizardSteps" :key="`wizard-step-${step.number}`">
+                  <button
+                    type="button"
+                    :class="wizardStepCardClass(step.number)"
+                    :disabled="!canNavigateToStep(step.number)"
+                    :aria-current="wizardStep === step.number ? 'step' : undefined"
+                    :aria-describedby="`wizard-step-hint-${step.number}`"
+                    @click="setWizardStep(step.number)"
+                  >
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="fd-kicker text-[10px]">Step {{ step.number }}</span>
+                      <span :class="wizardStepStatusBadgeClass(step.number)">
+                        <component :is="wizardStepStatusIcon(step.number)" class="h-3 w-3" aria-hidden="true" />
+                        {{ wizardStepStatusLabel(step.number) }}
+                      </span>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 text-[14px] font-semibold">
                       <component :is="step.icon" class="h-4 w-4" aria-hidden="true" />
                       {{ step.title }}
                     </span>
-                    <span :class="wizardStepStatusBadgeClass(step.number)">
-                      <component :is="wizardStepStatusIcon(step.number)" class="h-3 w-3" aria-hidden="true" />
-                      {{ wizardStepStatusLabel(step.number) }}
+                    <span :id="`wizard-step-hint-${step.number}`" class="fd-text-muted text-[12px] leading-5">
+                      {{ step.hint }}
                     </span>
-                  </div>
-                  <span :id="`wizard-step-hint-${step.number}`" class="fd-text-muted text-[12px] leading-5">
-                    {{ step.hint }}
-                  </span>
-                </button>
-              </li>
-            </ol>
+                  </button>
+                </li>
+              </ol>
+
+              <section class="fd-subtle-card grid gap-1.5 rounded-xl p-2.5">
+                <p class="fd-section-label">Session Snapshot</p>
+                <p class="fd-text-body text-xs">
+                  <span class="font-semibold">Mode:</span> {{ sessionModeLabel }}
+                </p>
+                <p class="fd-text-body text-xs">
+                  <span class="font-semibold">Source Pool:</span> {{ sourcePhotoCountLabel }}
+                </p>
+                <p class="fd-text-caption text-xs">{{ currentStepMeta.hint }}</p>
+                <ul class="grid gap-1 pt-1 text-xs">
+                  <li
+                    v-for="item in readinessItems"
+                    :key="item.id"
+                    class="fd-text-body inline-flex items-center gap-1.5"
+                  >
+                    <span
+                      class="inline-flex h-2.5 w-2.5 rounded-full"
+                      :class="item.complete ? 'bg-emerald-400' : 'bg-[rgb(var(--fd-border-strong)/0.84)]'"
+                      aria-hidden="true"
+                    />
+                    {{ item.label }}
+                  </li>
+                </ul>
+              </section>
+            </aside>
+
+            <section class="grid gap-3">
+              <div class="fd-callout grid gap-1 rounded-xl px-3 py-2">
+                <p class="fd-text-strong text-[13px] font-semibold">
+                  Step {{ wizardStep }}: {{ currentStepMeta.title }}
+                </p>
+                <p class="fd-text-muted text-[12px] leading-5">{{ currentStepMeta.hint }}</p>
+              </div>
+
+              <Transition name="wizard-step" mode="out-in">
+                <SetupWizardStepPhotos
+                  v-if="wizardStep === 1"
+                  key="wizard-step-photos"
+                  :file-input-accept="fileInputAccept"
+                  :tagged-photos="taggedPhotos"
+                  @photos-selected="onPhotosSelected"
+                />
+
+                <SetupWizardStepSession
+                  v-else-if="wizardStep === 2"
+                  key="wizard-step-session"
+                  :session-mode="sessionMode"
+                  :duration-seconds="durationSeconds"
+                  :class-target-minutes="classTargetMinutes"
+                  :class-pose-count="classPoseCount"
+                  :class-total-minutes-text="classTotalMinutesText"
+                  :class-delta-text="classDeltaText"
+                  :start-action-label="startActionLabel"
+                  :regenerate-action-label="regenerateActionLabel"
+                  :has-source-photos="hasSourcePhotos"
+                  :can-start-session="canStartSession"
+                  :session-preview-items="sessionPreviewItems"
+                  :session-preview-summary-text="sessionPreviewSummaryText"
+                  @session-mode-change="$emit('session-mode-change', $event)"
+                  @duration-input="$emit('duration-input', $event)"
+                  @duration-change="$emit('duration-change')"
+                  @start-session="startSessionFromWizard"
+                  @new-random-set="$emit('new-random-set')"
+                  @open-class-dialog="openClassDialog"
+                />
+
+                <SetupWizardStepAdvanced
+                  v-else
+                  key="wizard-step-advanced"
+                  :tagged-photos="taggedPhotos"
+                  :available-photo-tags="availablePhotoTags"
+                  :session-history="sessionHistory"
+                  :run-snapshots="runSnapshots"
+                  @photo-tag-update="$emit('photo-tag-update', $event)"
+                  @photo-tag-batch-update="$emit('photo-tag-batch-update', $event)"
+                  @photo-reorder="$emit('photo-reorder', $event)"
+                  @export-settings="$emit('export-settings')"
+                  @share-settings-link="$emit('share-settings-link', $event)"
+                  @import-settings="onImportSettingsSelected"
+                  @clear-history="$emit('clear-history')"
+                  @rerun-history="$emit('rerun-history', $event)"
+                  @save-history-snapshot="$emit('save-history-snapshot', $event)"
+                  @restore-run-snapshot="$emit('restore-run-snapshot', $event)"
+                  @delete-run-snapshot="$emit('delete-run-snapshot', $event)"
+                />
+              </Transition>
+
+              <footer class="mt-1 flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--fd-border)/0.82)] pt-3">
+                <div class="flex items-center gap-2">
+                  <BaseButton compact tone="subtle" :disabled="wizardStep === 1" @click="goToPreviousWizardStep">
+                    Back
+                  </BaseButton>
+                  <p class="fd-text-muted text-[12px]">
+                    {{ wizardStepStatusLabel(wizardStep) }}
+                  </p>
+                </div>
+                <div class="ml-auto grid grid-flow-col gap-2">
+                  <BaseButton compact tone="subtle" @click="closeWizard">Done</BaseButton>
+                  <BaseButton
+                    v-if="wizardStep < wizardStepCount"
+                    compact
+                    :disabled="!canAdvanceWizardStep"
+                    @click="goToNextWizardStep"
+                  >
+                    Next
+                  </BaseButton>
+                </div>
+              </footer>
+            </section>
           </div>
-
-          <SetupWizardStepPhotos
-            v-if="wizardStep === 1"
-            :file-input-accept="fileInputAccept"
-            :tagged-photos="taggedPhotos"
-            @photos-selected="onPhotosSelected"
-          />
-
-          <SetupWizardStepSession
-            v-else-if="wizardStep === 2"
-            :session-mode="sessionMode"
-            :duration-seconds="durationSeconds"
-            :class-target-minutes="classTargetMinutes"
-            :class-pose-count="classPoseCount"
-            :class-total-minutes-text="classTotalMinutesText"
-            :class-delta-text="classDeltaText"
-            :start-action-label="startActionLabel"
-            :regenerate-action-label="regenerateActionLabel"
-            :has-source-photos="hasSourcePhotos"
-            :can-start-session="canStartSession"
-            :session-preview-items="sessionPreviewItems"
-            :session-preview-summary-text="sessionPreviewSummaryText"
-            @session-mode-change="$emit('session-mode-change', $event)"
-            @duration-input="$emit('duration-input', $event)"
-            @duration-change="$emit('duration-change')"
-            @start-session="startSessionFromWizard"
-            @new-random-set="$emit('new-random-set')"
-            @open-class-dialog="openClassDialog"
-          />
-
-          <SetupWizardStepAdvanced
-            v-else
-            :tagged-photos="taggedPhotos"
-            :available-photo-tags="availablePhotoTags"
-            :session-history="sessionHistory"
-            :run-snapshots="runSnapshots"
-            @photo-tag-update="$emit('photo-tag-update', $event)"
-            @photo-tag-batch-update="$emit('photo-tag-batch-update', $event)"
-            @photo-reorder="$emit('photo-reorder', $event)"
-            @export-settings="$emit('export-settings')"
-            @share-settings-link="$emit('share-settings-link', $event)"
-            @import-settings="onImportSettingsSelected"
-            @clear-history="$emit('clear-history')"
-            @rerun-history="$emit('rerun-history', $event)"
-            @save-history-snapshot="$emit('save-history-snapshot', $event)"
-            @restore-run-snapshot="$emit('restore-run-snapshot', $event)"
-            @delete-run-snapshot="$emit('delete-run-snapshot', $event)"
-          />
-
-          <footer class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--fd-border)/0.82)] pt-3">
-            <div class="flex items-center gap-2">
-              <BaseButton compact tone="subtle" :disabled="wizardStep === 1" @click="goToPreviousWizardStep">
-                Back
-              </BaseButton>
-              <p class="fd-text-muted text-[12px]">
-                {{ wizardStepStatusLabel(wizardStep) }}
-              </p>
-            </div>
-            <div class="ml-auto grid grid-flow-col gap-2">
-              <BaseButton compact tone="subtle" @click="closeWizard">Done</BaseButton>
-              <BaseButton
-                v-if="wizardStep < wizardStepCount"
-                compact
-                :disabled="!canAdvanceWizardStep"
-                @click="goToNextWizardStep"
-              >
-                Next
-              </BaseButton>
-            </div>
-          </footer>
         </section>
       </div>
     </Transition>
@@ -233,6 +290,50 @@ const wizardSteps = [
   }
 ];
 
+const wizardProgressPercent = computed(() =>
+  Math.round((wizardStep.value / wizardStepCount) * 100)
+);
+
+const currentStepMeta = computed(() => {
+  return wizardSteps.find((step) => step.number === wizardStep.value) || wizardSteps[0];
+});
+
+const sessionModeLabel = computed(() =>
+  props.sessionMode === "class" ? "Life Class Wizard" : "Quick Session"
+);
+
+const sourcePhotoCountLabel = computed(() => {
+  const photoCount = Array.isArray(props.taggedPhotos) ? props.taggedPhotos.length : 0;
+  return `${photoCount} photo${photoCount === 1 ? "" : "s"}`;
+});
+
+const readinessItems = computed(() => {
+  const sessionConfigured = props.sessionMode === "quick" ? true : props.hasClassPlan;
+
+  return [
+    {
+      id: "photos",
+      label: props.hasSourcePhotos ? "Source photos loaded" : "Load source photos",
+      complete: props.hasSourcePhotos
+    },
+    {
+      id: "session",
+      label:
+        props.sessionMode === "quick"
+          ? "Quick timing configured"
+          : props.hasClassPlan
+            ? "Class plan configured"
+            : "Configure class plan",
+      complete: sessionConfigured
+    },
+    {
+      id: "advanced",
+      label: canNavigateToStep(3) ? "Advanced tools unlocked" : "Advanced tools lock until setup complete",
+      complete: canNavigateToStep(3)
+    }
+  ];
+});
+
 function wizardStepState(stepNumber) {
   if (stepNumber === wizardStep.value) {
     return "current";
@@ -305,7 +406,7 @@ function wizardStepStatusBadgeClass(stepNumber) {
 
 function wizardStepCardClass(stepNumber) {
   const baseClass =
-    "grid w-full gap-1.5 rounded-lg border px-3.5 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed";
+    "grid w-full gap-1.5 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed";
   const stepState = wizardStepState(stepNumber);
 
   if (stepState === "current") {
@@ -374,7 +475,7 @@ defineExpose({
 <style scoped>
 .dialog-fade-enter-active,
 .dialog-fade-leave-active {
-  transition: opacity 180ms ease;
+  transition: opacity 220ms ease;
 }
 
 .dialog-fade-enter-from,
@@ -384,20 +485,35 @@ defineExpose({
 
 .dialog-fade-enter-active section,
 .dialog-fade-leave-active section {
-  transition: transform 180ms ease, opacity 180ms ease;
+  transition: transform 220ms ease, opacity 220ms ease;
 }
 
 .dialog-fade-enter-from section,
 .dialog-fade-leave-to section {
   opacity: 0;
-  transform: translateY(10px) scale(0.985);
+  transform: translateY(12px) scale(0.986);
+}
+
+.wizard-step-enter-active,
+.wizard-step-leave-active {
+  transition:
+    opacity var(--fd-motion-base) var(--fd-ease-standard),
+    transform var(--fd-motion-base) var(--fd-ease-snappy);
+}
+
+.wizard-step-enter-from,
+.wizard-step-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.994);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .dialog-fade-enter-active,
   .dialog-fade-leave-active,
   .dialog-fade-enter-active section,
-  .dialog-fade-leave-active section {
+  .dialog-fade-leave-active section,
+  .wizard-step-enter-active,
+  .wizard-step-leave-active {
     transition: none;
   }
 }

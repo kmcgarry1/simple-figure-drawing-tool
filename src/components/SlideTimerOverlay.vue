@@ -25,7 +25,7 @@
 
       <div class="h-1 overflow-hidden rounded-full bg-white/22">
         <span
-          class="block h-full bg-gradient-to-r from-sky-200 via-lime-200 to-amber-200 transition-[width] duration-100"
+          class="fd-overlay-progress-fill block h-full transition-[width] duration-100"
           :style="{ width: `${overlayProgressPercent}%` }"
         />
       </div>

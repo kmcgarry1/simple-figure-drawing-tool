@@ -100,6 +100,31 @@ Status on working branch (2026-03-04): Platform items 1-3 are implemented with o
 1. Keep local-only mode as first-class path.
 2. Make backend-dependent features explicitly opt-in.
 
+## Release 2.0.0 (Studio UI Overhaul)
+
+Status on working branch (2026-03-04): visual system refresh is implemented with updated typography, palette tokens, upgraded surfaces/buttons, split non-live layout (workspace + context rail), and refined setup/live-control presentation while preserving existing app behavior.
+
+### Product
+
+1. Rebuild design tokens for light/dark themes with stronger contrast and modern card/surface hierarchy.
+2. Align styling principles with Apple HIG foundations (clarity, deference, depth) cross-referenced against Material 3 expressive guidance (shape hierarchy, tonal surfaces, motion polish).
+3. Refresh key top-level surfaces:
+   - app header
+   - setup overview hero
+   - live controls panel
+   - stage container and modal surface styling
+   - non-live split layout with contextual side rail
+4. Improve interaction polish:
+   - upgraded button styles and focus visibility
+   - smoother entry motion with reduced-motion support
+   - cleaner desktop/mobile spacing rhythm
+5. Keep workflow semantics and feature affordances stable to avoid regressions during visual transition.
+
+### QA
+
+1. Run local quality gate (`npm run check`) after UI refresh.
+2. Run smoke and accessibility e2e coverage (`npm run e2e`, `npm run e2e:a11y`) to validate unchanged interaction paths.
+
 ## Ongoing Engineering Checklist
 
 1. Keep dependencies current (`vue`, `vite`, `tailwindcss`, `eslint`, `vitest`, `playwright`, `@sentry/vue`).

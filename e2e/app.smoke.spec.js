@@ -131,7 +131,17 @@ test("advanced photo manager supports drag-and-drop reordering", async ({ page }
   await expect(photoCards.nth(0)).toContainText("drag-pose-1.png");
   await expect(photoCards.nth(2)).toContainText("drag-pose-3.png");
 
-  await photoCards.nth(2).dragTo(photoCards.nth(0));
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const sourceThumbnail = photoCards.nth(2).locator("img").first();
+    const targetThumbnail = photoCards.nth(0).locator("img").first();
+    await sourceThumbnail.dragTo(targetThumbnail);
+
+    if ((await photoCards.nth(0).textContent())?.includes("drag-pose-3.png")) {
+      break;
+    }
+
+    await page.waitForTimeout(120);
+  }
 
   await expect(photoCards.nth(0)).toContainText("drag-pose-3.png");
 });

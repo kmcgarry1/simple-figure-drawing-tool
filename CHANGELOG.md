@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.6.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.5.0...figure-drawing-v1.6.0) (2026-03-04)
+
+
+### Features
+
+* add expiring persisted settings share links ([0813eea](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/0813eea4a90a936773bb47656294323ed4173ffd))
+* add opt-in signaling relay for remote pairing ([1c416e5](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/1c416e5ecbf9ff89deae450a4644734c911e795a))
+* add optional multi-device share/signaling foundation ([1f3190e](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/1f3190e17a7a465a67a6ea8b934a62a8ed028057))
+* enrich session history summaries ([e1c3e69](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/e1c3e695a7cb8880b999a3fab8af1048b1ed5235))
+* enrich session history summaries ([8066411](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/806641171507c2e4c51da5c5b0afacb35cd5b475))
+
 ## [1.5.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.4.0...figure-drawing-v1.5.0) (2026-03-03)
 
 

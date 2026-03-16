@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.7.0...figure-drawing-v1.7.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* update all dependencies from open Dependabot PRs ([fd48831](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/fd4883144ce3044f1da11281f887af35bcbdfa15))
+
 ## [1.7.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.6.0...figure-drawing-v1.7.0) (2026-03-04)
 
 

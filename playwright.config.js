@@ -17,10 +17,13 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command:
-      "VITE_CLASS_TEMPLATE_SYNC_ENDPOINT=http://127.0.0.1:4173/__e2e-class-template-sync npm run dev -- --host 127.0.0.1 --port 4173",
+    command: "npm run dev -- --host 127.0.0.1 --port 4173",
+    env: {
+      ...process.env,
+      VITE_CLASS_TEMPLATE_SYNC_ENDPOINT: "http://127.0.0.1:4173/__e2e-class-template-sync"
+    },
     url: "http://127.0.0.1:4173",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120000
   }
 });

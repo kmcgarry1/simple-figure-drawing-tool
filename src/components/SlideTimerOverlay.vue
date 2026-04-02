@@ -23,7 +23,7 @@
         {{ activePoseLabel }}
       </p>
 
-      <div class="h-1 overflow-hidden rounded-full bg-white/22">
+      <div class="fd-overlay-progress-track h-1 overflow-hidden rounded-full">
         <span
           class="fd-overlay-progress-fill block h-full transition-[width] duration-100"
           :style="{ width: `${overlayProgressPercent}%` }"

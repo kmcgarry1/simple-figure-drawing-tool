@@ -1,6 +1,15 @@
 <template>
   <div class="landing-stack grid gap-4 stagger-in">
-    <SetupOverviewCard
+    <SetupStudioWorkspace
+      :file-input-accept="fileInputAccept"
+      :session-mode="sessionMode"
+      :duration-seconds="durationSeconds"
+      :tagged-photos="taggedPhotos"
+      :available-photo-tags="availablePhotoTags"
+      :class-target-minutes="classTargetMinutes"
+      :class-pose-count="classPoseCount"
+      :class-total-minutes-text="classTotalMinutesText"
+      :class-delta-text="classDeltaText"
       :landing-summary="landingSummary"
       :progress-label="progressLabel"
       :progress-percent="progressPercent"
@@ -9,12 +18,33 @@
       :regenerate-action-label="regenerateActionLabel"
       :can-start-session="canStartSession"
       :has-source-photos="hasSourcePhotos"
+      :has-class-plan="hasClassPlan"
       :status-message="statusMessage"
       :upload-notice="uploadNotice"
       :settings-save-status-text="settingsSaveStatusText"
+      :session-preview-items="sessionPreviewItems"
+      :session-preview-summary-text="sessionPreviewSummaryText"
+      :session-history="sessionHistory"
+      :run-snapshots="runSnapshots"
+      @photos-selected="$emit('photos-selected', $event)"
+      @session-mode-change="handleSessionModeChange"
+      @duration-input="$emit('duration-input', $event)"
+      @duration-change="$emit('duration-change')"
+      @photo-tag-update="$emit('photo-tag-update', $event)"
+      @photo-tag-batch-update="$emit('photo-tag-batch-update', $event)"
+      @photo-reorder="$emit('photo-reorder', $event)"
+      @export-settings="$emit('export-settings')"
+      @share-settings-link="$emit('share-settings-link', $event)"
+      @import-settings="$emit('import-settings', $event)"
       @open-wizard="openWizard"
+      @open-class-dialog="openClassDialog"
       @start-session="handleStartSession"
       @new-random-set="$emit('new-random-set')"
+      @clear-history="$emit('clear-history')"
+      @rerun-history="$emit('rerun-history', $event)"
+      @save-history-snapshot="$emit('save-history-snapshot', $event)"
+      @restore-run-snapshot="$emit('restore-run-snapshot', $event)"
+      @delete-run-snapshot="$emit('delete-run-snapshot', $event)"
     />
 
     <ClassSessionDialog
@@ -91,7 +121,7 @@
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import ClassSessionDialog from "./ClassSessionDialog.vue";
-import SetupOverviewCard from "./setupPanel/SetupOverviewCard.vue";
+import SetupStudioWorkspace from "./setupPanel/SetupStudioWorkspace.vue";
 import { setupPanelEmits, setupPanelProps } from "./setupPanel/setupPanelContract";
 import SetupWizardDialog from "./setupPanel/SetupWizardDialog.vue";
 

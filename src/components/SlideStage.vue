@@ -19,7 +19,7 @@
           :src="currentSlideUrl"
           :alt="currentSlideAlt"
         />
-        <p v-else key="stage-placeholder" class="m-4 text-center text-sm text-stone-500">
+        <p v-else key="stage-placeholder" class="fd-text-muted m-4 text-center text-sm">
           {{ placeholderText }}
         </p>
       </Transition>

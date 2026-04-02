@@ -1,88 +1,113 @@
 <template>
-  <div class="grid gap-2.5">
-    <div class="flex items-center justify-between gap-2">
-      <p class="fd-section-label inline-flex items-center gap-1.5">
-        <Save class="h-4 w-4 text-sky-700" aria-hidden="true" />
-        Saved Templates
-      </p>
-      <label class="grid gap-1 text-[11px] text-stone-500" for="templateSortMode">
-        <span>Sort</span>
+  <div class="grid gap-4">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div class="grid gap-1">
+        <p class="fd-section-label inline-flex items-center gap-1.5">
+          <Save class="h-4 w-4 fd-icon-accent" aria-hidden="true" />
+          Saved Templates
+        </p>
+        <p class="fd-text-strong text-sm font-semibold">Save, reuse, and sync class structures.</p>
+      </div>
+
+      <label class="grid gap-1.5 text-sm" for="templateSortMode">
+        <span class="fd-text-muted">Sort</span>
         <select
           id="templateSortMode"
           v-model="sortMode"
-          class="fd-input min-w-[140px] rounded-md px-1.5 py-1 text-[11px]"
+          class="fd-input min-w-[180px] rounded-xl px-3 py-2 text-sm"
         >
           <option value="updated-desc">Recently Updated</option>
           <option value="name-asc">Name (A-Z)</option>
         </select>
       </label>
     </div>
-    <p class="text-[12px] leading-5 text-stone-600">
-      Save, reuse, and share class structures to speed up recurring sessions.
+
+    <p class="fd-text-muted text-sm">
+      Keep recurring formats close at hand. Sync stays optional and does not change the saved payload shape.
     </p>
 
-    <div class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
-      <label class="grid gap-1 text-[12px] text-stone-700" for="templateNameInput">
-        <span>Template Name</span>
+    <section class="fd-subtle-card grid gap-3 rounded-2xl p-4">
+      <div class="grid gap-1">
+        <p class="fd-text-strong text-sm font-semibold">Save current plan</p>
+        <p class="fd-text-muted text-sm">Capture the current block structure under a reusable name.</p>
+      </div>
+
+      <label class="grid gap-1.5 text-sm" for="templateNameInput">
+        <span class="fd-text-muted">Template Name</span>
         <input
           id="templateNameInput"
           v-model.trim="templateName"
           type="text"
-          placeholder="e.g. Morning Gesture Set"
-          class="fd-input w-full rounded-md px-2 py-1.5 text-sm"
+          placeholder="Morning gesture set"
+          class="fd-input w-full rounded-xl px-3 py-2 text-sm"
           @keydown.enter.prevent="saveTemplate"
         />
       </label>
+
       <BaseButton compact tone="subtle" @click="saveTemplate">
         <Save class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
         Save Current Plan
       </BaseButton>
-    </div>
+    </section>
 
-    <div class="fd-subtle-card grid grid-cols-2 gap-2 rounded-lg p-2.5 max-[560px]:grid-cols-1">
-      <BaseButton compact tone="subtle" @click="$emit('class-template-export')">
-        <Download class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-        Export Templates
-      </BaseButton>
-      <input
-        ref="templateImportInputRef"
-        type="file"
-        accept=".json,application/json"
-        class="hidden"
-        @change="onTemplateImportSelected"
-      />
-      <BaseButton compact tone="subtle" @click="openTemplateImportDialog">
-        <Upload class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-        Import Templates
-      </BaseButton>
-    </div>
-
-    <div class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
+    <section class="fd-subtle-card grid gap-3 rounded-2xl p-4">
       <div class="grid gap-1">
-        <p class="fd-text-body inline-flex items-center gap-1.5 text-[12px] font-semibold">
-          <component :is="classTemplateSyncEnabled ? CloudUpload : CloudOff" class="h-3.5 w-3.5 text-sky-700" aria-hidden="true" />
-          Cross-Device Sync
+        <p class="fd-text-strong text-sm font-semibold">Transfer templates</p>
+        <p class="fd-text-muted text-sm">Export or import template JSON without changing the storage format.</p>
+      </div>
+
+      <div class="grid gap-2 sm:grid-cols-2">
+        <BaseButton compact tone="subtle" @click="$emit('class-template-export')">
+          <Download class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+          Export Templates
+        </BaseButton>
+
+        <input
+          ref="templateImportInputRef"
+          type="file"
+          accept=".json,application/json"
+          class="hidden"
+          @change="onTemplateImportSelected"
+        />
+        <BaseButton compact tone="subtle" @click="openTemplateImportDialog">
+          <Upload class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+          Import Templates
+        </BaseButton>
+      </div>
+    </section>
+
+    <section class="fd-subtle-card grid gap-3 rounded-2xl p-4">
+      <div class="grid gap-1">
+        <p class="fd-text-strong inline-flex items-center gap-1.5 text-sm font-semibold">
+          <component
+            :is="classTemplateSyncEnabled ? CloudUpload : CloudOff"
+            class="h-3.5 w-3.5 fd-icon-accent"
+            aria-hidden="true"
+          />
+          Cross-device sync
         </p>
-        <p class="text-[12px] text-stone-600">
+        <p class="fd-text-muted text-sm">
           {{
             classTemplateSyncEnabled
-              ? "Use a shared sync key across devices, then push or pull your template set."
-              : "Sync endpoint is not configured. Local template save/import/export remains available."
+              ? "Use a shared key on each device, then push or pull the template set."
+              : "Sync is unavailable here. Local template save, import, and export still work."
           }}
         </p>
       </div>
-      <label class="grid gap-1 text-[12px] text-stone-700" for="templateSyncKeyInput">
-        <span>Sync Key</span>
+
+      <label class="grid gap-1.5 text-sm" for="templateSyncKeyInput">
+        <span class="fd-text-muted">Sync Key</span>
         <input
           id="templateSyncKeyInput"
           v-model.trim="templateSyncKeyInput"
           type="text"
           :disabled="!classTemplateSyncEnabled"
-          placeholder="e.g. studio-team-1"
-          class="fd-input w-full rounded-md px-2 py-1.5 text-sm"
+          placeholder="studio-team-1"
+          class="fd-input w-full rounded-xl px-3 py-2 text-sm"
         />
       </label>
-      <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
+
+      <div class="grid gap-2 sm:grid-cols-2">
         <BaseButton compact tone="subtle" :disabled="!canSyncTemplates" @click="$emit('class-template-sync-push')">
           <CloudUpload class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
           Push To Sync
@@ -92,10 +117,11 @@
           Pull From Sync
         </BaseButton>
       </div>
-    </div>
+    </section>
 
-    <div v-if="classTemplates.length === 0" class="text-[12px] text-stone-600">
-      No custom templates saved yet.
+    <div v-if="classTemplates.length === 0" class="fd-inline-note">
+      <p class="fd-text-strong text-sm font-semibold">No saved templates yet.</p>
+      <p class="fd-text-muted text-sm">Save the current class plan here once the structure is ready.</p>
     </div>
 
     <section
@@ -103,32 +129,31 @@
       :key="group.id"
       class="grid gap-2"
     >
-      <p class="text-[11px] font-semibold uppercase tracking-wide text-stone-600">
-        {{ group.label }}
-      </p>
+      <p class="fd-kicker">{{ group.label }}</p>
 
       <article
         v-for="template in group.templates"
         :key="template.id"
-        class="fd-subtle-card grid gap-2 rounded-lg p-2.5"
+        class="fd-list-row"
       >
-        <label class="grid gap-1 text-[12px] text-stone-700" :for="`template-edit-${template.id}`">
-          <span>Template Name</span>
+        <div class="grid gap-1">
+          <p class="fd-text-strong text-sm font-semibold">{{ template.name }}</p>
+          <p class="fd-text-muted text-sm">{{ summarizeTemplate(template.blocks) }}</p>
+        </div>
+
+        <label class="grid gap-1.5 text-sm" :for="`template-edit-${template.id}`">
+          <span class="fd-text-muted">Template Name</span>
           <input
             :id="`template-edit-${template.id}`"
             v-model.trim="templateNames[template.id]"
             type="text"
-            class="fd-input w-full rounded-md px-2 py-1.5 text-sm"
+            class="fd-input w-full rounded-xl px-3 py-2 text-sm"
             @keydown.enter.prevent="renameTemplate(template.id)"
           />
         </label>
 
-        <p class="text-[12px] text-stone-600">
-          {{ summarizeTemplate(template.blocks) }}
-        </p>
-
-        <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-          <BaseButton compact @click="$emit('class-template-load', template.id)">
+        <div class="grid gap-2 sm:grid-cols-2">
+          <BaseButton compact tone="subtle" @click="$emit('class-template-load', template.id)">
             <FolderOpenDot class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             Load
           </BaseButton>
@@ -232,7 +257,7 @@ function renameTemplate(templateId) {
 function summarizeTemplate(blocks) {
   const summary = calculateClassPlanSummary(blocks || []);
   const blockCount = Array.isArray(blocks) ? blocks.length : 0;
-  return `${blockCount} block(s), ${summary.totalPoses} pose(s), ${summary.totalSeconds}s total`;
+  return `${blockCount} block(s) | ${summary.totalPoses} pose(s) | ${summary.totalSeconds}s total`;
 }
 
 function sortedTemplates(templates, nextSortMode) {

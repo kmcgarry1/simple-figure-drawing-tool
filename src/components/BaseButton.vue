@@ -34,9 +34,9 @@ const props = defineProps({
 defineEmits(["click"]);
 
 const baseClass =
-  "inline-flex w-full items-center justify-center rounded-xl border text-sm font-semibold tracking-[0.01em] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80";
+  "inline-flex w-full items-center justify-center gap-1.5 rounded-xl border text-sm font-semibold tracking-[0.01em] transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--fd-accent)/0.28)]";
 
-const sizeClass = computed(() => (props.compact ? "px-2.75 py-1.75 text-xs" : "px-4 py-2.5"));
+const sizeClass = computed(() => (props.compact ? "px-3 py-2 text-xs" : "px-4 py-3"));
 
 const toneClass = computed(() => {
   if (props.tone === "danger") {

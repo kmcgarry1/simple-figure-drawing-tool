@@ -3,54 +3,56 @@
     <Transition appear name="dialog-fade">
       <div
         v-if="isOpen"
-        class="fd-dialog-backdrop fixed inset-0 z-[90] grid place-items-center p-3"
+        class="fd-dialog-backdrop"
         @click.self="$emit('close')"
       >
         <section
+          ref="dialogRef"
           role="dialog"
           aria-modal="true"
           aria-labelledby="class-launch-review-title"
           aria-describedby="class-launch-review-description"
           tabindex="-1"
-          class="fd-modal-surface max-h-[92dvh] w-full max-w-5xl overflow-y-auto rounded-xl p-4"
-          @keydown.esc.prevent="$emit('close')"
+          class="fd-modal-surface fd-dialog-panel"
+          @keydown="onDialogKeydown"
         >
-          <header class="mb-3 flex items-start justify-between gap-3">
+          <header class="fd-sheet-header">
             <div class="grid gap-1">
-              <h2 id="class-launch-review-title" class="fd-title-gradient text-base font-semibold">
-                Review Class Pose Grid
-              </h2>
-              <p id="class-launch-review-description" class="text-sm text-stone-600">
-                Drag thumbnails to map photos to warm-up and long-pose durations before starting.
+              <p class="fd-section-label">Review</p>
+              <h2 id="class-launch-review-title" class="fd-sheet-title">Review Class Pose Grid</h2>
+              <p id="class-launch-review-description" class="fd-text-muted text-sm">
+                Drag thumbnails to remap images before launch. Each slot keeps its own duration.
               </p>
             </div>
             <button
               type="button"
               aria-label="Close class review dialog"
-              class="rounded-md border border-amber-300/75 bg-white/78 px-2.5 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              class="fd-topbar-button fd-topbar-button-quiet"
               @click="$emit('close')"
             >
               Close
             </button>
           </header>
 
-          <p class="mb-3 rounded-md border border-amber-200/80 bg-white/60 px-2.5 py-2 text-xs text-stone-600">
-            Duration stays with each pose slot. Moving an image to a different slot applies that slot's timer.
-          </p>
+          <section class="fd-callout rounded-2xl p-4">
+            <p class="fd-text-body text-sm">
+              Moving an image to a new slot changes the timer attached to that image. Review the order before you start.
+            </p>
+          </section>
 
-          <p v-if="slots.length === 0" class="rounded-md border border-amber-200/80 bg-white/56 px-2.5 py-2 text-sm text-stone-600">
-            No class poses are prepared yet.
+          <p v-if="slots.length === 0" class="fd-inline-note">
+            <span class="fd-text-strong text-sm font-semibold">No class poses are prepared yet.</span>
           </p>
 
           <div
             v-else
-            class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2"
+            class="fd-review-grid"
           >
             <article
               v-for="(slot, index) in slots"
               :key="slot.id"
               draggable="true"
-              class="grid gap-1.5 rounded-md border border-amber-200/80 bg-white/58 p-2 transition-shadow"
+              class="fd-review-slot"
               :class="cardClass(index)"
               @dragstart="onDragStart(index, $event)"
               @dragover="onDragOver(index, $event)"
@@ -58,27 +60,27 @@
               @dragend="resetDragState"
             >
               <div class="flex items-center justify-between gap-2">
-                <span class="text-xs font-semibold text-stone-800">Pose {{ slot.poseNumber }}</span>
-                <span class="text-xs text-stone-500">{{ slot.durationText }}</span>
+                <span class="fd-text-strong text-sm font-semibold">Pose {{ slot.poseNumber }}</span>
+                <span class="fd-text-muted text-sm">{{ slot.durationText }}</span>
               </div>
 
               <img
                 v-if="previewUrlsById[slot.id]"
                 :src="previewUrlsById[slot.id]"
                 :alt="`Pose ${slot.poseNumber}: ${slot.fileName}`"
-                class="h-24 w-full rounded-md border border-amber-200/70 bg-stone-100 object-cover"
+                class="fd-review-slot-media"
                 loading="lazy"
               />
               <div
                 v-else
-                class="grid h-24 place-items-center rounded-md border border-dashed border-amber-200/80 bg-white/40 text-[11px] text-stone-500"
+                class="fd-review-slot-empty"
               >
                 No preview
               </div>
 
-              <p class="truncate text-xs text-stone-600">{{ slot.label }} | {{ slot.fileName }}</p>
+              <p class="truncate fd-text-muted text-sm">{{ slot.label }} | {{ slot.fileName }}</p>
 
-              <div class="grid grid-cols-2 gap-1">
+              <div class="grid grid-cols-2 gap-2">
                 <BaseButton
                   compact
                   tone="subtle"
@@ -99,8 +101,8 @@
             </article>
           </div>
 
-          <footer class="mt-4 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-2">
-            <BaseButton tone="subtle" @click="$emit('close')">Back to Setup</BaseButton>
+          <footer class="grid gap-2 sm:grid-cols-2">
+            <BaseButton tone="subtle" @click="$emit('close')">Back To Setup</BaseButton>
             <BaseButton :disabled="slots.length === 0" @click="$emit('start-class')">Start Class</BaseButton>
           </footer>
         </section>
@@ -110,8 +112,17 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import BaseButton from "./BaseButton.vue";
+
+const FOCUSABLE_SELECTOR = [
+  "a[href]:not([tabindex='-1'])",
+  "button:not([disabled]):not([tabindex='-1'])",
+  "input:not([disabled]):not([type='hidden']):not([tabindex='-1'])",
+  "select:not([disabled]):not([tabindex='-1'])",
+  "textarea:not([disabled]):not([tabindex='-1'])",
+  "[tabindex]:not([tabindex='-1'])"
+].join(",");
 
 const props = defineProps({
   isOpen: {
@@ -126,9 +137,11 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "reorder", "start-class"]);
 
+const dialogRef = ref(null);
 const dragSourceIndex = ref(-1);
 const dragTargetIndex = ref(-1);
 const previewUrlsById = ref({});
+const previousFocusedElement = ref(null);
 
 function clearPreviewUrls() {
   for (const url of Object.values(previewUrlsById.value)) {
@@ -161,14 +174,33 @@ watch(
   }
 );
 
+watch(
+  () => props.isOpen,
+  async (nextOpen) => {
+    if (nextOpen) {
+      previousFocusedElement.value =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      document.body.style.overflow = "hidden";
+      await nextTick();
+      dialogRef.value?.focus();
+      return;
+    }
+
+    document.body.style.overflow = "";
+    await nextTick();
+    previousFocusedElement.value?.focus();
+  }
+);
+
 onBeforeUnmount(() => {
   clearPreviewUrls();
+  document.body.style.overflow = "";
 });
 
 function cardClass(index) {
   return {
-    "opacity-70 ring-2 ring-amber-300/70": index === dragSourceIndex.value,
-    "ring-2 ring-sky-300/80": dragSourceIndex.value >= 0 && index === dragTargetIndex.value
+    "is-dragging": index === dragSourceIndex.value,
+    "is-drop-target": dragSourceIndex.value >= 0 && index === dragTargetIndex.value
   };
 }
 
@@ -225,36 +257,40 @@ function onDrop(index, event) {
   requestMove(fromIndex, index);
   resetDragState();
 }
-</script>
 
-<style scoped>
-.dialog-fade-enter-active,
-.dialog-fade-leave-active {
-  transition: opacity 180ms ease;
-}
+function onDialogKeydown(event) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    emit("close");
+    return;
+  }
 
-.dialog-fade-enter-from,
-.dialog-fade-leave-to {
-  opacity: 0;
-}
+  if (event.key !== "Tab") {
+    return;
+  }
 
-.dialog-fade-enter-active section,
-.dialog-fade-leave-active section {
-  transition: transform 180ms ease, opacity 180ms ease;
-}
+  const focusables = Array.from(dialogRef.value?.querySelectorAll(FOCUSABLE_SELECTOR) || []).filter(
+    (element) => element instanceof HTMLElement && element.getClientRects().length > 0
+  );
 
-.dialog-fade-enter-from section,
-.dialog-fade-leave-to section {
-  opacity: 0;
-  transform: translateY(10px) scale(0.985);
-}
+  if (focusables.length === 0) {
+    event.preventDefault();
+    dialogRef.value?.focus();
+    return;
+  }
 
-@media (prefers-reduced-motion: reduce) {
-  .dialog-fade-enter-active,
-  .dialog-fade-leave-active,
-  .dialog-fade-enter-active section,
-  .dialog-fade-leave-active section {
-    transition: none;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+    return;
+  }
+
+  if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
   }
 }
-</style>
+</script>

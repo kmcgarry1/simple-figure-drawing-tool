@@ -479,31 +479,37 @@ p {
 
 .fd-live-toolbar {
   position: fixed;
-  left: 0.75rem;
-  right: 0.75rem;
-  bottom: 0.75rem;
+  left: calc(env(safe-area-inset-left, 0px) + 0.75rem);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
   z-index: 30;
   display: grid;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  justify-items: start;
+  gap: 0.55rem;
+  width: auto;
+  max-width: calc(100dvw - 1.5rem);
+  padding: 0.5rem;
 }
 
 .fd-live-toolbar-main {
   display: grid;
-  gap: 0.6rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  justify-content: start;
+  gap: 0.45rem;
 }
 
 .fd-live-toolbar-utility {
   display: flex;
-  justify-content: flex-end;
-  padding-top: 0.2rem;
+  justify-content: flex-start;
+  width: 100%;
+  padding-top: 0.5rem;
   border-top: 1px solid rgb(var(--fd-line) / 0.65);
 }
 
+.fd-live-control-button,
 .fd-live-settings-button {
   width: auto;
-  min-width: 180px;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .fd-dialog-backdrop {
@@ -1077,10 +1083,6 @@ summary {
   .fd-choice-grid-3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .fd-live-toolbar-main {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 720px) {
@@ -1110,14 +1112,23 @@ summary {
 
   .fd-metric-strip,
   .fd-summary-metrics,
-  .fd-choice-grid-3,
-  .fd-live-toolbar-main {
+  .fd-choice-grid-3 {
     grid-template-columns: 1fr;
   }
 
+  .fd-live-toolbar {
+    left: calc(env(safe-area-inset-left, 0px) + 0.5rem);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+    max-width: calc(100dvw - 1rem);
+    padding: 0.45rem;
+  }
+
+  .fd-live-toolbar-main {
+    gap: 0.4rem;
+  }
+
   .fd-live-toolbar-utility {
-    padding-top: 0;
-    border-top: 0;
+    padding-top: 0.4rem;
   }
 
   .fd-dialog-backdrop {

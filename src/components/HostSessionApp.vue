@@ -17,18 +17,18 @@
 
     <div class="surface-panel fd-live-toolbar">
       <div class="fd-live-toolbar-main">
-        <BaseButton compact @click="session.togglePause">
+        <BaseButton compact class="fd-live-control-button" @click="session.togglePause">
           {{ session.pauseLabel.value }}
         </BaseButton>
-        <BaseButton compact tone="subtle" @click="session.goToNextSlide">
+        <BaseButton compact class="fd-live-control-button" tone="subtle" @click="session.goToNextSlide">
           <ArrowRight class="fd-inline-icon-sm" aria-hidden="true" />
           Next
         </BaseButton>
-        <BaseButton compact tone="subtle" @click="openPairPhoneSheet">
+        <BaseButton compact class="fd-live-control-button" tone="subtle" @click="openPairPhoneSheet">
           <Smartphone class="fd-inline-icon-sm" aria-hidden="true" />
           Pair Phone
         </BaseButton>
-        <BaseButton compact tone="danger" @click="session.stopSession">
+        <BaseButton compact class="fd-live-control-button" tone="danger" @click="session.stopSession">
           End
         </BaseButton>
       </div>

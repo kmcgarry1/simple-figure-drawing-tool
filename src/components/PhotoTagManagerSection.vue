@@ -1,80 +1,64 @@
 <template>
-  <section class="fd-card grid gap-2 rounded-lg p-3">
-    <p class="text-sm font-semibold text-stone-800">Photo Order and Tags</p>
-    <p class="text-xs text-stone-600">
-      Reorder photos and assign tags for specific class blocks. Order affects class runs when photo order is set to
-      <strong>Sequential</strong>.
-    </p>
-    <p v-if="availablePhotoTags.length > 0" class="text-xs text-stone-600">
-      Active tags: {{ availablePhotoTags.join(", ") }}
-    </p>
-    <p v-else class="text-xs text-stone-500">No tags assigned yet.</p>
-    <p class="text-xs text-stone-600">Select multiple photos to apply or remove tags in one action.</p>
+  <section class="fd-card grid gap-4 rounded-2xl p-4">
+    <div class="grid gap-1">
+      <p class="fd-text-strong text-base font-semibold">Photo order and tags</p>
+      <p class="fd-text-muted text-sm">
+        Reorder photos and assign tags for specific class blocks. Upload order matters only when class sequence uses
+        sequential mode.
+      </p>
+      <p v-if="availablePhotoTags.length > 0" class="fd-text-muted text-sm">
+        Active tags: {{ availablePhotoTags.join(", ") }}
+      </p>
+      <p v-else class="fd-text-muted text-sm">No tags assigned yet.</p>
+    </div>
 
-    <section class="fd-subtle-card grid gap-2 rounded-lg p-2.5">
+    <section class="fd-subtle-card grid gap-3 rounded-2xl p-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <p class="text-xs font-semibold uppercase tracking-wide text-stone-600">Bulk Tag Actions</p>
-        <p class="text-xs text-stone-600">{{ selectedPhotoCount }} selected</p>
+        <div class="grid gap-1">
+          <p class="fd-section-label">Bulk Tag Actions</p>
+          <p class="fd-text-muted text-sm">{{ selectedPhotoCount }} selected</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <BaseButton compact tone="subtle" :disabled="taggedPhotos.length === 0" @click="selectAllPhotos">
+            Select All
+          </BaseButton>
+          <BaseButton compact tone="subtle" :disabled="selectedPhotoCount === 0" @click="clearSelectedPhotos">
+            Clear Selection
+          </BaseButton>
+        </div>
       </div>
-      <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
-        <label class="grid gap-1 text-[11px] text-stone-600" for="bulkPhotoTagInput">
-          <span>Tag Name</span>
+
+      <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+        <label class="grid gap-1.5 text-sm" for="bulkPhotoTagInput">
+          <span class="fd-text-muted">Tag Name</span>
           <input
             id="bulkPhotoTagInput"
             v-model="bulkTagValue"
             type="text"
             placeholder="gesture"
-            class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
+            class="fd-input w-full rounded-xl px-3 py-2 text-sm"
           />
         </label>
-        <button
-          type="button"
-          class="rounded border border-amber-200/90 bg-white/80 px-2.5 py-1.5 text-[11px] font-semibold text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
-          :disabled="!canApplyBulkTag"
-          @click="applyTagToSelectedPhotos"
-        >
+        <BaseButton compact tone="subtle" :disabled="!canApplyBulkTag" @click="applyTagToSelectedPhotos">
           Apply Tag
-        </button>
-        <button
-          type="button"
-          class="rounded border border-amber-200/90 bg-white/80 px-2.5 py-1.5 text-[11px] font-semibold text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
-          :disabled="!canRemoveBulkTag"
-          @click="removeTagFromSelectedPhotos"
-        >
+        </BaseButton>
+        <BaseButton compact tone="subtle" :disabled="!canRemoveBulkTag" @click="removeTagFromSelectedPhotos">
           Remove Tag
-        </button>
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          class="rounded border border-amber-200/90 bg-white/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
-          :disabled="taggedPhotos.length === 0"
-          @click="selectAllPhotos"
-        >
-          Select All
-        </button>
-        <button
-          type="button"
-          class="rounded border border-amber-200/90 bg-white/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
-          :disabled="selectedPhotoCount === 0"
-          @click="clearSelectedPhotos"
-        >
-          Clear Selection
-        </button>
+        </BaseButton>
       </div>
     </section>
 
-    <div class="grid max-h-[24rem] gap-2 overflow-y-auto pr-1" role="list" aria-label="Source photo order">
+    <div class="fd-library-list" role="list" aria-label="Source photo order">
       <article
         v-for="(photo, index) in taggedPhotos"
         :key="photo.id"
         role="listitem"
         :data-photo-id="photo.id"
         :aria-grabbed="draggedPhotoId === photo.id ? 'true' : 'false'"
-        class="fd-subtle-card grid gap-2 rounded-lg p-2 transition-colors"
+        class="fd-library-row"
         :class="{
-          'opacity-60 ring-2 ring-sky-300/80': draggedPhotoId === photo.id,
-          'ring-2 ring-amber-300/80': dropTargetPhotoId === photo.id && draggedPhotoId !== photo.id
+          'is-dragging': draggedPhotoId === photo.id,
+          'is-drop-target': dropTargetPhotoId === photo.id && draggedPhotoId !== photo.id
         }"
         draggable="true"
         @dragstart="onDragStart($event, photo.id)"
@@ -83,8 +67,8 @@
         @drop="onDrop($event, photo.id)"
         @dragend="onDragEnd"
       >
-        <div class="flex items-start gap-2">
-          <div class="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-amber-200/90 bg-white/84">
+        <div class="flex items-start gap-3">
+          <div class="fd-library-thumb">
             <img
               v-if="previewUrlsById[photo.id]"
               class="h-full w-full object-cover"
@@ -93,47 +77,48 @@
             />
             <div
               v-else
-              class="grid h-full w-full place-items-center text-[10px] font-semibold uppercase tracking-wide text-stone-500"
+              class="grid h-full w-full place-items-center text-xs font-semibold uppercase tracking-[0.08em] fd-text-muted"
             >
               IMG
             </div>
           </div>
 
-          <div class="min-w-0 flex-1 grid gap-1">
-            <div class="flex items-center justify-between gap-2">
-              <label class="inline-flex items-center gap-1.5 text-[11px] text-stone-600">
+          <div class="min-w-0 flex-1 grid gap-3">
+            <div class="fd-row-actions">
+              <label class="fd-check-inline">
                 <input
                   type="checkbox"
-                  class="h-3.5 w-3.5 rounded border-stone-400 text-sky-700 focus:ring-sky-300"
+                  class="fd-check-input"
                   :checked="isPhotoSelected(photo.id)"
                   :aria-label="`Select ${photo.name} for bulk tag actions`"
                   @change="setPhotoSelection(photo.id, $event.target.checked)"
                 />
-                Select
+                <span>Select</span>
               </label>
-              <span class="truncate text-xs font-medium text-stone-800">
+
+              <span class="truncate fd-text-strong text-sm font-semibold">
                 {{ index + 1 }}. {{ photo.name }}
               </span>
 
-              <div class="grid grid-flow-col gap-1">
-                <button
-                  type="button"
+              <div class="flex gap-2">
+                <BaseButton
+                  compact
+                  tone="subtle"
                   :disabled="index === 0"
-                  class="rounded border border-amber-200/90 bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
                   :aria-label="`Move ${photo.name} up`"
                   @click="requestPhotoReorder(photo.id, 'up')"
                 >
                   Up
-                </button>
-                <button
-                  type="button"
+                </BaseButton>
+                <BaseButton
+                  compact
+                  tone="subtle"
                   :disabled="index === taggedPhotos.length - 1"
-                  class="rounded border border-amber-200/90 bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
                   :aria-label="`Move ${photo.name} down`"
                   @click="requestPhotoReorder(photo.id, 'down')"
                 >
                   Down
-                </button>
+                </BaseButton>
               </div>
             </div>
 
@@ -142,7 +127,7 @@
               :value="photo.tag"
               :aria-label="`Tag for ${photo.name}`"
               placeholder="Tag name (leave empty for all)"
-              class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
+              class="fd-input w-full rounded-xl px-3 py-2 text-sm"
               @change="onTagChange(photo.id, $event)"
             />
           </div>
@@ -154,6 +139,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from "vue";
+import BaseButton from "./BaseButton.vue";
 
 const props = defineProps({
   taggedPhotos: {

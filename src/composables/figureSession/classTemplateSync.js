@@ -17,11 +17,35 @@ function readClassTemplateSyncEnv(overrides) {
     return overrides;
   }
 
-  return import.meta.env || {};
+  const browserOverrides =
+    typeof window !== "undefined" && typeof window === "object"
+      ? {
+          VITE_CLASS_TEMPLATE_SYNC_ENDPOINT: window.__FD_CLASS_TEMPLATE_SYNC_ENDPOINT__,
+          VITE_CLASS_TEMPLATE_SYNC_TIMEOUT_MS: window.__FD_CLASS_TEMPLATE_SYNC_TIMEOUT_MS__
+        }
+      : {};
+
+  return {
+    ...(import.meta.env || {}),
+    ...browserOverrides
+  };
 }
 
 function normalizeSyncEndpoint(rawEndpoint) {
   return String(rawEndpoint || "").trim();
+}
+
+function readLocalDevSyncEndpointFallback() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  const { hostname, origin } = window.location || {};
+  if (hostname !== "127.0.0.1" && hostname !== "localhost") {
+    return "";
+  }
+
+  return `${origin}/__e2e-class-template-sync`;
 }
 
 export function normalizeClassTemplateSyncKey(rawKey) {
@@ -35,7 +59,8 @@ export function buildClassTemplateSyncConfig(options = {}) {
       env.VITE_CLASS_TEMPLATE_SYNC_ENDPOINT ??
       env.VITE_CLASS_TEMPLATES_SYNC_ENDPOINT ??
       env.CLASS_TEMPLATE_SYNC_ENDPOINT ??
-      env.CLASS_TEMPLATES_SYNC_ENDPOINT
+      env.CLASS_TEMPLATES_SYNC_ENDPOINT ??
+      readLocalDevSyncEndpointFallback()
   );
 
   return {

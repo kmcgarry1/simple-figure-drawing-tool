@@ -1,83 +1,83 @@
 <template>
-  <div class="grid gap-2.5">
-    <p class="fd-section-label inline-flex items-center gap-1.5">
-      <WandSparkles class="h-4 w-4 text-sky-700" aria-hidden="true" />
-      Class Builder Assistant
-    </p>
-    <section class="fd-subtle-card grid gap-2.5 rounded-lg p-3">
-      <p class="text-[12px] leading-5 text-stone-600">
-        Generate a class plan from a target duration preset, gesture/long-pose mix, and preferred
-        photo tags.
+  <div class="grid gap-3">
+    <div class="grid gap-1">
+      <p class="fd-section-label inline-flex items-center gap-2">
+        <WandSparkles class="h-4 w-4 fd-icon-accent" aria-hidden="true" />
+        Planner Assistant
       </p>
+      <p class="fd-text-strong text-sm font-semibold">Generate a starting structure, then refine it manually.</p>
+      <p class="fd-text-muted text-sm">
+        Use this only when you want a fast first draft. It stays secondary to the preset and block editor.
+      </p>
+    </div>
 
-      <div class="grid grid-cols-3 gap-2 max-[560px]:grid-cols-1">
-        <BaseButton
-          v-for="preset in classPresetOptions"
-          :key="`assistant-preset-${preset.id}`"
-          compact
-          :tone="assistantPresetId === preset.id ? 'primary' : 'subtle'"
-          @click="assistantPresetId = preset.id"
-        >
-          {{ preset.label }}
-        </BaseButton>
-      </div>
-
-      <label class="grid gap-1 text-[12px] text-stone-700" for="assistantGestureShare">
-        <span>Gesture Mix: {{ gestureSharePercent }}% (Long Pose {{ 100 - gestureSharePercent }}%)</span>
-        <input
-          id="assistantGestureShare"
-          type="range"
-          min="10"
-          max="90"
-          step="1"
-          :value="gestureSharePercent"
-          class="fd-input w-full accent-amber-500"
-          @input="onGestureShareInput"
-        />
-      </label>
-
-      <div class="grid grid-cols-2 gap-2 max-[560px]:grid-cols-1">
-        <label class="grid gap-1 text-[12px] text-stone-700" for="assistantGestureTag">
-          <span>Gesture Tag</span>
-          <select
-            id="assistantGestureTag"
-            v-model="gestureTag"
-            class="fd-input w-full rounded-md px-2 py-1.5 text-sm"
-          >
-            <option v-for="tag in tagOptions" :key="`assistant-gesture-tag-${tag}`" :value="tag">
-              {{ formatTagLabel(tag) }}
-            </option>
-          </select>
-        </label>
-
-        <label class="grid gap-1 text-[12px] text-stone-700" for="assistantLongPoseTag">
-          <span>Long Pose Tag</span>
-          <select
-            id="assistantLongPoseTag"
-            v-model="longPoseTag"
-            class="fd-input w-full rounded-md px-2 py-1.5 text-sm"
-          >
-            <option v-for="tag in tagOptions" :key="`assistant-long-tag-${tag}`" :value="tag">
-              {{ formatTagLabel(tag) }}
-            </option>
-          </select>
-        </label>
-      </div>
-
-      <label class="inline-flex items-center gap-2 text-[12px] text-stone-700">
-        <input
-          v-model="includeBreaks"
-          type="checkbox"
-          class="h-4 w-4 rounded border-amber-300/90 bg-white text-sky-500 focus-visible:ring-sky-300/80"
-        />
-        <span>Include scheduled breaks for longer classes.</span>
-      </label>
-
-      <BaseButton compact @click="generateGuidedPlan">
-        <WandSparkles class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-        Generate Guided Plan
+    <div class="fd-choice-grid fd-choice-grid-3">
+      <BaseButton
+        v-for="preset in classPresetOptions"
+        :key="`assistant-preset-${preset.id}`"
+        compact
+        :tone="assistantPresetId === preset.id ? 'primary' : 'subtle'"
+        @click="assistantPresetId = preset.id"
+      >
+        {{ preset.label }}
       </BaseButton>
-    </section>
+    </div>
+
+    <label class="grid gap-1.5 text-sm" for="assistantGestureShare">
+      <span class="fd-text-muted">Gesture Mix: {{ gestureSharePercent }}% | Long Pose {{ 100 - gestureSharePercent }}%</span>
+      <input
+        id="assistantGestureShare"
+        type="range"
+        min="10"
+        max="90"
+        step="1"
+        :value="gestureSharePercent"
+        class="fd-range-input w-full"
+        @input="onGestureShareInput"
+      />
+    </label>
+
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label class="grid gap-1.5 text-sm" for="assistantGestureTag">
+        <span class="fd-text-muted">Gesture Tag</span>
+        <select
+          id="assistantGestureTag"
+          v-model="gestureTag"
+          class="fd-input w-full rounded-xl px-3 py-2 text-sm"
+        >
+          <option v-for="tag in tagOptions" :key="`assistant-gesture-tag-${tag}`" :value="tag">
+            {{ formatTagLabel(tag) }}
+          </option>
+        </select>
+      </label>
+
+      <label class="grid gap-1.5 text-sm" for="assistantLongPoseTag">
+        <span class="fd-text-muted">Long Pose Tag</span>
+        <select
+          id="assistantLongPoseTag"
+          v-model="longPoseTag"
+          class="fd-input w-full rounded-xl px-3 py-2 text-sm"
+        >
+          <option v-for="tag in tagOptions" :key="`assistant-long-tag-${tag}`" :value="tag">
+            {{ formatTagLabel(tag) }}
+          </option>
+        </select>
+      </label>
+    </div>
+
+    <label class="fd-check-inline">
+      <input
+        v-model="includeBreaks"
+        type="checkbox"
+        class="fd-check-input"
+      />
+      <span>Include scheduled breaks for longer classes.</span>
+    </label>
+
+    <BaseButton compact tone="subtle" @click="generateGuidedPlan">
+      <WandSparkles class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+      Generate Starting Plan
+    </BaseButton>
   </div>
 </template>
 

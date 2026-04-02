@@ -14,37 +14,13 @@ function createPngFilePayload(name) {
   };
 }
 
-function setupWizardDialog(page) {
-  return page.getByRole("dialog", { name: "Setup Wizard" });
-}
-
-function wizardStepButton(page, stepNumber, stepTitle) {
-  return setupWizardDialog(page).getByRole("button", {
-    name: new RegExp(`Step\\s*${stepNumber}[\\s\\S]*${stepTitle}`, "i")
-  });
-}
-
-async function openSetupWizard(page) {
-  const wizard = setupWizardDialog(page);
-  if (await wizard.isVisible()) {
-    return;
-  }
-
-  await page.getByRole("button", { name: /Setup Wizard/ }).click();
-  await expect(wizard).toBeVisible();
-}
-
 async function expectNoCriticalOrSeriousViolations(page, { include }) {
   const builder = new AxeBuilder({ page });
   if (include) {
     builder.include(include);
   }
 
-  const analysis = await builder
-    // Contrast tuning is handled separately; keep this gate focused on structural/accessibility errors.
-    .disableRules(["color-contrast"])
-    .analyze();
-
+  const analysis = await builder.disableRules(["color-contrast"]).analyze();
   const seriousViolations = analysis.violations.filter((violation) =>
     ["critical", "serious"].includes(String(violation.impact))
   );
@@ -52,22 +28,99 @@ async function expectNoCriticalOrSeriousViolations(page, { include }) {
   expect(seriousViolations).toEqual([]);
 }
 
-test("landing view has no critical/serious accessibility violations", async ({ page }) => {
-  await page.goto("/");
+test("studio route has no critical or serious accessibility violations", async ({ page }) => {
+  await page.goto("/studio");
   await expect(page.locator("main")).toBeVisible();
+  await page.getByText("More").click();
   await expectNoCriticalOrSeriousViolations(page, { include: "body" });
 });
 
-test("setup wizard has no critical/serious accessibility violations", async ({ page }) => {
-  await page.goto("/");
-
-  await openSetupWizard(page);
-  await wizardStepButton(page, 1, "Photos").click();
-  await setupWizardDialog(page).locator("#photoInput").setInputFiles([
-    createPngFilePayload("a11y-pose-1.png"),
-    createPngFilePayload("a11y-pose-2.png")
+test("manage library drawer has no critical or serious accessibility violations", async ({ page }) => {
+  await page.goto("/studio");
+  await page.locator("#studioPhotoInput").setInputFiles([
+    createPngFilePayload("a11y-1.png"),
+    createPngFilePayload("a11y-2.png")
   ]);
 
-  await wizardStepButton(page, 3, "Advanced").click();
+  await page.getByRole("button", { name: "Manage Library" }).click();
+  await expect(page.getByRole("dialog", { name: "Manage library" })).toBeVisible();
   await expectNoCriticalOrSeriousViolations(page, { include: '[role="dialog"][aria-modal="true"]' });
+});
+
+test("history tabs and archive tools have no critical or serious accessibility violations", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      "figureDrawing.history.v1",
+      JSON.stringify([
+        {
+          id: "a11y-history-1",
+          sessionMode: "quick",
+          result: "completed",
+          startedAt: "2026-03-01T10:00:00.000Z",
+          endedAt: "2026-03-01T10:05:00.000Z",
+          elapsedSeconds: 300,
+          plannedSlides: 5,
+          completedSlides: 5,
+          plannedDurationSeconds: 300,
+          completedDurationSeconds: 300,
+          durationDeltaSeconds: 0,
+          plannedBreakCount: 0,
+          completedBreakCount: 0,
+          plannedBreakDurationSeconds: 0,
+          completedBreakDurationSeconds: 0,
+          templateName: "",
+          presetId: "quick-session",
+          presetLabel: "Quick Session",
+          appliedTags: []
+        }
+      ])
+    );
+    window.localStorage.setItem(
+      "figureDrawing.runSnapshots.v1",
+      JSON.stringify([
+        {
+          id: "a11y-snapshot-1",
+          name: "Quick Snapshot",
+          sessionMode: "quick",
+          sourceSessionId: "a11y-history-1",
+          templateName: "",
+          appliedTags: [],
+          updatedAt: "2026-03-01T10:05:00.000Z",
+          createdAt: "2026-03-01T10:05:00.000Z",
+          rerunSettings: {
+            sessionMode: "quick",
+            durationSeconds: 60,
+            classPresetId: "class-3h",
+            classBlocks: [],
+            classPhotoOrder: "shuffle",
+            avoidImmediateRepeats: true
+          }
+        }
+      ])
+    );
+  });
+
+  await page.goto("/history");
+  await page.getByRole("button", { name: "Snapshots" }).click();
+  await page.getByText("Filters, export, and maintenance").click();
+  await expectNoCriticalOrSeriousViolations(page, { include: "body" });
+});
+
+test("live session settings sheet has no critical or serious accessibility violations", async ({ page }) => {
+  await page.goto("/studio");
+  await page.locator("#studioPhotoInput").setInputFiles([
+    createPngFilePayload("a11y-live-1.png"),
+    createPngFilePayload("a11y-live-2.png")
+  ]);
+
+  await page.getByRole("button", { name: "Start Session" }).click();
+  await page.getByRole("button", { name: "Session Settings" }).click();
+  await expect(page.getByRole("dialog", { name: "Session settings" })).toBeVisible();
+  await expectNoCriticalOrSeriousViolations(page, { include: '[role="dialog"][aria-modal="true"]' });
+});
+
+test("remote route has no critical or serious accessibility violations", async ({ page }) => {
+  await page.goto("/remote");
+  await expect(page.locator("main")).toBeVisible();
+  await expectNoCriticalOrSeriousViolations(page, { include: "body" });
 });

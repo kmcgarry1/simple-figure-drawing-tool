@@ -1,13 +1,17 @@
 <template>
-  <div class="grid gap-2.5">
-    <p class="fd-section-label inline-flex items-center gap-1.5">
-      <Shuffle class="h-4 w-4 text-sky-700" aria-hidden="true" />
-      Photo Sequence
-    </p>
-    <p class="text-[12px] leading-5 text-stone-600">
-      Decide whether the class runs in randomized order or follows upload sequence.
-    </p>
-    <div class="fd-segmented max-w-[380px]" role="group" aria-label="Photo order mode">
+  <div class="grid gap-3">
+    <div class="grid gap-1">
+      <p class="fd-section-label inline-flex items-center gap-1.5">
+        <Shuffle class="h-4 w-4 fd-icon-accent" aria-hidden="true" />
+        Photo Sequence
+      </p>
+      <p class="fd-text-strong text-sm font-semibold">Control how references are pulled into the class.</p>
+      <p class="fd-text-muted text-sm">
+        Shuffle is safer for variety. Upload order works better when the source pool was arranged on purpose.
+      </p>
+    </div>
+
+    <div class="fd-segmented max-w-[420px]" role="group" aria-label="Photo order mode">
       <button
         type="button"
         class="fd-segmented-option"
@@ -27,16 +31,21 @@
         Upload Order
       </button>
     </div>
-    <label class="inline-flex items-center gap-2 text-[12px] text-stone-700" :class="{ 'opacity-70': classPhotoOrder === 'sequential' }">
+
+    <label class="fd-check-inline" :class="{ 'opacity-60': classPhotoOrder === 'sequential' }">
       <input
         type="checkbox"
-        class="h-4 w-4 rounded border-amber-300/90 bg-white text-sky-500 focus-visible:ring-sky-300/80"
+        class="fd-check-input"
         :checked="avoidImmediateRepeats"
         :disabled="classPhotoOrder === 'sequential'"
         @change="onRepeatToggle"
       />
       <span>Avoid back-to-back repeats while shuffling.</span>
     </label>
+
+    <p class="fd-text-muted text-sm">
+      This only changes photo order. The timing structure stays exactly as defined in the block list.
+    </p>
   </div>
 </template>
 

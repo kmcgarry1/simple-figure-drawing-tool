@@ -1,13 +1,16 @@
 <template>
-  <div class="grid gap-2.5">
-    <p class="fd-section-label inline-flex items-center gap-1.5">
-      <Timer class="h-4 w-4 text-sky-700" aria-hidden="true" />
-      Class Length Preset
-    </p>
-    <p class="text-[12px] leading-5 text-stone-600">
-      Choose a time target before fine-tuning blocks and sequence.
-    </p>
-    <div class="fd-subtle-card grid grid-cols-3 gap-2 rounded-lg p-2.5 max-[560px]:grid-cols-1">
+  <div class="grid gap-3">
+    <div class="grid gap-1">
+      <p class="fd-section-label inline-flex items-center gap-2">
+        <Timer class="h-4 w-4 fd-icon-accent" aria-hidden="true" />
+        Class Length Preset
+      </p>
+      <p class="fd-text-muted text-sm">
+        Choose a time target before fine-tuning the timing structure and sequence.
+      </p>
+    </div>
+
+    <div class="fd-choice-grid fd-choice-grid-3">
       <BaseButton
         v-for="preset in classPresetOptions"
         :key="preset.id"

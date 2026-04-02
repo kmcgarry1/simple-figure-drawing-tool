@@ -1,235 +1,322 @@
 <template>
-  <section class="fd-card grid gap-2 rounded-lg p-3">
-    <div class="flex items-center justify-between gap-2">
-      <p class="text-sm font-semibold text-stone-800">Session History</p>
-      <div class="grid grid-flow-col gap-1.5">
-        <BaseButton
-          compact
-          tone="subtle"
-          :disabled="filteredEntries.length === 0"
-          @click="exportFilteredHistoryJson"
+  <section class="fd-card fd-history-panel rounded-2xl p-4">
+    <div class="fd-history-header">
+      <div class="grid gap-1">
+        <p class="fd-section-label">Archive</p>
+        <p class="fd-text-strong text-base font-semibold">
+          {{ activeTab === "runs" ? "Recent runs" : "Saved snapshots" }}
+        </p>
+        <p class="fd-text-muted text-sm">
+          {{
+            activeTab === "runs"
+              ? `${filteredEntries.length} run${filteredEntries.length === 1 ? "" : "s"} ready to review.`
+              : `${recentSnapshots.length} snapshot${recentSnapshots.length === 1 ? "" : "s"} ready to restore.`
+          }}
+        </p>
+      </div>
+
+      <div class="fd-segmented fd-history-tabs" role="group" aria-label="History views">
+        <button
+          type="button"
+          class="fd-segmented-option"
+          :class="{ 'is-active': activeTab === 'runs' }"
+          :aria-pressed="activeTab === 'runs' ? 'true' : 'false'"
+          @click="activeTab = 'runs'"
         >
-          Export History JSON
-        </BaseButton>
-        <BaseButton compact tone="subtle" :disabled="sessionHistory.length === 0" @click="$emit('clear-history')">
-          Clear
-        </BaseButton>
+          Runs
+        </button>
+        <button
+          type="button"
+          class="fd-segmented-option"
+          :class="{ 'is-active': activeTab === 'snapshots' }"
+          :aria-pressed="activeTab === 'snapshots' ? 'true' : 'false'"
+          @click="activeTab = 'snapshots'"
+        >
+          Snapshots
+        </button>
       </div>
     </div>
 
-    <section class="fd-subtle-card grid gap-2 rounded-md p-2.5">
-      <p class="text-xs font-semibold uppercase tracking-wide text-stone-600">Filters</p>
-      <div class="grid gap-2 sm:grid-cols-2">
-        <label class="grid gap-1 text-[11px] text-stone-600" for="historyModeFilter">
-          <span>Mode Filter</span>
-          <select
-            id="historyModeFilter"
-            v-model="modeFilter"
-            class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
-          >
-            <option value="all">All Modes</option>
-            <option value="class">Class</option>
-            <option value="quick">Quick</option>
-          </select>
-        </label>
+    <details class="fd-subtle-card fd-disclosure rounded-2xl p-4">
+      <summary class="fd-disclosure-summary">
+        <div class="grid gap-1">
+          <p class="fd-section-label">Archive Tools</p>
+          <p class="fd-text-strong text-sm font-semibold">Filters, export, and maintenance</p>
+        </div>
+        <span class="fd-chip rounded-full px-2.5 py-1 text-xs font-semibold">Optional</span>
+      </summary>
 
-        <label class="grid gap-1 text-[11px] text-stone-600" for="historyOutcomeFilter">
-          <span>Outcome Filter</span>
-          <select
-            id="historyOutcomeFilter"
-            v-model="outcomeFilter"
-            class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
-          >
-            <option value="all">All Outcomes</option>
-            <option value="completed">Completed</option>
-            <option value="ended">Ended</option>
-          </select>
-        </label>
+      <div class="mt-4 grid gap-4">
+        <section class="fd-card grid gap-3 rounded-2xl p-4">
+          <div class="grid gap-1">
+            <p class="fd-text-strong text-sm font-semibold">Run filters</p>
+            <p class="fd-text-muted text-sm">Use filters only when you need to narrow the archive.</p>
+          </div>
 
-        <label class="grid gap-1 text-[11px] text-stone-600" for="historyDateFromFilter">
-          <span>Date From</span>
-          <input
-            id="historyDateFromFilter"
-            v-model="dateFromFilter"
-            type="date"
-            class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
-          />
-        </label>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="grid gap-1.5 text-sm" for="historyModeFilter">
+              <span class="fd-text-muted">Mode</span>
+              <select
+                id="historyModeFilter"
+                v-model="modeFilter"
+                class="fd-input w-full rounded-xl px-3 py-2 text-sm"
+              >
+                <option value="all">All Modes</option>
+                <option value="class">Class</option>
+                <option value="quick">Quick</option>
+              </select>
+            </label>
 
-        <label class="grid gap-1 text-[11px] text-stone-600" for="historyDateToFilter">
-          <span>Date To</span>
-          <input
-            id="historyDateToFilter"
-            v-model="dateToFilter"
-            type="date"
-            class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
-          />
-        </label>
+            <label class="grid gap-1.5 text-sm" for="historyOutcomeFilter">
+              <span class="fd-text-muted">Outcome</span>
+              <select
+                id="historyOutcomeFilter"
+                v-model="outcomeFilter"
+                class="fd-input w-full rounded-xl px-3 py-2 text-sm"
+              >
+                <option value="all">All Outcomes</option>
+                <option value="completed">Completed</option>
+                <option value="ended">Ended</option>
+              </select>
+            </label>
+
+            <label class="grid gap-1.5 text-sm" for="historyDateFromFilter">
+              <span class="fd-text-muted">Date From</span>
+              <input
+                id="historyDateFromFilter"
+                v-model="dateFromFilter"
+                type="date"
+                class="fd-input w-full rounded-xl px-3 py-2 text-sm"
+              />
+            </label>
+
+            <label class="grid gap-1.5 text-sm" for="historyDateToFilter">
+              <span class="fd-text-muted">Date To</span>
+              <input
+                id="historyDateToFilter"
+                v-model="dateToFilter"
+                type="date"
+                class="fd-input w-full rounded-xl px-3 py-2 text-sm"
+              />
+            </label>
+          </div>
+
+          <div class="fd-row-actions">
+            <p class="fd-text-muted text-sm">Showing {{ filteredEntries.length }} of {{ sessionHistory.length }} run(s).</p>
+            <button
+              type="button"
+              class="fd-mini-button"
+              :disabled="!hasActiveFilters"
+              @click="resetFilters"
+            >
+              <FilterX class="fd-inline-icon-sm" aria-hidden="true" />
+              Reset Filters
+            </button>
+          </div>
+
+          <div class="grid gap-2 sm:grid-cols-2">
+            <BaseButton compact tone="subtle" :disabled="filteredEntries.length === 0" @click="exportFilteredHistoryJson">
+              <Download class="fd-inline-icon-sm" aria-hidden="true" />
+              Export History JSON
+            </BaseButton>
+            <BaseButton compact tone="danger" :disabled="sessionHistory.length === 0" @click="$emit('clear-history')">
+              <Trash2 class="fd-inline-icon-sm" aria-hidden="true" />
+              Clear History
+            </BaseButton>
+          </div>
+        </section>
+
+        <details class="fd-card fd-disclosure rounded-2xl p-4">
+          <summary class="fd-disclosure-summary">
+            <div class="grid gap-1">
+              <p class="fd-section-label">Insights</p>
+              <p class="fd-text-strong text-sm font-semibold">
+                Last {{ insights.windowDays }} days
+              </p>
+            </div>
+            <span class="fd-chip rounded-full px-2.5 py-1 text-xs font-semibold">Optional</span>
+          </summary>
+
+          <div class="mt-4 grid gap-4">
+            <div class="fd-summary-metrics">
+              <div>
+                <p class="fd-kicker">Sessions</p>
+                <p class="fd-text-strong text-sm font-semibold">{{ insights.sessionsInWindow }}</p>
+              </div>
+              <div>
+                <p class="fd-kicker">Completed</p>
+                <p class="fd-text-strong text-sm font-semibold">{{ insights.completedSessionsInWindow }}</p>
+              </div>
+              <div>
+                <p class="fd-kicker">Practice</p>
+                <p class="fd-text-strong text-sm font-semibold">{{ formatDuration(insights.totalElapsedSecondsInWindow) }}</p>
+              </div>
+              <div>
+                <p class="fd-kicker">Avg Slides</p>
+                <p class="fd-text-strong text-sm font-semibold">{{ formatAverageSlides(insights.averageCompletedSlides) }}</p>
+              </div>
+              <div>
+                <p class="fd-kicker">Avg Completion</p>
+                <p class="fd-text-strong text-sm font-semibold">{{ insights.averageCompletionRatioPercent }}%</p>
+              </div>
+            </div>
+
+            <div class="grid gap-3">
+              <div class="grid gap-1">
+                <p class="fd-kicker">Most-used Templates</p>
+                <p v-if="insights.topTemplates.length === 0" class="fd-text-muted text-sm">
+                  No template usage captured yet.
+                </p>
+                <div v-else class="flex flex-wrap gap-2">
+                  <span
+                    v-for="template in insights.topTemplates"
+                    :key="`template-insight-${template.label}`"
+                    class="fd-chip rounded-full px-2.5 py-1 text-xs font-semibold"
+                  >
+                    {{ template.label }} ({{ template.count }})
+                  </span>
+                </div>
+              </div>
+
+              <div class="grid gap-1">
+                <p class="fd-kicker">Most-used Tags</p>
+                <p v-if="insights.topTags.length === 0" class="fd-text-muted text-sm">
+                  No class tags captured yet.
+                </p>
+                <div v-else class="flex flex-wrap gap-2">
+                  <span
+                    v-for="tag in insights.topTags"
+                    :key="`tag-insight-${tag.label}`"
+                    class="fd-chip rounded-full px-2.5 py-1 text-xs font-semibold"
+                  >
+                    {{ tag.label }} ({{ tag.count }})
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
       </div>
-      <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-600">
-        <p>Showing {{ filteredEntries.length }} of {{ sessionHistory.length }} session(s).</p>
-        <button
-          type="button"
-          class="rounded border border-amber-200/90 bg-white/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-stone-700 transition-colors hover:bg-white disabled:opacity-35 disabled:hover:bg-white/80"
-          :disabled="!hasActiveFilters"
-          @click="resetFilters"
-        >
-          Reset Filters
-        </button>
-      </div>
-    </section>
+    </details>
 
-    <section class="fd-subtle-card grid gap-2 rounded-md p-2.5">
-      <p class="text-xs font-semibold uppercase tracking-wide text-stone-600">
-        Insights (Last {{ insights.windowDays }} Days)
+    <div v-if="activeTab === 'runs'" class="fd-history-list" role="list" aria-label="Recent runs">
+      <p v-if="sessionHistory.length === 0" class="fd-text-muted text-sm">
+        No sessions recorded yet.
+      </p>
+      <p v-else-if="filteredEntries.length === 0" class="fd-text-muted text-sm">
+        No sessions match the current archive filters.
       </p>
 
-      <div class="grid grid-cols-2 gap-2 text-xs text-stone-600 max-[560px]:grid-cols-1">
-        <p>
-          Sessions:
-          <span class="font-semibold text-stone-800">{{ insights.sessionsInWindow }}</span>
-        </p>
-        <p>
-          Completed:
-          <span class="font-semibold text-stone-800">{{ insights.completedSessionsInWindow }}</span>
-        </p>
-        <p>
-          Practice Time:
-          <span class="font-semibold text-stone-800">{{ formatDuration(insights.totalElapsedSecondsInWindow) }}</span>
-        </p>
-        <p>
-          Avg Completed Slides:
-          <span class="font-semibold text-stone-800">
-            {{ formatAverageSlides(insights.averageCompletedSlides) }}
-          </span>
-        </p>
-        <p class="col-span-2 max-[560px]:col-span-1">
-          Avg Completion Ratio:
-          <span class="font-semibold text-stone-800">{{ insights.averageCompletionRatioPercent }}%</span>
-        </p>
-      </div>
+      <article
+        v-for="entry in recentEntries"
+        :key="entry.id"
+        role="listitem"
+        class="fd-history-row"
+      >
+        <div class="fd-history-row-header">
+          <div class="grid gap-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <p class="fd-text-strong text-sm font-semibold">{{ entry.sessionMode === "class" ? "Class Run" : "Quick Run" }}</p>
+              <span class="fd-chip rounded-full px-2.5 py-1 text-xs font-semibold">{{ entry.result }}</span>
+            </div>
+            <p class="fd-text-muted text-sm">{{ formatTimestamp(entry.endedAt) }}</p>
+          </div>
 
-      <div class="grid gap-1">
-        <p class="text-[11px] font-semibold uppercase tracking-wide text-stone-500">Most-used Templates</p>
-        <div v-if="insights.topTemplates.length === 0" class="text-xs text-stone-500">
-          No template usage captured yet.
+          <div class="fd-history-row-meta">
+            <span>{{ entry.completedSlides }} / {{ entry.plannedSlides }} slides</span>
+            <span>{{ formatDuration(entry.elapsedSeconds) }}</span>
+          </div>
         </div>
-        <div v-else class="flex flex-wrap gap-1">
-          <span
-            v-for="template in insights.topTemplates"
-            :key="`template-insight-${template.label}`"
-            class="rounded-full border border-amber-200/90 bg-white/80 px-2 py-0.5 text-[11px] text-stone-700"
-          >
-            {{ template.label }} ({{ template.count }})
-          </span>
+
+        <p class="fd-text-body text-sm">{{ buildTimingSummary(entry) }}</p>
+        <p class="fd-text-muted text-sm">{{ buildAttributionSummary(entry) }}</p>
+
+        <div v-if="snapshotEditorEntryId === entry.id" class="fd-history-editor">
+          <label class="grid gap-1.5 text-sm" :for="`snapshot-name-${entry.id}`">
+            <span class="fd-text-muted">Snapshot Name</span>
+            <input
+              :id="`snapshot-name-${entry.id}`"
+              type="text"
+              class="fd-input w-full rounded-xl px-3 py-2 text-sm"
+              :value="snapshotNamesByEntryId[entry.id] || ''"
+              :placeholder="buildDefaultSnapshotName(entry)"
+              @input="setSnapshotDraftName(entry.id, $event.target.value)"
+            />
+          </label>
+
+          <div class="grid gap-2 sm:grid-cols-2">
+            <BaseButton compact tone="subtle" @click="cancelSnapshotSave">
+              <X class="fd-inline-icon-sm" aria-hidden="true" />
+              Cancel
+            </BaseButton>
+            <BaseButton compact @click="confirmSnapshotSave(entry)">
+              <BookmarkPlus class="fd-inline-icon-sm" aria-hidden="true" />
+              Confirm Save
+            </BaseButton>
+          </div>
         </div>
-      </div>
 
-      <div class="grid gap-1">
-        <p class="text-[11px] font-semibold uppercase tracking-wide text-stone-500">Most-used Tags</p>
-        <div v-if="insights.topTags.length === 0" class="text-xs text-stone-500">
-          No class tags captured yet.
+        <div v-else class="fd-row-actions">
+          <BaseButton compact @click="rerunFromEntry(entry.id)">
+            <RotateCcw class="fd-inline-icon-sm" aria-hidden="true" />
+            Rerun Setup
+          </BaseButton>
+          <BaseButton compact tone="subtle" @click="beginSnapshotSave(entry)">
+            <Bookmark class="fd-inline-icon-sm" aria-hidden="true" />
+            Save Snapshot
+          </BaseButton>
         </div>
-        <div v-else class="flex flex-wrap gap-1">
-          <span
-            v-for="tag in insights.topTags"
-            :key="`tag-insight-${tag.label}`"
-            class="rounded-full border border-amber-200/90 bg-white/80 px-2 py-0.5 text-[11px] text-stone-700"
-          >
-            {{ tag.label }} ({{ tag.count }})
-          </span>
-        </div>
-      </div>
-    </section>
+      </article>
+    </div>
 
-    <p v-if="sessionHistory.length === 0" class="text-sm text-stone-500">
-      No sessions recorded yet.
-    </p>
-    <p v-else-if="filteredEntries.length === 0" class="text-sm text-stone-500">
-      No sessions match current filters.
-    </p>
-
-    <article
-      v-for="entry in recentEntries"
-      :key="entry.id"
-      class="fd-subtle-card grid gap-1 rounded-md px-2.5 py-2 text-xs text-stone-600"
-    >
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <span class="font-medium text-stone-800">
-          {{ entry.sessionMode === "class" ? "Class" : "Quick" }} | {{ entry.result }}
-        </span>
-        <span>{{ formatTimestamp(entry.endedAt) }}</span>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 text-stone-500">
-        <span>{{ entry.completedSlides }} / {{ entry.plannedSlides }} slides</span>
-        <span>{{ formatDuration(entry.elapsedSeconds) }}</span>
-      </div>
-      <p class="text-[11px] text-stone-500">
-        {{ buildTimingSummary(entry) }}
-      </p>
-      <p class="text-[11px] text-stone-500">
-        {{ buildBreakSummary(entry) }}
-      </p>
-      <p class="text-[11px] text-stone-500">
-        {{ buildAttributionSummary(entry) }}
-      </p>
-      <label class="grid gap-1 pt-1 text-[11px] text-stone-600" :for="`snapshot-name-${entry.id}`">
-        <span>Snapshot Name</span>
-        <input
-          :id="`snapshot-name-${entry.id}`"
-          type="text"
-          class="fd-input w-full rounded-md px-2 py-1.5 text-xs"
-          :value="snapshotNamesByEntryId[entry.id] || ''"
-          :placeholder="buildDefaultSnapshotName(entry)"
-          @input="setSnapshotDraftName(entry.id, $event.target.value)"
-        />
-      </label>
-      <div class="grid grid-cols-2 gap-2 pt-1">
-        <BaseButton compact tone="subtle" @click="rerunFromEntry(entry.id)">Rerun Setup</BaseButton>
-        <BaseButton compact tone="subtle" @click="saveSnapshotFromEntry(entry)">Save Snapshot</BaseButton>
-      </div>
-    </article>
-
-    <section class="fd-subtle-card grid gap-2 rounded-md p-2.5">
-      <div class="flex items-center justify-between gap-2">
-        <p class="text-xs font-semibold uppercase tracking-wide text-stone-600">
-          Run Snapshots
-        </p>
-        <p class="text-[11px] text-stone-500">
-          {{ recentSnapshots.length }} saved
-        </p>
-      </div>
-
-      <p v-if="recentSnapshots.length === 0" class="text-xs text-stone-500">
-        Save snapshots from history entries to reuse named setups quickly.
+    <div v-else class="fd-history-list" role="list" aria-label="Saved snapshots">
+      <p v-if="recentSnapshots.length === 0" class="fd-text-muted text-sm">
+        Save snapshots from run history to restore named setups quickly.
       </p>
 
       <article
         v-for="snapshot in recentSnapshots"
         :key="snapshot.id"
-        class="fd-callout-muted grid gap-1 rounded-md px-2.5 py-2 text-xs text-stone-600"
+        role="listitem"
+        class="fd-history-row"
       >
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="font-semibold text-stone-800">{{ snapshot.name }}</span>
-          <span>{{ formatTimestamp(snapshot.updatedAt) }}</span>
+        <div class="fd-history-row-header">
+          <div class="grid gap-1">
+            <p class="fd-text-strong text-sm font-semibold">{{ snapshot.name }}</p>
+            <p class="fd-text-muted text-sm">{{ formatTimestamp(snapshot.updatedAt) }}</p>
+          </div>
+
+          <div class="fd-history-row-meta">
+            <span>{{ snapshot.sessionMode === "class" ? "Class" : "Quick" }}</span>
+          </div>
         </div>
-        <p class="text-[11px] text-stone-500">
-          {{ snapshot.sessionMode === "class" ? "Class" : "Quick" }} setup
-          <template v-if="snapshot.templateName">
-            | Template: {{ snapshot.templateName }}
-          </template>
+
+        <p class="fd-text-body text-sm">
+          {{
+            snapshot.templateName
+              ? `${snapshot.sessionMode === "class" ? "Class" : "Quick"} setup | Template ${snapshot.templateName}`
+              : `${snapshot.sessionMode === "class" ? "Class" : "Quick"} setup`
+          }}
         </p>
-        <div class="grid grid-cols-2 gap-2 pt-1">
-          <BaseButton compact tone="subtle" @click="restoreSnapshot(snapshot.id)">Restore Snapshot</BaseButton>
-          <BaseButton compact tone="danger" @click="deleteSnapshot(snapshot.id)">Delete Snapshot</BaseButton>
+
+        <div class="fd-row-actions">
+          <BaseButton compact @click="restoreSnapshot(snapshot.id)">
+            <History class="fd-inline-icon-sm" aria-hidden="true" />
+            Restore Snapshot
+          </BaseButton>
+          <BaseButton compact tone="danger" @click="deleteSnapshot(snapshot.id)">
+            <Trash2 class="fd-inline-icon-sm" aria-hidden="true" />
+            Delete
+          </BaseButton>
         </div>
       </article>
-    </section>
+    </div>
   </section>
 </template>
 
 <script setup>
 import { computed, ref } from "vue";
+import { Bookmark, BookmarkPlus, Download, FilterX, History, RotateCcw, Trash2, X } from "lucide-vue-next";
 import { buildSessionInsights } from "../composables/figureSession/sessionInsights";
 import {
   createSessionHistoryExportPayload,
@@ -256,10 +343,12 @@ const emit = defineEmits([
   "delete-run-snapshot"
 ]);
 
+const activeTab = ref("runs");
 const modeFilter = ref("all");
 const outcomeFilter = ref("all");
 const dateFromFilter = ref("");
 const dateToFilter = ref("");
+const snapshotEditorEntryId = ref("");
 const snapshotNamesByEntryId = ref({});
 
 const activeFilters = computed(() => ({
@@ -396,36 +485,37 @@ function buildTimingSummary(entry) {
   return `Timing: ${formatDuration(elapsedSeconds)} elapsed vs ${formatDuration(plannedDurationSeconds)} planned (${deltaLabel})`;
 }
 
-function buildBreakSummary(entry) {
-  const plannedBreakCount = Math.max(0, Math.round(parseToNumber(entry?.plannedBreakCount, 0)));
-  const completedBreakCount = Math.min(
-    plannedBreakCount,
-    Math.max(0, Math.round(parseToNumber(entry?.completedBreakCount, 0)))
-  );
-  const plannedBreakDurationSeconds = Math.max(
-    0,
-    parseToNumber(entry?.plannedBreakDurationSeconds, 0)
-  );
-  const completedBreakDurationSeconds = Math.min(
-    plannedBreakDurationSeconds,
-    Math.max(0, parseToNumber(entry?.completedBreakDurationSeconds, 0))
-  );
-
-  if (plannedBreakCount === 0) {
-    return "Breaks: None planned.";
-  }
-
-  return `Breaks: ${completedBreakCount} / ${plannedBreakCount} completed (${formatDuration(completedBreakDurationSeconds)} / ${formatDuration(plannedBreakDurationSeconds)})`;
-}
-
 function buildAttributionSummary(entry) {
   const templateName = String(entry?.templateName || "").trim();
   const presetLabel = String(entry?.presetLabel || "").trim();
 
-  return `Attribution: Template ${templateName || "none"} | Preset ${presetLabel || "n/a"}`;
+  if (templateName && presetLabel) {
+    return `Preset ${presetLabel} | Template ${templateName}`;
+  }
+  if (presetLabel) {
+    return `Preset ${presetLabel}`;
+  }
+  if (templateName) {
+    return `Template ${templateName}`;
+  }
+
+  return "Preset metadata was not saved for this run.";
 }
 
-function saveSnapshotFromEntry(entry) {
+function beginSnapshotSave(entry) {
+  const existingValue = String(snapshotNamesByEntryId.value[entry.id] || "").trim();
+  if (!existingValue) {
+    setSnapshotDraftName(entry.id, buildDefaultSnapshotName(entry));
+  }
+
+  snapshotEditorEntryId.value = entry.id;
+}
+
+function cancelSnapshotSave() {
+  snapshotEditorEntryId.value = "";
+}
+
+function confirmSnapshotSave(entry) {
   const currentName = String(snapshotNamesByEntryId.value[entry.id] || "").trim();
   const resolvedName = currentName || buildDefaultSnapshotName(entry);
 
@@ -434,6 +524,8 @@ function saveSnapshotFromEntry(entry) {
     sessionId: entry.id,
     name: resolvedName
   });
+  snapshotEditorEntryId.value = "";
+  activeTab.value = "snapshots";
 }
 
 function restoreSnapshot(snapshotId) {

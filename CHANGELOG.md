@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.7.1...figure-drawing-v1.8.0) (2026-04-02)
+
+
+### Features
+
+* rebuild the app around editorial studio routes ([d4d352e](https://github.com/kmcgarry1/simple-figure-drawing-tool/commit/d4d352e9c87703daa927744670cb68166c9931a4))
+
 ## [1.7.1](https://github.com/kmcgarry1/simple-figure-drawing-tool/compare/figure-drawing-v1.7.0...figure-drawing-v1.7.1) (2026-03-16)
 
 

@@ -31,7 +31,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.2.2",
-    "@vitejs/plugin-vue": "^6.0.5",
+    "@vitejs/plugin-vue": "^6.0.6",
     "autoprefixer": "^10.4.27",
     "eslint": "^10.1.0",
     "eslint-plugin-vue": "^10.8.0",
